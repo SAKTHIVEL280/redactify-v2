@@ -37,4 +37,6 @@ jobs:
         run: |
           test -f dist/_headers || (echo "Missing Cloudflare _headers in dist" && exit 1)
           test -f dist/tessdata/eng.traineddata || (echo "Missing offline tessdata in dist" && exit 1)
+          test -f dist/tessdata/worker.min.js || (echo "Missing offline OCR worker in dist" && exit 1)
+          test -f dist/tessdata/tesseract-core-lstm.wasm.js || (echo "Missing offline OCR WASM core in dist" && exit 1)
           echo "Production artifacts verified successfully."

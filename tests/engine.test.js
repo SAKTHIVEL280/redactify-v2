@@ -404,6 +404,17 @@ assert(!extractedPdfText.includes('218442898716'), 'PDF Ghost Text Eliminated: A
 assert(!extractedPdfText.includes('CONFIDENTIAL_AADHAAR'), 'PDF Ghost Text Eliminated: Confidential prefix cannot be extracted via pdftotext');
 assert(extractedPdfText.includes('Annual Statement'), 'PDF Selective Redaction: Non-redacted public content remains intact');
 
+console.log('\n─── Testing Offline Zero-CDN OCR Invariant ───────────────────────');
+const fs = await import('fs');
+assert(fs.existsSync('public/tessdata/worker.min.js'), 'Offline OCR: worker.min.js bundled in public/tessdata/');
+assert(fs.existsSync('public/tessdata/tesseract-core-simd-lstm.wasm.js'), 'Offline OCR: tesseract-core-simd-lstm.wasm.js bundled in public/tessdata/');
+assert(fs.existsSync('public/tessdata/tesseract-core-lstm.wasm.js'), 'Offline OCR: tesseract-core-lstm.wasm.js bundled in public/tessdata/');
+assert(fs.existsSync('public/tessdata/eng.traineddata'), 'Offline OCR: eng.traineddata bundled in public/tessdata/');
+const ocrCode = fs.readFileSync('src/core/parsers/ocrScanner.js', 'utf8');
+assert(ocrCode.includes("workerPath: '/tessdata/worker.min.js'"), 'Offline OCR: workerPath configured to local self-hosted asset');
+assert(ocrCode.includes("corePath: '/tessdata'"), 'Offline OCR: corePath configured to local self-hosted asset');
+assert(ocrCode.includes("workerBlobURL: false"), 'Offline OCR: workerBlobURL disabled for strict CSP compliance');
+
 console.log(`\n──────────────────────────────────────────────────────────────────`);
 console.log(`Total Passed: ${passed} | Total Failed: ${failed}`);
 

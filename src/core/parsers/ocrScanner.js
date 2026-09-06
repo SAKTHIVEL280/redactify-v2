@@ -71,8 +71,11 @@ export async function scanImageWithOCR(imageFileOrCanvas, presetId = 'all', cust
   onProgress(10, 100, 'Initializing WebAssembly OCR engine...');
 
   const worker = await Tesseract.createWorker('eng', 1, {
+    workerPath: '/tessdata/worker.min.js',
+    corePath: '/tessdata',
     langPath: '/tessdata',
     cachePath: '/tessdata',
+    workerBlobURL: false,
     logger: (m) => {
       if (m.status === 'recognizing text' && m.progress) {
         const pct = Math.round(20 + m.progress * 70);
