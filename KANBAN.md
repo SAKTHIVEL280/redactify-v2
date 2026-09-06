@@ -29,60 +29,41 @@
   - Created [`AGENT.md`](./AGENT.md) for anti-hallucination, strict safety boundaries, and verification invariants.
 - [x] **GitHub CLI Verification & Repository Initialization**
   - Authenticated `SAKTHIVEL280`.
-  - Configured `.gitignore` to isolate legacy references.
+  - Created and pushed to clean repository: [`SAKTHIVEL280/redactify-v2`](https://github.com/SAKTHIVEL280/redactify-v2).
+- [x] **Milestone 1: Core Foundation & High-Performance Engine**
+  - Scaffolding complete with Vite + React 18 + Tailwind CSS + Lucide + Zustand.
+  - Mathematical Checksum Validation (Luhn for Cards, Verhoeff for Indian Aadhaar, ISO 7064 Mod-97 for IBAN, US ABA Routing, Indian PAN).
+  - High-precision international patterns (E.164 Phones, US SSN, UK NINO, Canada SIN, Australia TFN, IPv4/v6).
+  - Contextual heuristic name & organization deduction (<4ms execution, 0MB download).
+  - Verified with 29 automated unit tests in `tests/engine.test.js` (100% pass rate).
+- [x] **Milestone 2: Multi-Modal Viewer & True Vector Redaction**
+  - Normalized Bounding Coordinate System (0.0 to 1.0) for zero drift across screens and zoom factors.
+  - True Vector PDF Redaction Engine (`pdf-lib`) with metadata stripping and memory-safe export.
+  - Format-preserving DOCX OOXML engine (`jszip`).
+  - Image canvas redaction engine (JPG/PNG/WebP).
+  - Interactive Crosshair Manual Drawing Tool (+ Manual Box for scans, signatures, stamps).
+- [x] **Milestone 3: Presentation Studio & Presets**
+  - Modern, responsive Dark Studio UI (`Header.jsx`, `Dropzone.jsx`, `DocumentViewer.jsx`, `EntityInspector.jsx`, `StyleToolbar.jsx`).
+  - Live "Zero-Trust" Security Indicator & "Try It Offline" challenge card.
+  - Compliance Presets: Indian KYC/DPDP (Aadhaar `XXXX-XXXX-1234` masking), Legal/Court, Banking, Medical, Resume, Universal.
+  - Customizable Redaction Styles (Solid Black, Charcoal, White-out, Navy, Audit Red, plus custom text labels like `[CONFIDENTIAL]`).
+  - Full Undo / Redo engine (`Ctrl+Z` / `Ctrl+Y`).
+- [x] **Milestone 4: Frictionless Monetization & Gating Engine**
+  - Pro Upgrade Modal with dual pricing: Global ($9/mo) + India (₹499/mo, ₹999 early-bird lifetime pass).
+  - Free trial hook: Page 1 export with watermark to prove value while requiring Pro for full multi-page export.
+  - License store with persistence and offline activation.
+  - User feedback & missed-entity reporting modal.
 
 ---
 
-### 🟡 [IN PROGRESS] Current Milestone: Milestone 1 (Core Foundation & Engine)
-- [ ] **Create GitHub Repository (`redactify-v2`) and push initial baseline.**
-- [ ] **Scaffold Modern Frontend Stack (Vite + React 19 + Tailwind CSS + Lucide + Zustand).**
-- [ ] **Implement Core International Detection Engine (`/src/core/engine`)**:
-  - Luhn algorithm for Credit Cards (Visa, MC, Amex, RuPay, JCB).
-  - Verhoeff algorithm for Indian Aadhaar validation (12-digit checksum).
-  - Indian PAN card regex & validation.
-  - International Phone Numbers (E.164 standard + country formats).
-  - International Bank Accounts (IBAN with ISO 7064 Mod-97 checksum, SWIFT/BIC, US Routing).
-  - US SSN, UK NINO, Canada SIN, Australia TFN.
-  - RFC Email validation & IP addresses (IPv4 / IPv6).
-  - Contextual Heuristic Name & Organization extractor (5ms execution, 0MB download).
+### 🟡 [IN PROGRESS] Current Milestone: Cloudflare Pages Deployment & Verification
+- [ ] Deploy production build to Cloudflare Pages (or preview).
+- [ ] Connect custom domain / subdomain (e.g. `redactify.daeq.in`).
+- [ ] Live end-to-end testing with sample Indian KYC documents and multi-page PDFs.
 
 ---
 
-### 🔵 [BACKLOG] Upcoming Milestones
-
-#### Milestone 2: Multi-Modal Viewer & True Vector Redaction
-- [ ] **Normalized Bounding Box System (0.0 to 1.0)**:
-  - Resolution-independent coordinate mapping for zero drift across devices/zoom levels.
-- [ ] **Interactive Document Viewer**:
-  - High-performance PDF renderer (`pdfjs-dist` lazy loaded).
-  - Scanned PDF detection with graceful manual tool prompt.
-  - Interactive Manual Crosshair Redaction Tool (draw boxes over signatures/stamps).
-- [ ] **Customizable Redaction Style System**:
-  - Solid blackout (`#000000`).
-  - Custom color palette (Charcoal, White-out, Navy, Warning Red).
-  - Custom embedded text labels (`[CONFIDENTIAL]`, `[REDACTED]`, custom text).
-- [ ] **True Vector PDF Export Engine (`pdf-lib`)**:
-  - Remove underlying character streams and draw native vector rectangles.
-  - Fast <2s export for 50-page documents with zero canvas memory bloat.
-  - Metadata sanitization (wipe author, creation software, hidden timestamps).
-- [ ] **Format-Preserving DOCX OOXML Redaction Engine (`jszip`)**:
-  - Search & replace in XML text runs preserving 100% styles, fonts, and tables.
-
-#### Milestone 3: Professional SaaS UI, Presets & Conversion Design
-- [ ] **Studio Layout**:
-  - Top bar with "Try It Offline" challenge card & live zero-trust client sandbox indicator.
-  - Preset Selector: Indian KYC/DPDP, Legal/Court, Financial/Banking, Resume/HR.
-  - Undo / Redo engine (`Ctrl+Z` / `Ctrl+Y`).
-- [ ] **Feedback & Missed-Entity Reporting Drawer**:
-  - Direct user feedback loop to report missed text/patterns.
-
-#### Milestone 4: Monetization & Aggressive Gating Engine
-- [ ] **Free vs. Pro Gating**:
-  - Free: Page 1 only + subtle watermark (*"Trial — Redacted with Redactify"*).
-  - Pro: Unlimited pages, zero watermark, all presets, batch processing.
-- [ ] **Dual Payment Gateway Integration**:
-  - Razorpay (India UPI / domestic cards in INR ₹).
-  - Dodo Payments (International cards / Apple Pay in USD $ with direct HDFC payouts).
-- [ ] **Cryptographic License Engine**:
-  - Asymmetric Ed25519 signed token verification with offline `expiresAt` support.
-  - Zero locking bugs; frictionless multi-device activation.
+### 🔵 [BACKLOG] Upcoming Enhancements
+- [ ] Dual Payment Gateway Webhooks (Dodo Payments for global USD + Razorpay for domestic INR).
+- [ ] Batch folder multi-file queue runner (Pro feature).
+- [ ] Cloudflare Worker Edge license verification handler.
