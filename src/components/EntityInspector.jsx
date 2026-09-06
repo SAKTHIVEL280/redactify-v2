@@ -1,12 +1,15 @@
 import React, { useState, useMemo } from 'react';
-import { ShieldCheck, Search, CheckSquare, Square, Trash2, MessageSquarePlus, Filter } from 'lucide-react';
+import { ShieldCheck, Search, CheckSquare, Square, Trash2, MessageSquarePlus, Filter, ChevronDown } from 'lucide-react';
 import { useRedactionStore } from '../store/redactionStore';
+import { PRESETS } from '../core/engine/presets';
 
 export function EntityInspector({ onOpenFeedback }) {
   const redactions = useRedactionStore((s) => s.redactions);
   const toggleRedaction = useRedactionStore((s) => s.toggleRedaction);
   const removeRedaction = useRedactionStore((s) => s.removeRedaction);
   const toggleAllRedactions = useRedactionStore((s) => s.toggleAllRedactions);
+  const activePreset = useRedactionStore((s) => s.activePreset);
+  const setActivePreset = useRedactionStore((s) => s.setActivePreset);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -56,6 +59,27 @@ export function EntityInspector({ onOpenFeedback }) {
 
       {/* Search & Filter */}
       <div className="p-3 border-b border-[#00000014] space-y-2">
+        {/* Preset Selector Dropdown */}
+        <div className="flex items-center justify-between gap-2 pb-1 border-b border-[#0000000a]">
+          <span className="text-[10px] uppercase font-semibold text-[#6f6f6e] tracking-wider">
+            Preset:
+          </span>
+          <div className="relative flex-1 max-w-[190px]">
+            <select
+              value={activePreset}
+              onChange={(e) => setActivePreset(e.target.value)}
+              className="w-full appearance-none bg-[#edede8] border border-[#00000014] rounded-full px-2.5 py-1 pr-6 text-[11px] text-[#141414] font-medium focus:outline-none cursor-pointer truncate hover:bg-[#dbdbd2] transition-colors"
+            >
+              {Object.values(PRESETS).map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="w-3 h-3 text-[#6f6f6e] absolute right-2 top-2 pointer-events-none" />
+          </div>
+        </div>
+
         <div className="relative">
           <Search className="w-3.5 h-3.5 text-[#8f8f8e] absolute left-3 top-2.5" />
           <input

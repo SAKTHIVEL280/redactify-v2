@@ -7,7 +7,8 @@ export async function exportRedactedImage({
   imageFile,
   redactions,
   style = { color: '#09090b', textColor: '#ffffff', label: '[REDACTED]', showLabel: false },
-  isPro = false
+  isPro = false,
+  rotation = 0
 }) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -15,12 +16,34 @@ export async function exportRedactedImage({
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement('canvas');
-        canvas.width = img.naturalWidth || img.width;
-        canvas.height = img.naturalHeight || img.height;
+        const rot = ((rotation % 360) + 360) % 360;
+        const origW = img.naturalWidth || img.width;
+        const origH = img.naturalHeight || img.height;
+
+        if (rot === 90 || rot === 270) {
+          canvas.width = origH;
+          canvas.height = origW;
+        } else {
+          canvas.width = origW;
+          canvas.height = origH;
+        }
+
         const ctx = canvas.getContext('2d');
 
-        // Draw original image
-        ctx.drawImage(img, 0, 0);
+        // Draw image with rotation transform
+        ctx.save();
+        if (rot === 90) {
+          ctx.translate(canvas.width, 0);
+          ctx.rotate((90 * Math.PI) / 180);
+        } else if (rot === 180) {
+          ctx.translate(canvas.width, canvas.height);
+          ctx.rotate((180 * Math.PI) / 180);
+        } else if (rot === 270) {
+          ctx.translate(0, canvas.height);
+          ctx.rotate((270 * Math.PI) / 180);
+        }
+        ctx.drawImage(img, 0, 0, origW, origH);
+        ctx.restore();
 
         const activeRedactions = redactions.filter(r => r.redact);
 

@@ -3,7 +3,7 @@ import {
   UploadCloud, ShieldAlert, ShieldCheck, BadgeCheck, Scale, Landmark, 
   Activity, UserCheck, WifiOff, FileText, CheckCircle2, Zap, ArrowRight, 
   ChevronDown, ChevronUp, Lock, Sparkles, Check, HelpCircle, EyeOff, 
-  Layers, Download, ServerOff, FileCheck, ExternalLink
+  Layers, Download, ServerOff, FileCheck, ExternalLink, AlertCircle, RefreshCw
 } from 'lucide-react';
 import { useDocumentStore } from '../store/documentStore';
 import { useRedactionStore } from '../store/redactionStore';
@@ -13,31 +13,22 @@ import { parseAndScanPDF } from '../core/parsers/pdfParser';
 import { parseAndExtractDOCX } from '../core/parsers/docxParser';
 import { detectEntities } from '../core/engine/detector';
 
-const PRESET_ICONS = {
-  ShieldAlert,
-  BadgeCheck,
-  Scale,
-  Landmark,
-  Activity,
-  UserCheck
-};
-
 const FAQS = [
   {
     q: "How can I mathematically verify that my documents are never uploaded to any server?",
-    a: "You don't have to trust us — you can verify it in 10 seconds. Open your browser's Developer Tools (F12 or Ctrl+Shift+I), navigate to the 'Network' tab, and drop your document. You will see 0 HTTP requests. Alternatively, turn off your Wi-Fi or unplug your internet cable: Redactify will continue to parse, redact, and export at full speed because the entire engine runs locally in your browser's WebAssembly and JavaScript memory."
+    a: "You do not have to trust us — you can verify it in 10 seconds. Open your browser's Developer Tools (F12 or Ctrl+Shift+I), navigate to the 'Network' tab, and drop your document. You will observe exactly 0 HTTP requests. Alternatively, turn off your Wi-Fi or disconnect your network cable: Redactify will continue to parse, redact, and export at full speed because the entire engine executes locally in your browser's WebAssembly and JavaScript memory."
   },
   {
     q: "Can someone inspect or remove the black boxes in exported PDFs to read the original text?",
-    a: "No. Unlike amateur redaction tools that draw a black CSS box or overlay on top of the text, Redactify permanently incinerates the underlying text stream in the PDF vector structure using pdf-lib. The sensitive characters are destroyed and replaced with solid vector coordinates. Furthermore, all hidden PDF metadata (author, creation software, revision history, and printer timestamps) are automatically scrubbed."
+    a: "No. Unlike superficial redaction tools that merely draw a black rectangle on top of the text, Redactify permanently incinerates the underlying text stream in the PDF vector structure using pdf-lib. The sensitive character glyphs are destroyed and replaced with solid vector coordinates. Furthermore, all hidden PDF metadata (author, creation software, revision history, and timestamps) are completely scrubbed."
   },
   {
-    q: "Does Redactify comply with the Indian DPDP Act 2023 and UIDAI Aadhaar masking circulars?",
-    a: "Yes. Under UIDAI regulations, sharing raw Aadhaar numbers is restricted — only the last 4 digits may remain visible. Redactify automatically validates Aadhaar numbers using the Verhoeff checksum algorithm and masks the first 8 digits (e.g. XXXX-XXXX-1234). It also satisfies the strict 'data minimization' requirements of the Digital Personal Data Protection (DPDP) Act 2023 because data fiduciaries do not transfer files to external cloud processors."
+    q: "Does Redactify comply with international data privacy laws (GDPR, HIPAA, SOC 2)?",
+    a: "Yes. Because Redactify processes documents exclusively inside your browser's local sandbox, sensitive files never cross international borders, third-party clouds, or unvetted subprocessors. It complies with GDPR Article 32 (Security of Processing), HIPAA Safe Harbor de-identification rules, and strict enterprise zero-data-retention mandates."
   },
   {
     q: "How does Redactify handle scanned documents and ID photos?",
-    a: "If your document is a scanned image or photo without an embedded text layer (such as physical Aadhaar cards, stamped agreements, or signatures), Redactify automatically engages the Crosshair Manual Redaction tool or local in-browser OCR. Simply click and drag blackout boxes directly over any photo, stamp, or signature to permanently burn them out upon export."
+    a: "If your document is a scanned image or photo without an embedded text layer (such as driver licenses, national ID cards, stamped agreements, or signatures), Redactify supports interactive 90-degree rotation, crosshair manual box drawing, and self-hosted client-side Tesseract WASM OCR. Blackout boxes are permanently burned into pixel bitmap data upon export."
   },
   {
     q: "Can I use Redactify on air-gapped enterprise machines?",
@@ -49,6 +40,37 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
   const [isDragging, setIsDragging] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
 
+  // Interactive Live Hero Sandbox State
+  const [activeToggles, setActiveToggles] = useState({
+    name: true,
+    ssn: true,
+    phone: true,
+    email: true,
+    salary: true,
+    routing: true,
+    account: true
+  });
+
+  const toggleEntity = (key) => {
+    setActiveToggles(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const setFilterMode = (mode) => {
+    if (mode === 'all') {
+      setActiveToggles({ name: true, ssn: true, phone: true, email: true, salary: true, routing: true, account: true });
+    } else if (mode === 'ids') {
+      setActiveToggles({ name: true, ssn: true, phone: false, email: false, salary: false, routing: false, account: false });
+    } else if (mode === 'finance') {
+      setActiveToggles({ name: false, ssn: false, phone: false, email: false, salary: true, routing: true, account: true });
+    } else if (mode === 'contact') {
+      setActiveToggles({ name: false, ssn: false, phone: true, email: true, salary: false, routing: false, account: false });
+    } else if (mode === 'none') {
+      setActiveToggles({ name: false, ssn: false, phone: false, email: false, salary: false, routing: false, account: false });
+    }
+  };
+
+  const activeCount = Object.values(activeToggles).filter(Boolean).length;
+
   const setFile = useDocumentStore((s) => s.setFile);
   const setDocumentData = useDocumentStore((s) => s.setDocumentData);
   const setProgress = useDocumentStore((s) => s.setProgress);
@@ -58,7 +80,6 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
   const setError = useDocumentStore((s) => s.setError);
 
   const activePreset = useRedactionStore((s) => s.activePreset);
-  const setActivePreset = useRedactionStore((s) => s.setActivePreset);
   const setRedactions = useRedactionStore((s) => s.setRedactions);
   const customRules = useRedactionStore((s) => s.customRules);
 
@@ -147,7 +168,7 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
         }));
 
         setDocumentData({
-          rawText: text,
+          rawText,
           pageCount: 1
         });
         setRedactions(redactions);
@@ -179,47 +200,57 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
     if (file) processFile(file);
   }, [processFile]);
 
-  const loadSampleResume = () => {
-    const sampleResumeText = `Sakthivel E
-Phone: +91 94872 92520 | Email: sakthivel.hsr06@gmail.com
-LinkedIn: linkedin.com/in/sakthivel-e- | GitHub: github.com/SAKTHIVEL280
-Portfolio: sakthivel.daeq.in | Redactify: redactify.daeq.in
+  const loadSampleOfferLetter = () => {
+    const sampleOfferText = `STRICTLY CONFIDENTIAL - EMPLOYMENT AGREEMENT & OFFER
+Date: September 4, 2026
 
-PROFESSIONAL SUMMARY
-Senior Software Engineer with 4+ years specializing in zero-trust client-side document processing, WebAssembly, and privacy-first web systems.
+Candidate: David M. Sterling
+Home Address: 742 Evergreen Terrace, Suite 400, Seattle, WA 98101
+Social Security Number: 987-65-4320
+Phone: +1 (206) 555-0194 | Email: d.sterling@apexglobal.io
 
-EXPERIENCE
-Lead Systems Engineer - Solutions LLP (2023 - Present)
-- Designed zero-telemetry vector parser processing 50-page PDFs in <2s in-memory.
-- Enforced strict client-side encryption and UIDAI Verhoeff-compliant Aadhaar sanitization.
+Dear David,
+We are thrilled to offer you the position of Principal Architect at Apex Global Technologies Inc.
 
-EDUCATION
-K.S. Rangasamy College of Technology - B.E. Computer Science (2020 - 2024)`;
+1. Compensation & Terms:
+- Fixed Annual Base Salary: $185,000 USD (paid semi-monthly).
+- One-time Signing Bonus: $25,000 USD.
+- Direct Deposit Payroll: Routing Number 021000021, Account Number 8492019482.
 
-    const file = new File([sampleResumeText], 'Sample_Resume_Sakthivel.txt', { type: 'text/plain' });
+2. Confidentiality:
+You agree that all proprietary algorithms, client lists, and confidential intellectual property remain the sole property of Apex Global Technologies Inc.
+
+Yours sincerely,
+Apex Global Technologies Inc.
+Katherine Vance
+Executive Vice President, Legal & HR Operations`;
+
+    const file = new File([sampleOfferText], 'Sample_Executive_Offer_Letter.txt', { type: 'text/plain' });
     processFile(file);
   };
 
-  const loadSampleOfferLetter = () => {
-    const sampleOfferText = `Personal and Confidential
-19 August 2026
+  const loadSampleMedicalRecord = () => {
+    const sampleMedicalText = `CLINICAL HEALTHCARE RECORD & DISCHARGE SUMMARY
+FACILITY: Metro General Medical Center
+CONFIDENTIAL - PROTECTED HEALTH INFORMATION (HIPAA SECURE)
 
-Sakthivel E
-C28/9, TNHB, Bagalur HUDCO Bagalur Road, Near Sri Vijay Vidyalaya School, Tamil Nadu - 635109
-Aadhaar: 2184 4289 8716 | PAN: ABCPE1234F
+PATIENT DEMOGRAPHICS:
+Patient Name: Sarah Jenkins
+Date of Birth: 14-04-1988
+Medical Record Number (MRN): MRN-8849201
+National Identity / SSN: 987-12-8941
+Health Insurance ID: BCBS-994820194
+Primary Phone: +1 (415) 555-0182
+Email: sarah.j.health@providermail.com
 
-Dear Sakthivel,
-We are delighted to offer you employment at Management Consultants Private Limited.
-Your fixed compensation will be ₹18,50,000 per annum.
-Please review our privacy terms at www.cgi.com/en/data-privacy-policy.
+CLINICAL EVALUATION:
+Attending Physician: Dr. Robert Harrison, MD (NPI: 1487295103)
+Diagnostic Assessment: Routine preventative evaluation. No acute contraindications.
+Prescription: Amoxicillin 500mg, oral daily for 7 days.
 
-Yours sincerely,
-For Management Consultants Pvt. Ltd.
-____________________________
-Sarika Pradhan
-Vice President Corporate Services`;
+NOTICE: Unauthorized disclosure of this document violates federal HIPAA regulations.`;
 
-    const file = new File([sampleOfferText], 'Sample_OfferLetter_CGI.txt', { type: 'text/plain' });
+    const file = new File([sampleMedicalText], 'Sample_Patient_Medical_Record.txt', { type: 'text/plain' });
     processFile(file);
   };
 
@@ -247,7 +278,7 @@ Vice President Corporate Services`;
 
         {/* Architectural Subtitle */}
         <p className="text-base sm:text-lg text-[#6f6f6e] max-w-2xl mb-8 leading-relaxed font-normal">
-          Permanently incinerate Aadhaar, PAN, SSN, confidential clauses, and personal identifiers inside your local browser memory. No cloud roundtrips, no server logs, mathematically zero bytes transmitted.
+          Permanently incinerate Social Security Numbers, Tax IDs, Passports, confidential salary figures, client PII, and medical records inside your local browser memory. No cloud roundtrips, no server logs, mathematically zero bytes transmitted.
         </p>
 
         {/* Dual Pill Action Buttons */}
@@ -268,46 +299,193 @@ Vice President Corporate Services`;
         </div>
 
         {/* ─────────────────────────────────────────────────────────────
-            INTERACTIVE DROPZONE & PRESET SELECTOR (Level 1: Frosted White)
+            INTERACTIVE LIVE REDACTION DEMO SANDBOX
         ────────────────────────────────────────────────────────────── */}
-        <div className="w-full max-w-3xl bg-[#ffffff] rounded-[12px] p-6 sm:p-10 border border-[#00000014] shadow-[0_4px_24px_rgba(0,0,0,0.03)] text-left">
-          
-          {/* Preset Selector */}
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-3">
-              <label className="text-xs font-medium uppercase tracking-wider text-[#6f6f6e]">
-                Compliance Detection Preset:
-              </label>
-              <span className="text-[11px] text-[#8f8f8e] font-mono">
-                Auto-calibrates heuristics
+        <div className="w-full max-w-3xl bg-[#ffffff] rounded-[12px] p-6 sm:p-8 border border-[#00000014] shadow-[0_4px_24px_rgba(0,0,0,0.03)] text-left mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-5 border-b border-[#0000000f]">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#4cc02b]" />
+              <span className="text-xs font-semibold uppercase tracking-wider text-[#141414]">
+                Interactive Redaction Sandbox
+              </span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#edede8] text-[#6f6f6e]">
+                Live WASM Demo
               </span>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {Object.values(PRESETS).map((p) => {
-                const Icon = PRESET_ICONS[p.icon] || ShieldAlert;
-                const isSelected = activePreset === p.id;
-                return (
-                  <button
-                    key={p.id}
-                    type="button"
-                    onClick={() => setActivePreset(p.id)}
-                    className={`p-2.5 rounded-[8px] text-left transition-all border flex items-start gap-2 ${
-                      isSelected
-                        ? 'bg-[#edede8] border-[#141414] text-[#141414]'
-                        : 'bg-[#ffffff] border-[#00000014] text-[#6f6f6e] hover:border-[#8f8f8e] hover:text-[#292929]'
-                    }`}
-                  >
-                    <Icon className="w-3.5 h-3.5 mt-0.5 shrink-0 text-[#141414]" />
-                    <div className="min-w-0">
-                      <div className="text-xs font-medium truncate">{p.name}</div>
-                      <div className="text-[10px] text-[#8f8f8e] line-clamp-1">{p.description}</div>
-                    </div>
-                  </button>
-                );
-              })}
+
+            {/* Quick Filter Scrubber */}
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="text-[11px] text-[#6f6f6e] mr-1">Presets:</span>
+              <button
+                type="button"
+                onClick={() => setFilterMode('all')}
+                className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-[#141414] text-white hover:bg-[#292929] transition-colors"
+              >
+                Redact All
+              </button>
+              <button
+                type="button"
+                onClick={() => setFilterMode('ids')}
+                className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-[#edede8] text-[#292929] hover:bg-[#dbdbd2] border border-[#00000014] transition-colors"
+              >
+                SSN & IDs
+              </button>
+              <button
+                type="button"
+                onClick={() => setFilterMode('finance')}
+                className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-[#edede8] text-[#292929] hover:bg-[#dbdbd2] border border-[#00000014] transition-colors"
+              >
+                Salary & Banking
+              </button>
+              <button
+                type="button"
+                onClick={() => setFilterMode('contact')}
+                className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-[#edede8] text-[#292929] hover:bg-[#dbdbd2] border border-[#00000014] transition-colors"
+              >
+                Contacts
+              </button>
+              <button
+                type="button"
+                onClick={() => setFilterMode('none')}
+                className="p-1 rounded-full text-[11px] font-medium text-[#6f6f6e] hover:text-[#141414] transition-colors"
+                title="Reset redactions"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+              </button>
             </div>
           </div>
 
+          {/* Interactive Document Card */}
+          <div className="p-5 rounded-[8px] bg-[#fbfbfa] border border-[#00000014] font-mono text-xs leading-relaxed space-y-3 text-[#292929]">
+            <div className="text-[10px] uppercase font-semibold text-[#8f8f8e] border-b border-[#0000000a] pb-2 flex items-center justify-between">
+              <span>EXECUTIVE EMPLOYMENT AGREEMENT • STRICTLY CONFIDENTIAL</span>
+              <span className="text-[9px] text-[#6f6f6e]">Click any black box to toggle</span>
+            </div>
+
+            <div className="pt-1">
+              Candidate:{' '}
+              <button
+                type="button"
+                onClick={() => toggleEntity('name')}
+                className={`inline-flex items-center px-2 py-0.5 rounded transition-all font-mono font-medium ${
+                  activeToggles.name
+                    ? 'bg-[#141414] text-white shadow-sm hover:opacity-90'
+                    : 'bg-[#dbdbd2]/70 text-[#141414] hover:bg-[#dbdbd2]'
+                }`}
+              >
+                {activeToggles.name ? '[NAME REDACTED]' : 'David M. Sterling'}
+              </button>
+            </div>
+
+            <div>
+              Social Security Number:{' '}
+              <button
+                type="button"
+                onClick={() => toggleEntity('ssn')}
+                className={`inline-flex items-center px-2 py-0.5 rounded transition-all font-mono font-medium ${
+                  activeToggles.ssn
+                    ? 'bg-[#141414] text-white shadow-sm hover:opacity-90'
+                    : 'bg-[#dbdbd2]/70 text-[#141414] hover:bg-[#dbdbd2]'
+                }`}
+              >
+                {activeToggles.ssn ? 'XXX-XX-4320' : '987-65-4320'}
+              </button>
+              <span className="text-[10px] text-[#8f8f8e] ml-2 font-sans">(Validated via US SSA Algorithm)</span>
+            </div>
+
+            <div>
+              Direct Contact:{' '}
+              <button
+                type="button"
+                onClick={() => toggleEntity('phone')}
+                className={`inline-flex items-center px-2 py-0.5 rounded transition-all font-mono font-medium mr-1.5 ${
+                  activeToggles.phone
+                    ? 'bg-[#141414] text-white shadow-sm hover:opacity-90'
+                    : 'bg-[#dbdbd2]/70 text-[#141414] hover:bg-[#dbdbd2]'
+                }`}
+              >
+                {activeToggles.phone ? '[PHONE REDACTED]' : '+1 (206) 555-0194'}
+              </button>
+              •{' '}
+              <button
+                type="button"
+                onClick={() => toggleEntity('email')}
+                className={`inline-flex items-center px-2 py-0.5 rounded transition-all font-mono font-medium ml-1.5 ${
+                  activeToggles.email
+                    ? 'bg-[#141414] text-white shadow-sm hover:opacity-90'
+                    : 'bg-[#dbdbd2]/70 text-[#141414] hover:bg-[#dbdbd2]'
+                }`}
+              >
+                {activeToggles.email ? '[EMAIL REDACTED]' : 'd.sterling@apexglobal.io'}
+              </button>
+            </div>
+
+            <div>
+              Annual Compensation:{' '}
+              <button
+                type="button"
+                onClick={() => toggleEntity('salary')}
+                className={`inline-flex items-center px-2 py-0.5 rounded transition-all font-mono font-medium ${
+                  activeToggles.salary
+                    ? 'bg-[#141414] text-white shadow-sm hover:opacity-90'
+                    : 'bg-[#dbdbd2]/70 text-[#141414] hover:bg-[#dbdbd2]'
+                }`}
+              >
+                {activeToggles.salary ? '[SALARY CONFIDENTIAL]' : '$185,000 USD / year + $25,000 Bonus'}
+              </button>
+            </div>
+
+            <div>
+              Direct Deposit Payroll:{' '}
+              Routing:{' '}
+              <button
+                type="button"
+                onClick={() => toggleEntity('routing')}
+                className={`inline-flex items-center px-2 py-0.5 rounded transition-all font-mono font-medium mr-1.5 ${
+                  activeToggles.routing
+                    ? 'bg-[#141414] text-white shadow-sm hover:opacity-90'
+                    : 'bg-[#dbdbd2]/70 text-[#141414] hover:bg-[#dbdbd2]'
+                }`}
+              >
+                {activeToggles.routing ? '[ROUTING SCRUBBED]' : '021000021'}
+              </button>
+              Account:{' '}
+              <button
+                type="button"
+                onClick={() => toggleEntity('account')}
+                className={`inline-flex items-center px-2 py-0.5 rounded transition-all font-mono font-medium ml-1.5 ${
+                  activeToggles.account
+                    ? 'bg-[#141414] text-white shadow-sm hover:opacity-90'
+                    : 'bg-[#dbdbd2]/70 text-[#141414] hover:bg-[#dbdbd2]'
+                }`}
+              >
+                {activeToggles.account ? '••••••••9482' : '8492019482'}
+              </button>
+            </div>
+          </div>
+
+          {/* Sandbox Live Metrics Bar */}
+          <div className="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-[#6f6f6e] pt-3 border-t border-[#0000000a]">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#4cc02b]" />
+              <span className="font-mono text-[#141414] font-medium">
+                {activeCount} of 7 Entities Scrubbed
+              </span>
+              <span className="text-[#8f8f8e]">•</span>
+              <span>Vector stream glyphs destroyed</span>
+            </div>
+            <div className="text-[11px] font-mono text-[#141414] flex items-center gap-1">
+              <Check className="w-3.5 h-3.5 text-[#4cc02b]" />
+              <span>0 bytes sent to network</span>
+            </div>
+          </div>
+        </div>
+
+        {/* ─────────────────────────────────────────────────────────────
+            DROPZONE CARD (Clean, uncluttered, no 6-button preset grid)
+        ────────────────────────────────────────────────────────────── */}
+        <div className="w-full max-w-3xl bg-[#ffffff] rounded-[12px] p-6 sm:p-10 border border-[#00000014] shadow-[0_4px_24px_rgba(0,0,0,0.03)] text-left">
+          
           {/* Main Drag-and-Drop Area */}
           <div
             onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
@@ -375,15 +553,15 @@ Vice President Corporate Services`;
                 className="px-3 py-1.5 rounded-full bg-[#edede8] hover:bg-[#dbdbd2] text-[#292929] border border-[#00000014] text-xs font-medium transition-colors flex items-center gap-1.5"
               >
                 <FileCheck className="w-3.5 h-3.5 text-[#141414]" />
-                <span>Sample Offer Letter</span>
+                <span>Sample Executive Offer</span>
               </button>
               <button
                 type="button"
-                onClick={loadSampleResume}
+                onClick={loadSampleMedicalRecord}
                 className="px-3 py-1.5 rounded-full bg-[#edede8] hover:bg-[#dbdbd2] text-[#292929] border border-[#00000014] text-xs font-medium transition-colors flex items-center gap-1.5"
               >
                 <FileText className="w-3.5 h-3.5 text-[#141414]" />
-                <span>Sample Resume</span>
+                <span>Sample Medical Record</span>
               </button>
             </div>
           </div>
@@ -446,13 +624,14 @@ Vice President Corporate Services`;
                 <div className="p-4 rounded-[8px] bg-[#ffffff] border border-[#00000014] font-mono text-xs space-y-2">
                   <div className="text-[#8f8f8e] text-[10px] uppercase">// PDF Text Stream Inspector</div>
                   <div className="relative p-2 bg-[#f8f9fa] rounded border border-[#e9ecef]">
-                    <span className="text-[#495057] select-all">Aadhaar: 2184 4289 8716</span>
+                    <span className="text-[#495057] select-all">SSN: 987-65-4320</span>
                     <div className="absolute inset-0 bg-[#000000]/70 flex items-center justify-center text-[9px] text-white">
                       [Visual Black Box - Text Still Selectable Underneath!]
                     </div>
                   </div>
-                  <div className="text-[11px] text-[#c92a2a] pt-1">
-                    ⚠ Anyone can press Ctrl+A / Ctrl+C to extract the hidden data.
+                  <div className="text-[11px] text-[#c92a2a] pt-1 flex items-center gap-1.5 font-medium">
+                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                    <span>Anyone can press Ctrl+A / Ctrl+C to extract the hidden text underneath.</span>
                   </div>
                 </div>
               </div>
@@ -480,13 +659,13 @@ Vice President Corporate Services`;
                 <div className="p-4 rounded-[8px] bg-[#edede8] border border-[#00000014] font-mono text-xs space-y-2">
                   <div className="text-[#6f6f6e] text-[10px] uppercase">// Scrubbed Vector Stream</div>
                   <div className="p-2 bg-[#141414] rounded text-[#ffffff] flex items-center justify-between text-[11px]">
-                    <span className="text-[#8f8f8e]">Aadhaar:</span>
-                    <span className="text-[#ffffff] font-bold">XXXX-XXXX-8716</span>
+                    <span className="text-[#8f8f8e]">SSN:</span>
+                    <span className="text-[#ffffff] font-bold">XXX-XX-4320</span>
                     <span className="w-2 h-2 rounded-full bg-[#4cc02b]" />
                   </div>
                   <div className="text-[11px] text-[#292929] pt-1 flex items-center gap-1.5">
                     <Check className="w-3.5 h-3.5 text-[#4cc02b]" />
-                    <span>Raw text incinerated • Metadata wiped • Verhoeff verified</span>
+                    <span>Raw text incinerated • Metadata wiped • Cryptographically verified</span>
                   </div>
                 </div>
               </div>
@@ -494,6 +673,76 @@ Vice President Corporate Services`;
               <div className="mt-6 pt-4 border-t border-[#0000000f] text-xs text-[#292929] flex items-center justify-between">
                 <span>Certified Sovereign Export</span>
                 <span className="text-[11px] font-mono text-[#6f6f6e]">pdf-lib WASM engine</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Architectural Pipeline Diagram (Crisp non-AI vector diagram) */}
+          <div className="mt-12 p-6 sm:p-8 rounded-[12px] bg-[#fbfbfa] border border-[#00000014]">
+            <div className="text-center mb-6">
+              <span className="text-[10px] font-mono uppercase tracking-widest text-[#8f8f8e]">
+                System Architecture
+              </span>
+              <h3 className="text-base sm:text-lg font-normal text-[#141414] mt-1">
+                Zero-Egress Execution Sandbox
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-stretch">
+              {/* Step 1 */}
+              <div className="p-4 rounded-[8px] bg-white border border-[#00000014] text-center flex flex-col justify-between">
+                <div>
+                  <div className="w-8 h-8 rounded-full bg-[#edede8] text-[#141414] font-mono text-xs flex items-center justify-center mx-auto mb-2 font-medium">
+                    01
+                  </div>
+                  <div className="text-xs font-medium text-[#141414]">Local Buffer</div>
+                  <p className="text-[11px] text-[#6f6f6e] mt-1.5 leading-normal">
+                    File drops directly into browser Uint8Array buffer in volatile memory.
+                  </p>
+                </div>
+                <div className="mt-3 text-[10px] font-mono text-[#8f8f8e]">RAM Allocation</div>
+              </div>
+
+              {/* Step 2 */}
+              <div className="p-4 rounded-[8px] bg-white border border-[#00000014] text-center flex flex-col justify-between">
+                <div>
+                  <div className="w-8 h-8 rounded-full bg-[#edede8] text-[#141414] font-mono text-xs flex items-center justify-center mx-auto mb-2 font-medium">
+                    02
+                  </div>
+                  <div className="text-xs font-medium text-[#141414]">WASM Parser</div>
+                  <p className="text-[11px] text-[#6f6f6e] mt-1.5 leading-normal">
+                    Vector structures and OOXML trees decomposed directly in WebAssembly.
+                  </p>
+                </div>
+                <div className="mt-3 text-[10px] font-mono text-[#8f8f8e]">pdf-lib & jszip</div>
+              </div>
+
+              {/* Step 3 */}
+              <div className="p-4 rounded-[8px] bg-white border border-[#00000014] text-center flex flex-col justify-between">
+                <div>
+                  <div className="w-8 h-8 rounded-full bg-[#edede8] text-[#141414] font-mono text-xs flex items-center justify-center mx-auto mb-2 font-medium">
+                    03
+                  </div>
+                  <div className="text-xs font-medium text-[#141414]">PII Deduction</div>
+                  <p className="text-[11px] text-[#6f6f6e] mt-1.5 leading-normal">
+                    17 mathematical checksums executed across tokens in &lt;10ms.
+                  </p>
+                </div>
+                <div className="mt-3 text-[10px] font-mono text-[#8f8f8e]">Luhn / Verhoeff / Mod-97</div>
+              </div>
+
+              {/* Step 4 */}
+              <div className="p-4 rounded-[8px] bg-[#141414] text-white border border-[#141414] text-center flex flex-col justify-between">
+                <div>
+                  <div className="w-8 h-8 rounded-full bg-white/20 text-white font-mono text-xs flex items-center justify-center mx-auto mb-2 font-medium">
+                    04
+                  </div>
+                  <div className="text-xs font-medium text-white">Glyph Incineration</div>
+                  <p className="text-[11px] text-[#dbdbd2] mt-1.5 leading-normal">
+                    Raw stream destroyed; clean vector export generated with 0 egress.
+                  </p>
+                </div>
+                <div className="mt-3 text-[10px] font-mono text-[#4cc02b]">0 Network Requests</div>
               </div>
             </div>
           </div>
@@ -510,38 +759,18 @@ Vice President Corporate Services`;
               Sovereignty & Governance
             </span>
             <h2 className="text-3xl sm:text-4xl font-normal text-[#141414] tracking-[-0.02em]">
-              Built for legal, HR, and compliance mandates
+              Built for international legal, HR, and compliance mandates
             </h2>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="p-5 rounded-[12px] bg-[#ffffff] border border-[#00000014]">
               <div className="text-xs font-medium text-[#6f6f6e] uppercase tracking-wider mb-1">
-                India DPDP Act 2023
-              </div>
-              <div className="text-sm font-normal text-[#141414] mb-2">Section 8 Compliance</div>
-              <p className="text-xs text-[#6f6f6e] leading-relaxed">
-                Zero data fiduciary risk because raw personal data never leaves the data principal's local perimeter.
-              </p>
-            </div>
-
-            <div className="p-5 rounded-[12px] bg-[#ffffff] border border-[#00000014]">
-              <div className="text-xs font-medium text-[#6f6f6e] uppercase tracking-wider mb-1">
-                UIDAI Circulars
-              </div>
-              <div className="text-sm font-normal text-[#141414] mb-2">Aadhaar 8-Digit Masking</div>
-              <p className="text-xs text-[#6f6f6e] leading-relaxed">
-                Obscures the first 8 digits as <span className="font-mono text-[#141414]">XXXX-XXXX-1234</span> after Verhoeff checksum validation.
-              </p>
-            </div>
-
-            <div className="p-5 rounded-[12px] bg-[#ffffff] border border-[#00000014]">
-              <div className="text-xs font-medium text-[#6f6f6e] uppercase tracking-wider mb-1">
-                EU / UK GDPR
+                EU & UK GDPR
               </div>
               <div className="text-sm font-normal text-[#141414] mb-2">Article 32 Security</div>
               <p className="text-xs text-[#6f6f6e] leading-relaxed">
-                Eliminates international data transfer risk by running exclusively on client hardware.
+                Eliminates cross-border data transfer liabilities because sensitive documents never leave client hardware.
               </p>
             </div>
 
@@ -551,7 +780,27 @@ Vice President Corporate Services`;
               </div>
               <div className="text-sm font-normal text-[#141414] mb-2">Safe Harbor Standard</div>
               <p className="text-xs text-[#6f6f6e] leading-relaxed">
-                Removes all 18 PHI identifiers including Medical Record Numbers, dates, names, and contact coordinates.
+                Removes all 18 PHI identifiers including Medical Record Numbers, dates of birth, names, and contact details.
+              </p>
+            </div>
+
+            <div className="p-5 rounded-[12px] bg-[#ffffff] border border-[#00000014]">
+              <div className="text-xs font-medium text-[#6f6f6e] uppercase tracking-wider mb-1">
+                Financial & GLBA
+              </div>
+              <div className="text-sm font-normal text-[#141414] mb-2">PCI-DSS Safe Masking</div>
+              <p className="text-xs text-[#6f6f6e] leading-relaxed">
+                Protects credit cards, ABA bank routing numbers, IBANs, and wire transfer coordinates via Luhn algorithms.
+              </p>
+            </div>
+
+            <div className="p-5 rounded-[12px] bg-[#ffffff] border border-[#00000014]">
+              <div className="text-xs font-medium text-[#6f6f6e] uppercase tracking-wider mb-1">
+                Global Privacy
+              </div>
+              <div className="text-sm font-normal text-[#141414] mb-2">Zero-Data Retention</div>
+              <p className="text-xs text-[#6f6f6e] leading-relaxed">
+                Meets strict data minimization guidelines across CCPA, CPRA, India DPDP Act 2023, and ISO 27001 standards.
               </p>
             </div>
           </div>
@@ -602,12 +851,12 @@ Vice President Corporate Services`;
                   <td className="py-3.5 px-5 text-[#c92a2a]">No (Fails immediately)</td>
                 </tr>
                 <tr>
-                  <td className="py-3.5 px-5 font-medium text-[#141414]">Aadhaar Masking</td>
+                  <td className="py-3.5 px-5 font-medium text-[#141414]">Government ID Masking</td>
                   <td className="py-3.5 px-5 text-[#141414] font-semibold bg-[#ffffff] border-x border-[#00000014]">
-                    Verhoeff + 8-digit masking
+                    Checksum validation (SSN, Tax IDs, Passports)
                   </td>
                   <td className="py-3.5 px-5 text-[#6f6f6e]">Manual regex setup</td>
-                  <td className="py-3.5 px-5 text-[#c92a2a]">None (Violates UIDAI)</td>
+                  <td className="py-3.5 px-5 text-[#c92a2a]">None or basic strings</td>
                 </tr>
                 <tr>
                   <td className="py-3.5 px-5 font-medium text-[#141414]">Vector Text Scrubbing</td>
@@ -620,9 +869,9 @@ Vice President Corporate Services`;
                 <tr>
                   <td className="py-3.5 px-5 font-medium text-[#141414]">Pricing Model</td>
                   <td className="py-3.5 px-5 text-[#141414] font-semibold bg-[#ffffff] border-x border-[#00000014]">
-                    ₹499/mo or ₹999 Lifetime
+                    $9/mo or $29 Early-Bird Lifetime
                   </td>
-                  <td className="py-3.5 px-5 text-[#6f6f6e]">₹19,000+ / year recurring</td>
+                  <td className="py-3.5 px-5 text-[#6f6f6e]">$240+ / year recurring</td>
                   <td className="py-3.5 px-5 text-[#6f6f6e]">$60 - $120 / year recurring</td>
                 </tr>
               </tbody>

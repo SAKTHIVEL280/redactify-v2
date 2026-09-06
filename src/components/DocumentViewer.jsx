@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, AlertCircle, X, ShieldAlert, Sparkles, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, AlertCircle, X, ShieldAlert, Sparkles, Loader2, RotateCw, RotateCcw } from 'lucide-react';
 import { useDocumentStore } from '../store/documentStore';
 import { useRedactionStore } from '../store/redactionStore';
 import { scanImageWithOCR } from '../core/parsers/ocrScanner';
@@ -23,6 +23,10 @@ export function DocumentViewer() {
   const setCurrentPage = useDocumentStore((s) => s.setCurrentPage);
   const rawText = useDocumentStore((s) => s.rawText);
   const isScannedDocument = useDocumentStore((s) => s.isScannedDocument);
+  const rotation = useDocumentStore((s) => s.rotation);
+  const setRotation = useDocumentStore((s) => s.setRotation);
+  const rotateClockwise = useDocumentStore((s) => s.rotateClockwise);
+  const rotateCounterClockwise = useDocumentStore((s) => s.rotateCounterClockwise);
 
   const redactions = useRedactionStore((s) => s.redactions);
   const toggleRedaction = useRedactionStore((s) => s.toggleRedaction);
@@ -78,6 +82,32 @@ export function DocumentViewer() {
     }
   };
 
+  const handleRotateCw = useCallback(() => {
+    rotateClockwise();
+    if (redactions.length > 0) {
+      setRedactions(redactions.map(r => ({
+        ...r,
+        x: Math.max(0, Math.min(1, 1 - r.y - r.height)),
+        y: Math.max(0, Math.min(1, r.x)),
+        width: r.height,
+        height: r.width
+      })));
+    }
+  }, [rotateClockwise, redactions, setRedactions]);
+
+  const handleRotateCcw = useCallback(() => {
+    rotateCounterClockwise();
+    if (redactions.length > 0) {
+      setRedactions(redactions.map(r => ({
+        ...r,
+        x: Math.max(0, Math.min(1, r.y)),
+        y: Math.max(0, Math.min(1, 1 - r.x - r.width)),
+        width: r.height,
+        height: r.width
+      })));
+    }
+  }, [rotateCounterClockwise, redactions, setRedactions]);
+
   // Render PDF or Image page to canvas
   useEffect(() => {
     if (!file) return;
@@ -109,9 +139,10 @@ export function DocumentViewer() {
             return;
           }
 
-          // Render at crisp scale
+          // Render at crisp scale with rotation
+          const rot = ((rotation % 360) + 360) % 360;
           const scale = 1.5 * zoom;
-          const viewport = pageObj.getViewport({ scale });
+          const viewport = pageObj.getViewport({ scale, rotation: (pageObj.rotate + rot) % 360 });
           const canvas = canvasRef.current;
           if (!canvas) {
             if (pageObj.cleanup) pageObj.cleanup();
@@ -144,14 +175,39 @@ export function DocumentViewer() {
         const canvas = canvasRef.current;
         if (!canvas) return;
 
-        const baseWidth = Math.min(img.naturalWidth || 800, 850);
-        const displayWidth = Math.round(baseWidth * zoom);
-        const displayHeight = Math.round(((img.naturalHeight || 600) / (img.naturalWidth || 800)) * displayWidth);
+        const rot = ((rotation % 360) + 360) % 360;
+        const isSideways = rot === 90 || rot === 270;
+        const naturalW = img.naturalWidth || img.width || 800;
+        const naturalH = img.naturalHeight || img.height || 600;
+
+        const baseWidth = Math.min(naturalW, 850);
+        const scale = baseWidth / naturalW;
+        const baseHeight = Math.round(naturalH * scale);
+
+        const displayWidth = Math.round((isSideways ? baseHeight : baseWidth) * zoom);
+        const displayHeight = Math.round((isSideways ? baseWidth : baseHeight) * zoom);
 
         canvas.width = displayWidth;
         canvas.height = displayHeight;
         const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, displayWidth, displayHeight);
+
+        ctx.save();
+        if (rot === 90) {
+          ctx.translate(displayWidth, 0);
+          ctx.rotate((90 * Math.PI) / 180);
+          ctx.drawImage(img, 0, 0, Math.round(baseWidth * zoom), Math.round(baseHeight * zoom));
+        } else if (rot === 180) {
+          ctx.translate(displayWidth, displayHeight);
+          ctx.rotate((180 * Math.PI) / 180);
+          ctx.drawImage(img, 0, 0, Math.round(baseWidth * zoom), Math.round(baseHeight * zoom));
+        } else if (rot === 270) {
+          ctx.translate(0, displayHeight);
+          ctx.rotate((270 * Math.PI) / 180);
+          ctx.drawImage(img, 0, 0, Math.round(baseWidth * zoom), Math.round(baseHeight * zoom));
+        } else {
+          ctx.drawImage(img, 0, 0, displayWidth, displayHeight);
+        }
+        ctx.restore();
 
         if (isMounted) {
           setRenderedDimensions({ width: displayWidth, height: displayHeight });
@@ -169,7 +225,7 @@ export function DocumentViewer() {
       if (renderTask && renderTask.cancel) renderTask.cancel();
       if (pageObj && pageObj.cleanup) pageObj.cleanup();
     };
-  }, [file, fileType, currentPage, zoom]);
+  }, [file, fileType, currentPage, zoom, rotation]);
 
   // Clean up PDF document proxy when unmounting or clearing document
   useEffect(() => {
@@ -263,25 +319,51 @@ export function DocumentViewer() {
           </div>
         )}
 
-        {/* Zoom Controls */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setZoom(Math.max(0.7, zoom - 0.1))}
-            className="p-1.5 rounded-full hover:bg-[#dbdbd2] text-[#6f6f6e] hover:text-[#141414] transition-colors"
-            title="Zoom Out"
-          >
-            <ZoomOut className="w-4 h-4" />
-          </button>
-          <span className="text-xs font-mono text-[#6f6f6e] w-12 text-center">
-            {Math.round(zoom * 100)}%
-          </span>
-          <button
-            onClick={() => setZoom(Math.min(2.0, zoom + 0.1))}
-            className="p-1.5 rounded-full hover:bg-[#dbdbd2] text-[#6f6f6e] hover:text-[#141414] transition-colors"
-            title="Zoom In"
-          >
-            <ZoomIn className="w-4 h-4" />
-          </button>
+        {/* Toolbar Controls: Rotation & Zoom */}
+        <div className="flex items-center gap-3">
+          {/* Rotation Controls */}
+          <div className="flex items-center gap-1 border-r border-[#00000014] pr-2.5">
+            <button
+              onClick={handleRotateCcw}
+              className="p-1.5 rounded-full hover:bg-[#dbdbd2] text-[#6f6f6e] hover:text-[#141414] transition-colors"
+              title="Rotate 90° Counter-Clockwise"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={handleRotateCw}
+              className="p-1.5 rounded-full hover:bg-[#dbdbd2] text-[#6f6f6e] hover:text-[#141414] transition-colors"
+              title="Rotate 90° Clockwise"
+            >
+              <RotateCw className="w-3.5 h-3.5" />
+            </button>
+            {rotation !== 0 && (
+              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#dbdbd2] text-[#141414] font-medium">
+                {rotation}°
+              </span>
+            )}
+          </div>
+
+          {/* Zoom Controls */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setZoom(Math.max(0.7, zoom - 0.1))}
+              className="p-1.5 rounded-full hover:bg-[#dbdbd2] text-[#6f6f6e] hover:text-[#141414] transition-colors"
+              title="Zoom Out"
+            >
+              <ZoomOut className="w-4 h-4" />
+            </button>
+            <span className="text-xs font-mono text-[#6f6f6e] w-12 text-center">
+              {Math.round(zoom * 100)}%
+            </span>
+            <button
+              onClick={() => setZoom(Math.min(2.0, zoom + 0.1))}
+              className="p-1.5 rounded-full hover:bg-[#dbdbd2] text-[#6f6f6e] hover:text-[#141414] transition-colors"
+              title="Zoom In"
+            >
+              <ZoomIn className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -295,7 +377,31 @@ export function DocumentViewer() {
             </span>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
+            {/* Quick Rotate Controls in Banner */}
+            <div className="flex items-center gap-1 bg-white/70 px-2 py-0.5 rounded-full border border-[#00000014]">
+              <span className="text-[10px] text-[#6f6f6e] mr-0.5">Rotate:</span>
+              <button
+                onClick={handleRotateCcw}
+                className="p-1 rounded hover:bg-[#dbdbd2] text-[#141414] transition-colors"
+                title="Rotate 90° CCW"
+              >
+                <RotateCcw className="w-3 h-3" />
+              </button>
+              <button
+                onClick={handleRotateCw}
+                className="p-1 rounded hover:bg-[#dbdbd2] text-[#141414] transition-colors"
+                title="Rotate 90° CW"
+              >
+                <RotateCw className="w-3 h-3" />
+              </button>
+              {rotation !== 0 && (
+                <span className="text-[10px] font-mono text-[#141414] font-medium">
+                  {rotation}°
+                </span>
+              )}
+            </div>
+
             {ocrStatusMessage && (
               <span className="text-[11px] font-mono text-[#141414] flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#4cc02b]" />

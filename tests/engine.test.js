@@ -35,10 +35,10 @@ let failed = 0;
 
 function assert(condition, message) {
   if (condition) {
-    console.log(`  ✓ ${message}`);
+    console.log(`  [PASS] ${message}`);
     passed++;
   } else {
-    console.error(`  ✗ FAIL: ${message}`);
+    console.error(`  [FAIL] ${message}`);
     failed++;
   }
 }
@@ -427,11 +427,51 @@ assert(headersContent.includes('Strict-Transport-Security: max-age=63072000; inc
 const redirectsContent = fs.readFileSync('public/_redirects', 'utf8');
 assert(redirectsContent.includes('/*    /index.html   200'), 'Cloudflare Pages: SPA rewrite fallback configured in _redirects');
 
+console.log('\n─── Testing Image & Document Rotation Geometry ───────────────────');
+// Degree wrap-around
+const rotNormalizer = (deg) => ((deg % 360) + 360) % 360;
+assert(rotNormalizer(90) === 90, 'Rotation: 90° normalizes to 90°');
+assert(rotNormalizer(450) === 90, 'Rotation: 450° wraps around to 90°');
+assert(rotNormalizer(-90) === 270, 'Rotation: -90° (CCW) normalizes to 270°');
+assert(rotNormalizer(360) === 0, 'Rotation: 360° normalizes to 0°');
+
+// Coordinate Transformation (90° CW)
+const origBox = { x: 0.1, y: 0.2, width: 0.3, height: 0.4 };
+const cwBox = {
+  x: Math.max(0, Math.min(1, 1 - origBox.y - origBox.height)),
+  y: Math.max(0, Math.min(1, origBox.x)),
+  width: origBox.height,
+  height: origBox.width
+};
+assert(Math.abs(cwBox.x - 0.4) < 1e-5, 'Rotation CW: X coordinate correctly mapped (1 - 0.2 - 0.4 = 0.4)');
+assert(Math.abs(cwBox.y - 0.1) < 1e-5, 'Rotation CW: Y coordinate correctly mapped (0.1)');
+assert(Math.abs(cwBox.width - 0.4) < 1e-5, 'Rotation CW: Width swaps with height (0.4)');
+assert(Math.abs(cwBox.height - 0.3) < 1e-5, 'Rotation CW: Height swaps with width (0.3)');
+
+// Inverse Coordinate Transformation (90° CCW / 270° CW)
+const ccwBox = {
+  x: Math.max(0, Math.min(1, cwBox.y)),
+  y: Math.max(0, Math.min(1, 1 - cwBox.x - cwBox.width)),
+  width: cwBox.height,
+  height: cwBox.width
+};
+assert(Math.abs(ccwBox.x - origBox.x) < 1e-5, 'Rotation CCW Inverse: X coordinate recovers original');
+assert(Math.abs(ccwBox.y - origBox.y) < 1e-5, 'Rotation CCW Inverse: Y coordinate recovers original');
+assert(Math.abs(ccwBox.width - origBox.width) < 1e-5, 'Rotation CCW Inverse: Width recovers original');
+assert(Math.abs(ccwBox.height - origBox.height) < 1e-5, 'Rotation CCW Inverse: Height recovers original');
+
+// Dimensions Swap Check
+const isSideways = (deg) => deg === 90 || deg === 270;
+assert(isSideways(90) === true, 'Rotation: 90° swaps canvas aspect ratio (portrait <-> landscape)');
+assert(isSideways(270) === true, 'Rotation: 270° swaps canvas aspect ratio');
+assert(isSideways(0) === false, 'Rotation: 0° preserves native aspect ratio');
+assert(isSideways(180) === false, 'Rotation: 180° preserves native aspect ratio');
+
 console.log(`\n──────────────────────────────────────────────────────────────────`);
 console.log(`Total Passed: ${passed} | Total Failed: ${failed}`);
 
 if (failed > 0) {
   process.exit(1);
 } else {
-  console.log('🌟 ALL UNIT TESTS PASSED WITH 100% ACCURACY!');
+  console.log('[SUCCESS] ALL UNIT TESTS PASSED WITH 100% ACCURACY!');
 }

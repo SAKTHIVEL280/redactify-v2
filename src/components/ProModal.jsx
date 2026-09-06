@@ -109,7 +109,7 @@ export function ProModal({ onNavigateToPricing }) {
                 </div>
                 <div className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-[#4cc02b] shrink-0" />
-                  <span>Aadhaar / PAN KYC</span>
+                  <span>SSN / Passports / IDs</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-[#4cc02b] shrink-0" />
@@ -127,10 +127,10 @@ export function ProModal({ onNavigateToPricing }) {
 
               {/* Pricing Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {/* Global Plan */}
+                {/* Pro Monthly */}
                 <div className="p-4 rounded-[12px] bg-[#ffffff] border border-[#00000014] flex flex-col justify-between shadow-sm">
                   <div>
-                    <div className="text-[10px] font-medium text-[#6f6f6e] uppercase tracking-wider">Global (USD)</div>
+                    <div className="text-[10px] font-medium text-[#6f6f6e] uppercase tracking-wider">Pro Monthly</div>
                     <div className="flex items-baseline gap-1 mt-1">
                       <span className="text-2xl font-normal text-[#141414]">$9</span>
                       <span className="text-xs text-[#6f6f6e]">/ month</span>
@@ -145,23 +145,23 @@ export function ProModal({ onNavigateToPricing }) {
                     }}
                     className="mt-4 w-full h-9 rounded-full bg-[#dbdbd2] hover:bg-[#d0d0c8] text-[#292929] text-xs font-medium text-center transition-all border border-[#00000014]"
                   >
-                    View Details & Buy
+                    Select Plan
                   </button>
                 </div>
 
-                {/* India Domestic Plan */}
+                {/* Lifetime Early-Bird */}
                 <div className="p-4 rounded-[12px] bg-[#ffffff] border-2 border-[#141414] relative overflow-hidden flex flex-col justify-between shadow-sm">
                   <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-[#141414] text-[9px] font-medium text-white uppercase tracking-wider">
-                    India
+                    Lifetime
                   </div>
 
                   <div>
-                    <div className="text-[10px] font-medium text-[#141414] uppercase tracking-wider">Domestic (INR)</div>
+                    <div className="text-[10px] font-medium text-[#141414] uppercase tracking-wider">Lifetime Pass</div>
                     <div className="flex items-baseline gap-1 mt-1">
-                      <span className="text-2xl font-normal text-[#141414]">₹499</span>
-                      <span className="text-xs text-[#6f6f6e]">/ month</span>
+                      <span className="text-2xl font-normal text-[#141414]">$29</span>
+                      <span className="text-xs text-[#6f6f6e]">one-time</span>
                     </div>
-                    <p className="text-[11px] text-[#6f6f6e] mt-1">or ₹999 Lifetime Early Access</p>
+                    <p className="text-[11px] text-[#6f6f6e] mt-1">Pay once, own forever. Zero recurring fees.</p>
                   </div>
 
                   <button
@@ -171,7 +171,7 @@ export function ProModal({ onNavigateToPricing }) {
                     }}
                     className="mt-4 w-full h-9 rounded-full bg-[#141414] hover:bg-[#292929] text-white text-xs font-medium text-center transition-all shadow-sm"
                   >
-                    Pay with UPI / Cards
+                    Get Lifetime Access
                   </button>
                 </div>
               </div>

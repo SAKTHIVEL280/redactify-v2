@@ -7,7 +7,7 @@ import { useLicenseStore } from '../store/licenseStore';
 import { validateLicenseKey } from '../core/license/validator';
 
 export function PricingPage({ onNavigateToStudio }) {
-  const [currency, setCurrency] = useState('INR'); // 'INR' | 'USD'
+  const [currency, setCurrency] = useState('USD'); // 'USD' | 'INR'
   const [inputKey, setInputKey] = useState('');
   const [validationResult, setValidationResult] = useState(null);
   const [openFaq, setOpenFaq] = useState(0);
@@ -34,8 +34,8 @@ export function PricingPage({ onNavigateToStudio }) {
       a: "The Free Trial allows inspecting unlimited pages and exporting Page 1 with a trial notice. The Pro tier unlocks unlimited page exports (100+ pages) with 100% clean vector streams, true PDF operator scrubbing, and zero watermarks."
     },
     {
-      q: "Does Redactify comply with the Indian DPDP Act 2023 & UIDAI Aadhaar circulars?",
-      a: "Yes. Under UIDAI circulars, sharing raw 12-digit Aadhaar numbers is restricted. Redactify automatically validates Aadhaar with the Verhoeff dihedral algorithm and masks the first 8 digits (XXXX-XXXX-1234). Because all processing executes in browser memory, you are fully compliant with Section 8 data minimization mandates."
+      q: "Does Redactify comply with global privacy laws (GDPR, HIPAA, SOC 2, GLBA)?",
+      a: "Yes. Because Redactify processes documents strictly inside your browser's local sandbox, sensitive files never cross international borders, third-party cloud servers, or unvetted subprocessors. It complies with GDPR Article 32 (Security of Processing), HIPAA Safe Harbor de-identification rules, and strict enterprise zero-data-retention policies."
     },
     {
       q: "Can I use Redactify on air-gapped enterprise machines?",
@@ -64,16 +64,6 @@ export function PricingPage({ onNavigateToStudio }) {
           <div className="pt-2 flex justify-center">
             <div className="inline-flex items-center p-1 rounded-full bg-[#dbdbd2] border border-[#00000014]">
               <button
-                onClick={() => setCurrency('INR')}
-                className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
-                  currency === 'INR'
-                    ? 'bg-[#141414] text-white shadow-sm'
-                    : 'text-[#353535] hover:text-[#141414]'
-                }`}
-              >
-                🇮🇳 Domestic (INR ₹)
-              </button>
-              <button
                 onClick={() => setCurrency('USD')}
                 className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
                   currency === 'USD'
@@ -81,7 +71,17 @@ export function PricingPage({ onNavigateToStudio }) {
                     : 'text-[#353535] hover:text-[#141414]'
                 }`}
               >
-                🌍 Global (USD $)
+                Global (USD $)
+              </button>
+              <button
+                onClick={() => setCurrency('INR')}
+                className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
+                  currency === 'INR'
+                    ? 'bg-[#141414] text-white shadow-sm'
+                    : 'text-[#353535] hover:text-[#141414]'
+                }`}
+              >
+                INR (₹)
               </button>
             </div>
           </div>
@@ -236,11 +236,11 @@ export function PricingPage({ onNavigateToStudio }) {
                 </li>
                 <li className="flex items-start gap-2.5">
                   <Check className="w-4 h-4 text-[#4cc02b] shrink-0 mt-0.5" />
-                  <span>DPDP 2023 & GDPR audit compliance report</span>
+                  <span>GDPR, HIPAA & ISO 27001 audit verification package</span>
                 </li>
                 <li className="flex items-start gap-2.5">
                   <Check className="w-4 h-4 text-[#4cc02b] shrink-0 mt-0.5" />
-                  <span>Direct founder support (Sakthivel E)</span>
+                  <span>Dedicated priority engineering & SLA support</span>
                 </li>
               </ul>
             </div>

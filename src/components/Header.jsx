@@ -161,7 +161,7 @@ export function Header({ activePage, setActivePage }) {
             className="hidden sm:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#dbdbd2] hover:bg-[#d0d0c8] text-[#292929] border border-[#00000014] text-xs font-medium transition-all"
           >
             <span>Upgrade</span>
-            <span className="text-[10px] text-[#6f6f6e]">₹499 / $9</span>
+            <span className="text-[10px] text-[#6f6f6e]">$9 / mo</span>
           </button>
         )}
 

@@ -11,6 +11,7 @@ export function StyleToolbar() {
   const file = useDocumentStore((s) => s.file);
   const fileType = useDocumentStore((s) => s.fileType);
   const pageCount = useDocumentStore((s) => s.pageCount);
+  const rotation = useDocumentStore((s) => s.rotation);
   const redactions = useRedactionStore((s) => s.redactions);
   const style = useRedactionStore((s) => s.style);
   const setStyle = useRedactionStore((s) => s.setStyle);
@@ -57,7 +58,8 @@ export function StyleToolbar() {
           imageFile: file,
           redactions,
           style,
-          isPro
+          isPro,
+          rotation
         });
       } else {
         // Plain text

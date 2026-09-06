@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { 
-  UploadCloud, ShieldAlert, FileText, FileCheck, ArrowRight, Sparkles 
+  UploadCloud, ShieldAlert, FileText, FileCheck, ArrowRight, Sparkles, ChevronDown 
 } from 'lucide-react';
 import { useDocumentStore } from '../store/documentStore';
 import { useRedactionStore } from '../store/redactionStore';
@@ -141,46 +141,56 @@ export function StudioDropzone() {
   }, [processFile]);
 
   const loadSampleOfferLetter = () => {
-    const sampleOfferText = `Personal and Confidential
-19 August 2026
+    const sampleOfferText = `STRICTLY CONFIDENTIAL - EMPLOYMENT AGREEMENT & OFFER
+Date: September 4, 2026
 
-Sakthivel E
-C28/9, TNHB, Bagalur HUDCO Bagalur Road, Near Sri Vijay Vidyalaya School, Tamil Nadu - 635109
-Aadhaar: 2184 4289 8716 | PAN: ABCPE1234F
+Candidate: David M. Sterling
+Home Address: 742 Evergreen Terrace, Suite 400, Seattle, WA 98101
+Social Security Number: 987-65-4320
+Phone: +1 (206) 555-0194 | Email: d.sterling@apexglobal.io
 
-Dear Sakthivel,
-We are delighted to offer you employment at Management Consultants Private Limited.
-Your fixed compensation will be ₹18,50,000 per annum.
-Please review our privacy terms at www.cgi.com/en/data-privacy-policy.
+Dear David,
+We are thrilled to offer you the position of Principal Architect at Apex Global Technologies Inc.
+
+1. Compensation & Terms:
+- Fixed Annual Base Salary: $185,000 USD (paid semi-monthly).
+- One-time Signing Bonus: $25,000 USD.
+- Direct Deposit Payroll: Routing Number 021000021, Account Number 8492019482.
+
+2. Confidentiality:
+You agree that all proprietary algorithms, client lists, and confidential intellectual property remain the sole property of Apex Global Technologies Inc.
 
 Yours sincerely,
-For Management Consultants Pvt. Ltd.
-____________________________
-Sarika Pradhan
-Vice President Corporate Services`;
+Apex Global Technologies Inc.
+Katherine Vance
+Executive Vice President, Legal & HR Operations`;
 
-    const file = new File([sampleOfferText], 'Sample_OfferLetter_CGI.txt', { type: 'text/plain' });
+    const file = new File([sampleOfferText], 'Sample_Executive_Offer_Letter.txt', { type: 'text/plain' });
     processFile(file);
   };
 
-  const loadSampleResume = () => {
-    const sampleResumeText = `Sakthivel E
-Phone: +91 94872 92520 | Email: sakthivel.hsr06@gmail.com
-LinkedIn: linkedin.com/in/sakthivel-e- | GitHub: github.com/SAKTHIVEL280
-Portfolio: sakthivel.daeq.in | Redactify: redactify.daeq.in
+  const loadSampleMedicalRecord = () => {
+    const sampleMedicalText = `CLINICAL HEALTHCARE RECORD & DISCHARGE SUMMARY
+FACILITY: Metro General Medical Center
+CONFIDENTIAL - PROTECTED HEALTH INFORMATION (HIPAA SECURE)
 
-PROFESSIONAL SUMMARY
-Senior Software Engineer with 4+ years specializing in zero-trust client-side document processing, WebAssembly, and privacy-first web systems.
+PATIENT DEMOGRAPHICS:
+Patient Name: Sarah Jenkins
+Date of Birth: 14-04-1988
+Medical Record Number (MRN): MRN-8849201
+National Identity / SSN: 987-12-8941
+Health Insurance ID: BCBS-994820194
+Primary Phone: +1 (415) 555-0182
+Email: sarah.j.health@providermail.com
 
-EXPERIENCE
-Lead Systems Engineer - Solutions LLP (2023 - Present)
-- Designed zero-telemetry vector parser processing 50-page PDFs in <2s in-memory.
-- Enforced strict client-side encryption and UIDAI Verhoeff-compliant Aadhaar sanitization.
+CLINICAL EVALUATION:
+Attending Physician: Dr. Robert Harrison, MD (NPI: 1487295103)
+Diagnostic Assessment: Routine preventative evaluation. No acute contraindications.
+Prescription: Amoxicillin 500mg, oral daily for 7 days.
 
-EDUCATION
-K.S. Rangasamy College of Technology - B.E. Computer Science (2020 - 2024)`;
+NOTICE: Unauthorized disclosure of this document violates federal HIPAA regulations.`;
 
-    const file = new File([sampleResumeText], 'Sample_Resume_Sakthivel.txt', { type: 'text/plain' });
+    const file = new File([sampleMedicalText], 'Sample_Patient_Medical_Record.txt', { type: 'text/plain' });
     processFile(file);
   };
 
@@ -200,35 +210,30 @@ K.S. Rangasamy College of Technology - B.E. Computer Science (2020 - 2024)`;
       </div>
 
       <div className="w-full max-w-2xl bg-[#ffffff] rounded-[12px] p-6 sm:p-10 border border-[#00000014] shadow-[0_4px_24px_rgba(0,0,0,0.03)] text-left">
-        {/* Preset Selector */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-2.5">
-            <span className="text-xs font-medium uppercase tracking-wider text-[#6f6f6e]">
-              Detection Preset
-            </span>
-            <span className="text-[11px] text-[#8f8f8e] font-mono">
-              Auto-calibrates PII heuristics
+        {/* Clean Studio Preset Dropdown */}
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-[10px] bg-[#fbfbfa] border border-[#00000014]">
+          <div>
+            <label htmlFor="studio-preset-select" className="text-xs font-semibold text-[#141414] block">
+              Compliance Detection Preset
+            </label>
+            <span className="text-[11px] text-[#6f6f6e]">
+              Preconfigures sovereign regex and algorithmic filters
             </span>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {Object.values(PRESETS).map((p) => {
-              const isSelected = activePreset === p.id;
-              return (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => setActivePreset(p.id)}
-                  className={`p-2.5 rounded-[8px] text-left transition-all border ${
-                    isSelected
-                      ? 'bg-[#edede8] border-[#141414] text-[#141414]'
-                      : 'bg-[#ffffff] border-[#00000014] text-[#6f6f6e] hover:border-[#8f8f8e] hover:text-[#292929]'
-                  }`}
-                >
-                  <div className="text-xs font-medium truncate">{p.name}</div>
-                  <div className="text-[10px] text-[#8f8f8e] line-clamp-1 mt-0.5">{p.description}</div>
-                </button>
-              );
-            })}
+          <div className="relative">
+            <select
+              id="studio-preset-select"
+              value={activePreset}
+              onChange={(e) => setActivePreset(e.target.value)}
+              className="appearance-none bg-[#ffffff] border border-[#00000014] rounded-full px-4 py-2 pr-8 text-xs font-medium text-[#141414] shadow-sm hover:border-[#141414] focus:outline-none cursor-pointer"
+            >
+              {Object.values(PRESETS).map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="w-3.5 h-3.5 text-[#6f6f6e] absolute right-3 top-3 pointer-events-none" />
           </div>
         </div>
 
@@ -299,15 +304,15 @@ K.S. Rangasamy College of Technology - B.E. Computer Science (2020 - 2024)`;
               className="px-3 py-1.5 rounded-full bg-[#edede8] hover:bg-[#dbdbd2] text-[#292929] border border-[#00000014] text-xs font-medium transition-colors flex items-center gap-1.5"
             >
               <FileCheck className="w-3.5 h-3.5 text-[#141414]" />
-              <span>Sample Offer Letter</span>
+              <span>Sample Executive Offer</span>
             </button>
             <button
               type="button"
-              onClick={loadSampleResume}
+              onClick={loadSampleMedicalRecord}
               className="px-3 py-1.5 rounded-full bg-[#edede8] hover:bg-[#dbdbd2] text-[#292929] border border-[#00000014] text-xs font-medium transition-colors flex items-center gap-1.5"
             >
               <FileText className="w-3.5 h-3.5 text-[#141414]" />
-              <span>Sample Resume</span>
+              <span>Sample Medical Record</span>
             </button>
           </div>
         </div>

@@ -11,6 +11,7 @@ export const useDocumentStore = create((set) => ({
   isProcessing: false,
   progress: { current: 0, total: 0, message: '' },
   error: null,
+  rotation: 0, // 0 | 90 | 180 | 270 degrees
 
   setFile: (file, fileType) => set({
     file,
@@ -18,6 +19,7 @@ export const useDocumentStore = create((set) => ({
     fileSize: file.size,
     fileType,
     currentPage: 1,
+    rotation: 0,
     error: null
   }),
 
@@ -30,6 +32,10 @@ export const useDocumentStore = create((set) => ({
 
   setCurrentPage: (page) => set({ currentPage: page }),
 
+  setRotation: (rotation) => set({ rotation: ((rotation % 360) + 360) % 360 }),
+  rotateClockwise: () => set((state) => ({ rotation: (state.rotation + 90) % 360 })),
+  rotateCounterClockwise: () => set((state) => ({ rotation: (state.rotation + 270) % 360 })),
+
   setError: (error) => set({ error, isProcessing: false }),
 
   clearDocument: () => set({
@@ -40,6 +46,7 @@ export const useDocumentStore = create((set) => ({
     rawText: '',
     pageCount: 1,
     currentPage: 1,
+    rotation: 0,
     isProcessing: false,
     progress: { current: 0, total: 0, message: '' },
     error: null

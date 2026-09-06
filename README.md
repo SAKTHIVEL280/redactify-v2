@@ -1,7 +1,7 @@
-# Redactify 🛡️
+# Redactify 
 
-> **Zero-Knowledge, Client-Side Document Redaction & PII Masking Platform**  
-> Mathematically verified, compliance-grade redaction running 100% inside your browser via WebAssembly.  
+> **Zero-Knowledge, Client-Side Document Redaction & PII Masking Platform** 
+> Mathematically verified, compliance-grade redaction running 100% inside your browser via WebAssembly. 
 > **Zero document uploads. Zero server logs. Zero data leakage.**
 
 [![Unit Tests](https://img.shields.io/badge/tests-99%2F99%20passing-brightgreen.svg)](tests/engine.test.js)
@@ -11,7 +11,7 @@
 
 ---
 
-## 🌟 Executive Summary
+## Executive Summary
 
 Traditional document redaction platforms (such as Adobe Acrobat, Smallpdf, or iLovePDF) require users to upload sensitive files—contracts, tax filings, Aadhaar cards, medical histories, and employee resumes—to third-party cloud servers. This exposes organizations to devastating security breaches, regulatory penalties under GDPR, DPDP, HIPAA, and unauthorized AI training on confidential data.
 
@@ -19,7 +19,7 @@ Traditional document redaction platforms (such as Adobe Acrobat, Smallpdf, or iL
 
 ---
 
-## 🔐 Zero-Knowledge Privacy Guarantee
+## Zero-Knowledge Privacy Guarantee
 
 * **Zero Server Uploads**: Network requests containing document bytes are physically impossible. The entire lifecycle—from drag-and-drop to export—happens in local RAM.
 * **Offline-First Resilience**: Once loaded, Redactify works seamlessly with no internet connection (airplane mode compatible).
@@ -27,7 +27,7 @@ Traditional document redaction platforms (such as Adobe Acrobat, Smallpdf, or iL
 
 ---
 
-## 📐 Mathematical Verification Engine
+## Mathematical Verification Engine
 
 Redactify eliminates false positives through formal mathematical checksum algorithms rather than naive regex matching:
 
@@ -44,33 +44,33 @@ Redactify eliminates false positives through formal mathematical checksum algori
 
 ---
 
-## 🌍 Supported Global Jurisdictions
+## Supported Global Jurisdictions
 
 Redactify includes out-of-the-box support for international enterprise compliance:
 
-### 🇺🇸 United States (HIPAA, GLBA, FERPA)
+### United States (HIPAA, GLBA, FERPA)
 * **Social Security Numbers (SSN)**: Full Area/Group/Serial validation (rejects invalid 000, 666, 900+ series).
 * **Tax Identifiers**: Individual Taxpayer ID (ITIN), Employer Identification Number (EIN).
 * **Healthcare / HIPAA**: National Provider Identifier (NPI with Luhn check), DEA Registration Numbers, Medical Record Numbers (MRN), Health Insurance Member IDs.
 * **Financial**: ABA 9-digit Routing Transit numbers, Credit/Debit cards.
 
-### 🇪🇺 European Union & 🇬🇧 United Kingdom (GDPR)
+### European Union & United Kingdom (GDPR)
 * **National Identification**: UK National Insurance Number (NINO with HMRC prefix validation), Spanish DNI & NIE (Mod-23), French NIR (Mod-97), Italian Codice Fiscale, German Steuer-IdNr.
 * **Banking & Tax**: International IBAN (Mod-97), UK Sort Codes (XX-XX-XX), UK Unique Taxpayer Reference (UTR), European VAT IDs.
 * **Healthcare**: UK 10-digit NHS Numbers with Mod-11 validation.
 
-### 🇮🇳 India & 🇦🇵 APAC (DPDP Act, UIDAI, Privacy Act)
+### India & APAC (DPDP Act, UIDAI, Privacy Act)
 * **Indian Identity**: Aadhaar UID (Verhoeff checksum + UIDAI masking: XXXX-XXXX-1234), PAN Cards (entity check 4th character), Voter ID (EPIC), Indian Passports, Driving Licenses.
 * **Indian Tax & Employment**: GSTIN (15-character state + PAN + checksum), EPFO Universal Account Number (UAN), Bank Accounts, IFSC Codes.
 * **Australia & APAC**: Australian Tax File Number (TFN Mod-11), Australian Medicare Number (check digit verified), Singapore NRIC / FIN (Mod-11).
 
-### 🔑 Cloud Secrets & Developer Credentials
+### Cloud Secrets & Developer Credentials
 * **Cloud & DevOps**: AWS Access Keys (AKIA...), GitHub Personal Access Tokens (ghp_..., github_pat_...), Google API Keys (AIza...), Slack Tokens (xoxb-...), Stripe Secret/Publishable Keys (sk_live_...), OpenAI Keys (sk-...), JSON Web Tokens (eyJ...), PEM Private Keys (RSA, EC, OPENSSH).
 * **Cryptocurrency**: Bitcoin (P2PKH, P2SH, Bech32), Ethereum (0x... 40 hex), Solana wallets.
 
 ---
 
-## ⚡ In-Browser WASM OCR Scanner (~15MB)
+## In-Browser WASM OCR Scanner (~15MB)
 
 Scanned receipts, photographed identity cards, or flat PDFs without an embedded font stream are recognized directly on the client:
 * **WebAssembly Engine**: Built on tesseract.js@7.0.0 with WebAssembly worker threads.
@@ -79,7 +79,7 @@ Scanned receipts, photographed identity cards, or flat PDFs without an embedded 
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 * Node.js >= 18.0.0
@@ -115,41 +115,41 @@ npm run build
 
 ---
 
-## 🧪 Test Suite & Benchmarks
+## Test Suite & Benchmarks
 
 ```
 ─── Testing Mathematical Algorithms ──────────────────────────────
-  ✓ Valid Visa passes Luhn
-  ✓ Valid Aadhaar passes Verhoeff
-  ✓ Valid Person PAN passes
-  ✓ Valid UK IBAN passes
-  ✓ Valid Federal Reserve Routing passes
-  ✓ Valid Indian GSTIN passes
-  ✓ Valid UK NHS passes Mod-11
-  ✓ Valid Canadian SIN passes Luhn
-  ✓ Valid US SSN passes
-  ✓ Valid UK NINO passes
-  ✓ Valid Spanish DNI passes Mod-23
-  ✓ Valid French 13-digit NIR passes
-  ✓ Valid Italian Codice Fiscale passes check char
-  ✓ Valid Australian 9-digit TFN passes Mod-11
-  ✓ Valid Australian Medicare passes check digit
-  ✓ Valid Singapore NRIC passes Mod-11
-  ✓ Valid US NPI passes Luhn checksum
+ Valid Visa passes Luhn
+ Valid Aadhaar passes Verhoeff
+ Valid Person PAN passes
+ Valid UK IBAN passes
+ Valid Federal Reserve Routing passes
+ Valid Indian GSTIN passes
+ Valid UK NHS passes Mod-11
+ Valid Canadian SIN passes Luhn
+ Valid US SSN passes
+ Valid UK NINO passes
+ Valid Spanish DNI passes Mod-23
+ Valid French 13-digit NIR passes
+ Valid Italian Codice Fiscale passes check char
+ Valid Australian 9-digit TFN passes Mod-11
+ Valid Australian Medicare passes check digit
+ Valid Singapore NRIC passes Mod-11
+ Valid US NPI passes Luhn checksum
 
 ─── Testing Master Entity Detector ───────────────────────────────
 Detection executed in 8.53 ms (<20ms benchmark target)
-  ✓ All 40+ PII categories verified
-  ✓ All 5 Regional Compliance Presets verified
-  ✓ DOCX XML in-memory Parser & Exporter verified
+ All 40+ PII categories verified
+ All 5 Regional Compliance Presets verified
+ DOCX XML in-memory Parser & Exporter verified
 
 Total Passed: 99 | Total Failed: 0
-🌟 ALL UNIT TESTS PASSED WITH 100% ACCURACY!
+ ALL UNIT TESTS PASSED WITH 100% ACCURACY!
 ```
 
 ---
 
-## 📄 License
+## License
 
-Proprietary & Enterprise Licensed. All rights reserved.  
+Proprietary & Enterprise Licensed. All rights reserved. 
 Built with enterprise Forward Deployed Engineering (FDE) rigor.
