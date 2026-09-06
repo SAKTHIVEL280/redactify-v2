@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { X, Sparkles, CheckCircle2, ShieldCheck, CreditCard, KeyRound, Zap } from 'lucide-react';
+import { X, Sparkles, CheckCircle2, ShieldCheck, CreditCard, KeyRound, Zap, Check } from 'lucide-react';
 import { useLicenseStore } from '../store/licenseStore';
 import { validateLicenseKey } from '../core/license/validator';
 
-export function ProModal() {
+export function ProModal({ onNavigateToPricing }) {
   const showProModal = useLicenseStore((s) => s.showProModal);
   const closeProModal = useLicenseStore((s) => s.closeProModal);
   const proModalFeature = useLicenseStore((s) => s.proModalFeature);
@@ -41,28 +41,28 @@ export function ProModal() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-lg bg-zinc-900 border border-zinc-800 rounded-3xl shadow-2xl overflow-hidden text-left">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="relative w-full max-w-lg bg-[#ffffff] border border-[#00000014] rounded-[12px] shadow-[0_18px_55px_rgba(16,24,40,0.12)] overflow-hidden text-left">
         {/* Close Button */}
         <button
           onClick={closeProModal}
-          className="absolute top-4 right-4 p-1.5 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors z-10"
+          className="absolute top-4 right-4 p-1.5 rounded-full text-[#6f6f6e] hover:text-[#141414] hover:bg-[#edede8] transition-colors z-10"
         >
           <X className="w-4 h-4" />
         </button>
 
-        {/* Top Gradient Banner */}
-        <div className="p-6 bg-gradient-to-b from-rose-500/20 via-rose-500/5 to-transparent border-b border-zinc-800/60">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-300 text-xs font-bold mb-3">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>REDACTIFY PRO</span>
+        {/* Top Header */}
+        <div className="p-6 border-b border-[#00000014] bg-[#edede8]/60">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#ffffff] border border-[#00000014] text-[#292929] text-xs font-medium mb-3 shadow-sm">
+            <span className="w-2 h-2 rounded-full bg-[#4cc02b]" />
+            <span>Redactify Sovereign Pro</span>
           </div>
 
-          <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-            Unlock Full Commercial Power
+          <h2 className="text-xl sm:text-2xl font-normal text-[#141414] tracking-[-0.02em]">
+            Unlock commercial capabilities
           </h2>
 
-          <p className="text-xs text-zinc-300 mt-1">
+          <p className="text-xs text-[#6f6f6e] mt-1 leading-relaxed">
             {proModalFeature === 'multi-page'
               ? 'Multi-page exports are a Pro feature. Upgrade to export your entire clean document with zero watermarks.'
               : 'Redactify Pro gives you unlimited exports, batch processing, and complete zero-trust privacy.'}
@@ -70,23 +70,23 @@ export function ProModal() {
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex border-b border-zinc-800 px-6 pt-2">
+        <div className="flex border-b border-[#00000014] px-6 pt-2 bg-[#ffffff]">
           <button
             onClick={() => setActiveTab('pricing')}
-            className={`pb-2.5 px-3 text-xs font-bold transition-all border-b-2 ${
+            className={`pb-2.5 px-3 text-xs font-medium transition-all border-b-2 ${
               activeTab === 'pricing'
-                ? 'border-rose-500 text-white'
-                : 'border-transparent text-zinc-500 hover:text-zinc-300'
+                ? 'border-[#141414] text-[#141414]'
+                : 'border-transparent text-[#6f6f6e] hover:text-[#292929]'
             }`}
           >
             Subscription Plans
           </button>
           <button
             onClick={() => setActiveTab('license')}
-            className={`pb-2.5 px-3 text-xs font-bold transition-all border-b-2 ${
+            className={`pb-2.5 px-3 text-xs font-medium transition-all border-b-2 ${
               activeTab === 'license'
-                ? 'border-rose-500 text-white'
-                : 'border-transparent text-zinc-500 hover:text-zinc-300'
+                ? 'border-[#141414] text-[#141414]'
+                : 'border-transparent text-[#6f6f6e] hover:text-[#292929]'
             }`}
           >
             Enter License Key
@@ -94,95 +94,97 @@ export function ProModal() {
         </div>
 
         {/* Tab Content */}
-        <div className="p-6">
+        <div className="p-6 bg-[#ffffff]">
           {activeTab === 'pricing' ? (
-            <div className="space-y-4">
+            <div className="space-y-5">
               {/* Feature Checklist */}
-              <div className="grid grid-cols-2 gap-2.5 text-xs text-zinc-300 pb-2">
+              <div className="grid grid-cols-2 gap-2 text-xs text-[#353535] pb-2">
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-rose-400 shrink-0" />
+                  <Check className="w-3.5 h-3.5 text-[#4cc02b] shrink-0" />
                   <span>Unlimited Pages</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-rose-400 shrink-0" />
+                  <Check className="w-3.5 h-3.5 text-[#4cc02b] shrink-0" />
                   <span>Zero Watermarks</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-rose-400 shrink-0" />
+                  <Check className="w-3.5 h-3.5 text-[#4cc02b] shrink-0" />
                   <span>Aadhaar / PAN KYC</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-rose-400 shrink-0" />
-                  <span>Batch Folder Export</span>
+                  <Check className="w-3.5 h-3.5 text-[#4cc02b] shrink-0" />
+                  <span>Word DOCX Redactions</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-rose-400 shrink-0" />
+                  <Check className="w-3.5 h-3.5 text-[#4cc02b] shrink-0" />
                   <span>Custom Color Redaction</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-rose-400 shrink-0" />
+                  <Check className="w-3.5 h-3.5 text-[#4cc02b] shrink-0" />
                   <span>True Vector Export</span>
                 </div>
               </div>
 
               {/* Pricing Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {/* Global Plan */}
-                <div className="p-4 rounded-2xl bg-zinc-950/80 border border-zinc-800 hover:border-zinc-700 transition-all flex flex-col justify-between">
+                <div className="p-4 rounded-[12px] bg-[#ffffff] border border-[#00000014] flex flex-col justify-between shadow-sm">
                   <div>
-                    <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Global (USD)</div>
+                    <div className="text-[10px] font-medium text-[#6f6f6e] uppercase tracking-wider">Global (USD)</div>
                     <div className="flex items-baseline gap-1 mt-1">
-                      <span className="text-2xl font-extrabold text-white">$9</span>
-                      <span className="text-xs text-zinc-400">/ month</span>
+                      <span className="text-2xl font-normal text-[#141414]">$9</span>
+                      <span className="text-xs text-[#6f6f6e]">/ month</span>
                     </div>
-                    <p className="text-[11px] text-zinc-400 mt-1">Billed monthly. Cancel anytime.</p>
+                    <p className="text-[11px] text-[#6f6f6e] mt-1">Billed monthly. Cancel anytime.</p>
                   </div>
 
-                  <a
-                    href="https://redactify.daeq.in"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="mt-4 w-full py-2 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-bold text-center block transition-all shadow-sm"
+                  <button
+                    onClick={() => {
+                      closeProModal();
+                      if (onNavigateToPricing) onNavigateToPricing();
+                    }}
+                    className="mt-4 w-full h-9 rounded-full bg-[#dbdbd2] hover:bg-[#d0d0c8] text-[#292929] text-xs font-medium text-center transition-all border border-[#00000014]"
                   >
-                    Subscribe with Card
-                  </a>
+                    View Details & Buy
+                  </button>
                 </div>
 
                 {/* India Domestic Plan */}
-                <div className="p-4 rounded-2xl bg-rose-950/20 border border-rose-500/40 relative overflow-hidden flex flex-col justify-between">
-                  <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-rose-500 text-[9px] font-bold text-white uppercase tracking-wider">
-                    India Special
+                <div className="p-4 rounded-[12px] bg-[#ffffff] border-2 border-[#141414] relative overflow-hidden flex flex-col justify-between shadow-sm">
+                  <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-[#141414] text-[9px] font-medium text-white uppercase tracking-wider">
+                    India
                   </div>
 
                   <div>
-                    <div className="text-[10px] font-bold text-rose-300 uppercase tracking-wider">India (UPI / Cards)</div>
+                    <div className="text-[10px] font-medium text-[#141414] uppercase tracking-wider">Domestic (INR)</div>
                     <div className="flex items-baseline gap-1 mt-1">
-                      <span className="text-2xl font-extrabold text-white">₹499</span>
-                      <span className="text-xs text-zinc-400">/ month</span>
+                      <span className="text-2xl font-normal text-[#141414]">₹499</span>
+                      <span className="text-xs text-[#6f6f6e]">/ month</span>
                     </div>
-                    <p className="text-[11px] text-rose-200/70 mt-1">or ₹999 Lifetime Early Access</p>
+                    <p className="text-[11px] text-[#6f6f6e] mt-1">or ₹999 Lifetime Early Access</p>
                   </div>
 
-                  <a
-                    href="https://redactify.daeq.in"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="mt-4 w-full py-2 px-3 rounded-xl bg-gradient-to-r from-rose-500 to-rose-700 hover:opacity-95 text-white text-xs font-bold text-center block transition-all shadow-md shadow-rose-950/50"
+                  <button
+                    onClick={() => {
+                      closeProModal();
+                      if (onNavigateToPricing) onNavigateToPricing();
+                    }}
+                    className="mt-4 w-full h-9 rounded-full bg-[#141414] hover:bg-[#292929] text-white text-xs font-medium text-center transition-all shadow-sm"
                   >
-                    Pay with UPI / GPay
-                  </a>
+                    Pay with UPI / Cards
+                  </button>
                 </div>
               </div>
 
               {exportTrialCallback && (
-                <div className="pt-2 border-t border-zinc-800/80 text-center">
+                <div className="pt-2 border-t border-[#0000000f] text-center">
                   <button
                     onClick={() => {
                       const cb = exportTrialCallback;
                       closeProModal();
                       if (cb) cb();
                     }}
-                    className="w-full py-2 px-3 rounded-xl bg-zinc-800/80 hover:bg-zinc-750 text-zinc-300 hover:text-white text-xs font-medium text-center transition-all border border-zinc-700/60"
+                    className="w-full h-9 rounded-full bg-[#edede8] hover:bg-[#dbdbd2] text-[#292929] text-xs font-medium text-center transition-all border border-[#00000014]"
                   >
                     Continue Free Trial (Download Page 1 with Watermark)
                   </button>
@@ -192,43 +194,43 @@ export function ProModal() {
           ) : (
             <form onSubmit={handleManualActivation} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-zinc-300 mb-1.5">
+                <label className="block text-xs font-medium text-[#292929] mb-1.5">
                   Enter Pro License Key:
                 </label>
                 <div className="relative">
-                  <KeyRound className="w-4 h-4 text-zinc-500 absolute left-3 top-3" />
+                  <KeyRound className="w-4 h-4 text-[#8f8f8e] absolute left-3 top-3" />
                   <input
                     type="text"
                     placeholder="RDCT-XXXX-XXXX-XXXX"
                     value={licenseInput}
                     onChange={(e) => setLicenseInput(e.target.value)}
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-9 pr-3 py-2.5 text-xs font-mono text-white placeholder-zinc-600 focus:outline-none focus:border-rose-500 uppercase"
+                    className="w-full bg-[#edede8] border border-[#00000014] rounded-full pl-9 pr-3 py-2 text-xs font-mono text-[#141414] placeholder-[#8f8f8e] focus:outline-none focus:border-[#141414] uppercase"
                   />
                 </div>
                 {licenseError && (
-                  <p className="text-xs text-red-400 mt-1.5">{licenseError}</p>
+                  <p className="text-xs text-[#c92a2a] mt-1.5">{licenseError}</p>
                 )}
-                <p className="text-[11px] text-zinc-400 mt-1.5 flex items-center justify-between">
-                  <span>Keys are generated cryptographically.</span>
+                <div className="text-[11px] text-[#6f6f6e] mt-1.5 flex items-center justify-between">
+                  <span>Cryptographically verified offline.</span>
                   <button
                     type="button"
                     onClick={() => setLicenseInput('RDCT-PRO-A1B2C3D4-6AB6')}
-                    className="text-rose-400 hover:text-rose-300 underline font-mono text-[10px]"
+                    className="text-[#141414] hover:underline font-mono text-[10px]"
                   >
                     Insert Demo Key
                   </button>
-                </p>
+                </div>
               </div>
 
               <button
                 type="submit"
                 disabled={isActivating}
-                className="w-full py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold transition-all shadow-md shadow-rose-950/60 flex items-center justify-center gap-2"
+                className="w-full h-10 rounded-full bg-[#141414] hover:bg-[#292929] text-white text-xs font-medium transition-all shadow-sm flex items-center justify-center gap-2"
               >
                 {isActivating ? (
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 ) : (
-                  <Zap className="w-4 h-4" />
+                  <Zap className="w-3.5 h-3.5" />
                 )}
                 <span>Activate License</span>
               </button>

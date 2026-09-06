@@ -233,33 +233,33 @@ export function DocumentViewer() {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-zinc-950 overflow-hidden select-none">
+    <div className="flex-1 flex flex-col h-full bg-[#edede8] overflow-hidden select-none">
       {/* Viewer Top Toolbar (Pagination & Zoom) */}
-      <div className="h-12 border-b border-zinc-800/80 bg-zinc-900/50 px-4 flex items-center justify-between">
+      <div className="h-11 border-b border-[#00000014] bg-[#ffffff] px-4 flex items-center justify-between text-xs text-[#292929] shrink-0">
         {/* Pagination */}
         {pageCount > 1 ? (
           <div className="flex items-center gap-2">
             <button
               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
               disabled={currentPage <= 1}
-              className="p-1 rounded-lg hover:bg-zinc-800 disabled:opacity-30 text-zinc-300 transition-colors"
+              className="p-1 rounded-full hover:bg-[#dbdbd2] disabled:opacity-25 text-[#292929] transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
-            <span className="text-xs font-mono text-zinc-300">
-              Page <strong className="text-white">{currentPage}</strong> of {pageCount}
+            <span className="text-xs font-mono text-[#6f6f6e]">
+              Page <strong className="text-[#141414] font-semibold">{currentPage}</strong> of {pageCount}
             </span>
             <button
               onClick={() => setCurrentPage(Math.min(pageCount, currentPage + 1))}
               disabled={currentPage >= pageCount}
-              className="p-1 rounded-lg hover:bg-zinc-800 disabled:opacity-30 text-zinc-300 transition-colors"
+              className="p-1 rounded-full hover:bg-[#dbdbd2] disabled:opacity-25 text-[#292929] transition-colors"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
         ) : (
-          <div className="text-xs font-mono text-zinc-400">
-            {fileType === 'image' ? '📸 Image Mode — Drag crosshair to blackout areas' : 'Single Page Document'}
+          <div className="text-xs font-mono text-[#6f6f6e]">
+            {fileType === 'image' ? 'Image Mode — Drag crosshair to blackout areas' : 'Single Page Document'}
           </div>
         )}
 
@@ -267,17 +267,17 @@ export function DocumentViewer() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setZoom(Math.max(0.7, zoom - 0.1))}
-            className="p-1.5 rounded-lg hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 transition-colors"
+            className="p-1.5 rounded-full hover:bg-[#dbdbd2] text-[#6f6f6e] hover:text-[#141414] transition-colors"
             title="Zoom Out"
           >
             <ZoomOut className="w-4 h-4" />
           </button>
-          <span className="text-xs font-mono text-zinc-400 w-12 text-center">
+          <span className="text-xs font-mono text-[#6f6f6e] w-12 text-center">
             {Math.round(zoom * 100)}%
           </span>
           <button
             onClick={() => setZoom(Math.min(2.0, zoom + 0.1))}
-            className="p-1.5 rounded-lg hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 transition-colors"
+            className="p-1.5 rounded-full hover:bg-[#dbdbd2] text-[#6f6f6e] hover:text-[#141414] transition-colors"
             title="Zoom In"
           >
             <ZoomIn className="w-4 h-4" />
@@ -287,17 +287,18 @@ export function DocumentViewer() {
 
       {/* Scanned Document / Image Helper Banner */}
       {(isScannedDocument || fileType === 'image') && (
-        <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2 flex flex-wrap items-center justify-between gap-3 text-xs text-amber-300">
+        <div className="bg-[#dbdbd2]/80 border-b border-[#00000014] px-4 py-2 flex flex-wrap items-center justify-between gap-3 text-xs text-[#292929]">
           <div className="flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
+            <AlertCircle className="w-4 h-4 text-[#141414] shrink-0" />
             <span>
-              <strong>Scanned / Image Document:</strong> Drag crosshair to redact areas, or run in-browser AI OCR.
+              <strong>Scanned / Image Document:</strong> Drag crosshair to redact areas, or run in-browser OCR.
             </span>
           </div>
 
           <div className="flex items-center gap-3">
             {ocrStatusMessage && (
-              <span className="text-[11px] font-mono text-emerald-400">
+              <span className="text-[11px] font-mono text-[#141414] flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#4cc02b]" />
                 {ocrStatusMessage}
               </span>
             )}
@@ -305,22 +306,22 @@ export function DocumentViewer() {
             <button
               onClick={handleRunOcr}
               disabled={isOcrScanning}
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-500/30 text-xs font-medium transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#141414] hover:bg-[#292929] text-white text-xs font-medium transition-colors disabled:opacity-50 shadow-sm"
             >
               {isOcrScanning ? (
                 <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-400" />
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
                   <span>{ocrProgress.msg || `${ocrProgress.pct}%`}</span>
                 </>
               ) : (
                 <>
-                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                  <span>⚡ Run AI Auto-OCR Scan (~15MB WASM)</span>
+                  <Sparkles className="w-3.5 h-3.5 text-[#4cc02b]" />
+                  <span>Run AI Auto-OCR Scan (~15MB WASM)</span>
                 </>
               )}
             </button>
 
-            <span className="text-[11px] font-mono text-amber-400/80 hidden lg:inline">
+            <span className="text-[11px] font-mono text-[#6f6f6e] hidden lg:inline">
               Click box to toggle • Hover to delete
             </span>
           </div>
@@ -328,13 +329,13 @@ export function DocumentViewer() {
       )}
 
       {/* Canvas & Overlay Viewport */}
-      <div className="flex-1 overflow-auto p-4 sm:p-8 flex justify-center bg-zinc-950/60 relative">
+      <div className="flex-1 overflow-auto p-4 sm:p-8 flex justify-center bg-[#edede8] relative">
         <div
           ref={containerRef}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
-          className={`my-auto relative shadow-2xl rounded-lg border border-zinc-800 overflow-hidden bg-white max-w-full transition-transform ${
+          className={`my-auto relative shadow-[0_4px_24px_rgba(0,0,0,0.06)] rounded-[12px] border border-[#00000014] overflow-hidden bg-white max-w-full transition-transform ${
             isDrawingMode ? 'cursor-crosshair' : 'cursor-default'
           }`}
           style={{ width: renderedDimensions.width ? `${renderedDimensions.width}px` : 'auto' }}
@@ -342,7 +343,7 @@ export function DocumentViewer() {
           {(fileType === 'pdf' || fileType === 'image') ? (
             <canvas ref={canvasRef} className="block max-w-full" />
           ) : (
-            <div className="p-8 text-zinc-900 bg-white min-h-[500px] w-[600px] font-mono text-xs whitespace-pre-wrap">
+            <div className="p-8 text-[#141414] bg-white min-h-[500px] w-[600px] font-mono text-xs whitespace-pre-wrap">
               {rawText}
             </div>
           )}

@@ -3,28 +3,48 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --color-linen-canvas: #edede8;
+    --color-frosted-white: #ffffff;
+    --color-warm-stone: #dbdbd2;
+    --color-pebble: #c0c0c0;
+    --color-graphite-ink: #141414;
+    --color-charcoal-body: #292929;
+    --color-slate-caption: #6f6f6e;
+    --color-ash-subheading: #8f8f8e;
+    --color-iron-nav: #353535;
+    --color-onyx-border: #000000;
+    --color-quartz: #d0d0c8;
+    --color-lime-pulse: #4cc02b;
+  }
+
   body {
-    @apply bg-zinc-950 text-zinc-100 font-sans;
+    background-color: #edede8;
+    color: #292929;
+    font-family: 'Switzer', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    letter-spacing: -0.01em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
-/* Custom scrollbar styling */
+/* Restrained Architectural Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #09090b;
+  background: #edede8;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #27272a;
-  border-radius: 9999px;
+  background: #c0c0c0;
+  border-radius: 200px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #3f3f46;
+  background: #8f8f8e;
 }
 
 .no-scrollbar::-webkit-scrollbar {
