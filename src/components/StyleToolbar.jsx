@@ -24,12 +24,12 @@ export function StyleToolbar() {
 
   const activeCount = redactions.filter((r) => r.redact).length;
 
-  const handleExport = async () => {
+  const handleExport = async (forceTrial = false) => {
     if (!file) return;
 
-    // Aggressive Pro Gating Hook: If user has a multi-page document and is not Pro, give them a chance to upgrade first
-    if (!isPro && pageCount > 1) {
-      openProModal('multi-page');
+    // Pro Gating Hook: If user has a multi-page document and is not Pro, prompt modal with option to continue trial
+    if (!isPro && pageCount > 1 && !forceTrial) {
+      openProModal('multi-page', () => handleExport(true));
       return;
     }
 

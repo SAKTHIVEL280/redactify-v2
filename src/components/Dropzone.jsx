@@ -4,6 +4,7 @@ import { useDocumentStore } from '../store/documentStore';
 import { useRedactionStore } from '../store/redactionStore';
 import { PRESETS } from '../core/engine/presets';
 import { parseAndScanPDF } from '../core/parsers/pdfParser';
+import { parseAndExtractDOCX } from '../core/parsers/docxParser';
 import { detectEntities } from '../core/engine/detector';
 
 const PRESET_ICONS = {
@@ -64,7 +65,34 @@ export function Dropzone() {
         if (result.isScannedDocument || result.redactions.length === 0) {
           useRedactionStore.getState().setDrawingMode(true);
         }
-      } else if (fileType === 'docx' || fileType === 'text') {
+      } else if (fileType === 'docx') {
+        setProgress(30, 100, 'Unzipping DOCX document in browser memory...');
+        const { rawText } = await parseAndExtractDOCX(file);
+        setProgress(60, 100, 'Scanning text for sensitive data...');
+        const detections = detectEntities(rawText, activePreset, customRules);
+
+        const redactions = detections.map((det, i) => ({
+          id: `box_docx_${det.id}_${i}`,
+          pageIndex: 0,
+          x: 0,
+          y: 0,
+          width: 0,
+          height: 0,
+          type: 'auto',
+          category: det.category,
+          entityType: det.type,
+          value: det.value,
+          suggested: det.suggested,
+          confidence: det.confidence,
+          redact: true
+        }));
+
+        setDocumentData({
+          rawText,
+          pageCount: 1
+        });
+        setRedactions(redactions);
+      } else if (fileType === 'text') {
         const text = await file.text();
         setProgress(50, 100, 'Scanning text for sensitive data...');
         const detections = detectEntities(text, activePreset, customRules);

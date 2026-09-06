@@ -7,6 +7,7 @@ export function ProModal() {
   const closeProModal = useLicenseStore((s) => s.closeProModal);
   const proModalFeature = useLicenseStore((s) => s.proModalFeature);
   const activateLicense = useLicenseStore((s) => s.activateLicense);
+  const exportTrialCallback = useLicenseStore((s) => s.exportTrialCallback);
 
   const [activeTab, setActiveTab] = useState('pricing'); // 'pricing' | 'license'
   const [licenseInput, setLicenseInput] = useState('');
@@ -176,6 +177,21 @@ export function ProModal() {
                   </a>
                 </div>
               </div>
+
+              {exportTrialCallback && (
+                <div className="pt-2 border-t border-zinc-800/80 text-center">
+                  <button
+                    onClick={() => {
+                      const cb = exportTrialCallback;
+                      closeProModal();
+                      if (cb) cb();
+                    }}
+                    className="w-full py-2 px-3 rounded-xl bg-zinc-800/80 hover:bg-zinc-750 text-zinc-300 hover:text-white text-xs font-medium text-center transition-all border border-zinc-700/60"
+                  >
+                    Continue Free Trial (Download Page 1 with Watermark)
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             <form onSubmit={handleManualActivation} className="space-y-4">

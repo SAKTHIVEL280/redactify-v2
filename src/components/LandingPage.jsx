@@ -10,6 +10,7 @@ import { useRedactionStore } from '../store/redactionStore';
 import { useLicenseStore } from '../store/licenseStore';
 import { PRESETS } from '../core/engine/presets';
 import { parseAndScanPDF } from '../core/parsers/pdfParser';
+import { parseAndExtractDOCX } from '../core/parsers/docxParser';
 import { detectEntities } from '../core/engine/detector';
 
 const PRESET_ICONS = {
@@ -103,7 +104,34 @@ export function LandingPage() {
         if (result.isScannedDocument || result.redactions.length === 0) {
           useRedactionStore.getState().setDrawingMode(true);
         }
-      } else if (fileType === 'docx' || fileType === 'text') {
+      } else if (fileType === 'docx') {
+        setProgress(30, 100, 'Unzipping DOCX document in browser memory...');
+        const { rawText } = await parseAndExtractDOCX(file);
+        setProgress(60, 100, 'Scanning text for sensitive data...');
+        const detections = detectEntities(rawText, activePreset, customRules);
+
+        const redactions = detections.map((det, i) => ({
+          id: `box_docx_${det.id}_${i}`,
+          pageIndex: 0,
+          x: 0,
+          y: 0,
+          width: 0,
+          height: 0,
+          type: 'auto',
+          category: det.category,
+          entityType: det.type,
+          value: det.value,
+          suggested: det.suggested,
+          confidence: det.confidence,
+          redact: true
+        }));
+
+        setDocumentData({
+          rawText,
+          pageCount: 1
+        });
+        setRedactions(redactions);
+      } else if (fileType === 'text') {
         const text = await file.text();
         setProgress(50, 100, 'Scanning text for sensitive data...');
         const detections = detectEntities(text, activePreset, customRules);
@@ -187,7 +215,7 @@ K.S. Rangasamy College of Technology - B.E. Computer Science (2020 - 2024)`;
 
 Sakthivel E
 C28/9, TNHB, Bagalur HUDCO Bagalur Road, Near Sri Vijay Vidyalaya School, Tamil Nadu - 635109
-Aadhaar: 9876 5432 1098 | PAN: ABCDE1234F
+Aadhaar: 2184 4289 8716 | PAN: ABCPE1234F
 
 Dear Sakthivel,
 We are delighted to offer you employment at Management Consultants Private Limited.

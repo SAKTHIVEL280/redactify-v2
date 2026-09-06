@@ -26,15 +26,18 @@ export const useLicenseStore = create((set, get) => {
     license: initialLicense,
     showProModal: false,
     proModalFeature: '', // Reason prompting the modal: 'multi-page', 'batch', 'custom-style', etc.
+    exportTrialCallback: null,
 
-    openProModal: (featureReason = '') => set({
+    openProModal: (featureReason = '', trialCallback = null) => set({
       showProModal: true,
-      proModalFeature: featureReason
+      proModalFeature: featureReason,
+      exportTrialCallback: trialCallback
     }),
 
     closeProModal: () => set({
       showProModal: false,
-      proModalFeature: ''
+      proModalFeature: '',
+      exportTrialCallback: null
     }),
 
     activateLicense: (licenseData) => {

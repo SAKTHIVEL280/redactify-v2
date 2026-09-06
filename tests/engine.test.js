@@ -10,6 +10,9 @@ import {
   validateIndianPAN,
   validateUSRouting
 } from '../src/core/engine/algorithms.js';
+import JSZip from 'jszip';
+import { parseAndExtractDOCX } from '../src/core/parsers/docxParser.js';
+import { exportRedactedDOCX } from '../src/core/parsers/docxExporter.js';
 
 let passed = 0;
 let failed = 0;
@@ -118,6 +121,38 @@ const kycOnly = detectEntities(sampleText, 'kyc');
 const kycTypes = new Set(kycOnly.map(d => d.type));
 assert(kycTypes.has('aadhaar') && kycTypes.has('pan'), 'KYC preset includes Aadhaar and PAN');
 assert(!kycTypes.has('credit_card') && !kycTypes.has('iban'), 'KYC preset excludes unrelated credit card & IBAN');
+
+console.log('\n─── Testing In-Memory DOCX Parser & Exporter ─────────────────────');
+const zip = new JSZip();
+const sampleXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body>
+    <w:p><w:r><w:t>Confidential Employee Offer</w:t></w:r></w:p>
+    <w:p><w:r><w:t>Candidate: Sakthivel E</w:t></w:r></w:p>
+    <w:p><w:r><w:t>Contact: +91 94872 92520</w:t></w:r></w:p>
+    <w:p><w:r><w:t>Fixed Stipend: INR 21,500 / per month</w:t></w:r></w:p>
+  </w:body>
+</w:document>`;
+zip.file('word/document.xml', sampleXml);
+const docxBuf = await zip.generateAsync({ type: 'nodebuffer' });
+const dummyDocx = { arrayBuffer: async () => docxBuf.buffer.slice(docxBuf.byteOffset, docxBuf.byteOffset + docxBuf.byteLength) };
+const parsedDocx = await parseAndExtractDOCX(dummyDocx);
+assert(parsedDocx.rawText.includes('Sakthivel E'), 'DOCX Parser extracts candidate name');
+assert(parsedDocx.rawText.includes('+91 94872 92520'), 'DOCX Parser extracts phone number');
+
+const docxRedactions = [
+  { redact: true, value: 'Sakthivel E', suggested: '[NAME REDACTED]' },
+  { redact: true, value: '+91 94872 92520', suggested: '[PHONE REDACTED]' }
+];
+const redactedBlob = await exportRedactedDOCX({
+  fileArrayBuffer: docxBuf.buffer.slice(docxBuf.byteOffset, docxBuf.byteOffset + docxBuf.byteLength),
+  redactions: docxRedactions,
+  isPro: true
+});
+const redactedZip = await JSZip.loadAsync(await redactedBlob.arrayBuffer());
+const outXml = await redactedZip.file('word/document.xml').async('string');
+assert(!outXml.includes('Sakthivel E') && outXml.includes('[NAME REDACTED]'), 'DOCX Exporter redacts name');
+assert(!outXml.includes('+91 94872 92520') && outXml.includes('[PHONE REDACTED]'), 'DOCX Exporter redacts phone');
 
 console.log(`\n──────────────────────────────────────────────────────────────────`);
 console.log(`Total Passed: ${passed} | Total Failed: ${failed}`);
