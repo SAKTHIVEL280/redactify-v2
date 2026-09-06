@@ -422,10 +422,10 @@ assert(!headersContent.includes('Access-Control-Allow-Origin: *'), 'Headers: Wil
 assert(headersContent.includes('Cross-Origin-Opener-Policy: same-origin'), 'Headers: COOP same-origin isolation enforced');
 assert(headersContent.includes('Cross-Origin-Resource-Policy: same-origin'), 'Headers: CORP same-origin resource protection enforced');
 
-const vercelContent = fs.readFileSync('vercel.json', 'utf8');
-assert(vercelContent.includes('"value": "https://redactify.daeq.in"'), 'Vercel: CORS locked to https://redactify.daeq.in');
-assert(!vercelContent.includes('"value": "*"'), 'Vercel: Wildcard CORS strictly forbidden');
-assert(vercelContent.includes('"value": "same-origin"'), 'Vercel: COOP/CORP same-origin isolation enforced');
+assert(headersContent.includes('Strict-Transport-Security: max-age=63072000; includeSubDomains; preload'), 'Headers: HSTS max-age 2-year preloading enforced');
+
+const redirectsContent = fs.readFileSync('public/_redirects', 'utf8');
+assert(redirectsContent.includes('/*    /index.html   200'), 'Cloudflare Pages: SPA rewrite fallback configured in _redirects');
 
 console.log(`\n──────────────────────────────────────────────────────────────────`);
 console.log(`Total Passed: ${passed} | Total Failed: ${failed}`);
