@@ -93,6 +93,21 @@ assert(typesFound.has('phone'), 'Detected Phone numbers');
 assert(typesFound.has('ip'), 'Detected IP address');
 assert(typesFound.has('name'), 'Detected Person Name via honorific heuristic');
 assert(typesFound.has('organization'), 'Detected Organization via corporate suffix');
+assert(typesFound.has('date'), 'Detected Numeric Date');
+
+// Test Salary & Education & Locations
+const salaryEduText = `Stipend is INR 21,500 / per month. Fixed package: ₹18,50,000. Studied at K.S. Rangasamy College of Technology with CGPA: 8.66 / 10.0. Contact: 080- 41940000. Office at Bengaluru. Reference: HR\\F\\JD46253. Graduated: 2023 – 2027. Father's Name: Elango. Voter ID: ZBC3989613.`;
+const salaryDets = detectEntities(salaryEduText, 'all');
+const salaryTypes = new Set(salaryDets.map(d => d.type));
+assert(salaryTypes.has('salary'), 'Detected Financial Compensation & Salary');
+assert(salaryTypes.has('education'), 'Detected Educational Institution');
+assert(salaryTypes.has('gpa'), 'Detected CGPA/Academic Performance');
+assert(salaryTypes.has('phone'), 'Detected Landline STD Phone');
+assert(salaryTypes.has('location'), 'Detected Metro City Location');
+assert(salaryTypes.has('reference_id'), 'Detected Document Reference ID');
+assert(salaryTypes.has('date'), 'Detected Date Range (2023 – 2027)');
+assert(salaryTypes.has('name'), 'Detected Relative Name via contextual label');
+assert(salaryTypes.has('voter_id'), 'Detected Indian Voter ID (EPIC)');
 
 // Check Aadhaar masking format
 const aadhaarEntity = allDetections.find(d => d.type === 'aadhaar');

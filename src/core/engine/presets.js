@@ -11,8 +11,9 @@ export const PRESETS = {
     icon: 'ShieldAlert',
     types: [
       'email', 'phone', 'credit_card', 'iban', 'swift', 'routing',
-      'aadhaar', 'pan', 'passport', 'voter_id', 'ssn', 'ein', 'nino',
-      'sin', 'tfn', 'ip', 'dob', 'name', 'organization', 'url', 'address', 'pincode', 'date'
+      'aadhaar', 'pan', 'passport', 'voter_id', 'driving_license', 'ssn', 'ein', 'nino',
+      'sin', 'tfn', 'ip', 'dob', 'name', 'organization', 'url', 'address', 'pincode',
+      'date', 'salary', 'education', 'gpa', 'location', 'reference_id'
     ]
   },
   KYC: {
@@ -20,34 +21,34 @@ export const PRESETS = {
     name: 'Indian KYC & DPDP',
     description: 'Complies with UIDAI & DPDP: masks Aadhaar (first 8 digits), PAN cards, voter IDs, and passports.',
     icon: 'BadgeCheck',
-    types: ['aadhaar', 'pan', 'passport', 'voter_id', 'phone', 'dob', 'name', 'address', 'pincode']
+    types: ['aadhaar', 'pan', 'passport', 'voter_id', 'driving_license', 'phone', 'dob', 'name', 'address', 'pincode', 'location', 'date', 'reference_id']
   },
   LEGAL: {
     id: 'legal',
     name: 'Legal & Court Filings',
     description: 'Sanitizes witness/party names, organizations, addresses, settlements, and contact details.',
     icon: 'Scale',
-    types: ['name', 'organization', 'email', 'phone', 'ssn', 'aadhaar', 'dob', 'address', 'pincode', 'date']
+    types: ['name', 'organization', 'email', 'phone', 'ssn', 'aadhaar', 'dob', 'address', 'pincode', 'date', 'salary', 'location', 'reference_id']
   },
   FINANCIAL: {
     id: 'financial',
     name: 'Banking & PCI-DSS',
     description: 'Protects credit/debit cards, IBANs, IFSC codes, SWIFT numbers, and bank routing.',
     icon: 'Landmark',
-    types: ['credit_card', 'iban', 'swift', 'routing', 'ifsc', 'email', 'phone']
+    types: ['credit_card', 'iban', 'swift', 'routing', 'ifsc', 'email', 'phone', 'salary', 'pan', 'aadhaar']
   },
   MEDICAL: {
     id: 'medical',
     name: 'Medical & HIPAA',
     description: 'Redacts patient names, dates of birth, identification numbers, and contact information.',
     icon: 'Activity',
-    types: ['name', 'dob', 'ssn', 'aadhaar', 'phone', 'email', 'address']
+    types: ['name', 'dob', 'ssn', 'aadhaar', 'phone', 'email', 'address', 'date']
   },
   RESUME: {
     id: 'resume',
     name: 'Bias-Free Resume Screening',
     description: 'Redacts candidate name, email, phone, age, social URLs, and identifiers for blind merit recruitment.',
     icon: 'UserCheck',
-    types: ['name', 'email', 'phone', 'dob', 'ip', 'url', 'address', 'pincode']
+    types: ['name', 'email', 'phone', 'dob', 'ip', 'url', 'address', 'pincode', 'education', 'gpa', 'salary', 'location', 'date']
   }
 };

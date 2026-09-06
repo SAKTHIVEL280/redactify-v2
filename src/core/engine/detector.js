@@ -283,14 +283,13 @@ export function detectEntities(text, presetId = 'all', customRules = []) {
     }
   }
 
-  // ─── 9. International & Domestic Phone Numbers ──────────────────────────────
+  // ─── 9. International, Domestic & Landline Phone Numbers ──────────────────
   if (allowedTypes.has('phone')) {
-    const phoneRegexes = [PATTERNS.PHONE_INTERNATIONAL, PATTERNS.PHONE_DOMESTIC];
+    const phoneRegexes = [PATTERNS.PHONE_INTERNATIONAL, PATTERNS.PHONE_DOMESTIC, PATTERNS.PHONE_LANDLINE_STD];
     for (const pRegex of phoneRegexes) {
       let match;
       const regex = new RegExp(pRegex);
       while ((match = regex.exec(text)) !== null) {
-        // Strip out non-digits to ensure it has at least 7 digits (avoid false positives like page numbers)
         const digitsOnly = match[0].replace(/\D/g, '');
         if (digitsOnly.length >= 7 && digitsOnly.length <= 15) {
           rawEntities.push({
@@ -328,22 +327,25 @@ export function detectEntities(text, presetId = 'all', customRules = []) {
     }
   }
 
-  // ─── 11. Social Handles & URLs ──────────────────────────────────────────────
+  // ─── 11. Social Handles, Portfolios & Tech Domains ──────────────────────────
   if (allowedTypes.has('url')) {
-    let match;
-    const regex = new RegExp(PATTERNS.SOCIAL_URL);
-    while ((match = regex.exec(text)) !== null) {
-      rawEntities.push({
-        id: nextId(),
-        type: 'url',
-        category: 'contact',
-        value: match[0],
-        start: match.index,
-        end: match.index + match[0].length,
-        confidence: 0.96,
-        suggested: '[URL REDACTED]',
-        redact: true
-      });
+    const urlRegexes = [PATTERNS.SOCIAL_URL, PATTERNS.TECH_DOMAIN];
+    for (const uRegex of urlRegexes) {
+      let match;
+      const regex = new RegExp(uRegex);
+      while ((match = regex.exec(text)) !== null) {
+        rawEntities.push({
+          id: nextId(),
+          type: 'url',
+          category: 'contact',
+          value: match[0],
+          start: match.index,
+          end: match.index + match[0].length,
+          confidence: 0.96,
+          suggested: '[URL REDACTED]',
+          redact: true
+        });
+      }
     }
   }
 
@@ -366,39 +368,179 @@ export function detectEntities(text, presetId = 'all', customRules = []) {
     }
   }
 
-  // ─── 13. Physical Addresses ────────────────────────────────────────────────
+  // ─── 13. Physical Addresses & Landmarks ─────────────────────────────────────
   if (allowedTypes.has('address')) {
+    const addrRegexes = [PATTERNS.ADDRESS, PATTERNS.ADDRESS_LANDMARK];
+    for (const aRegex of addrRegexes) {
+      let match;
+      const regex = new RegExp(aRegex);
+      while ((match = regex.exec(text)) !== null) {
+        rawEntities.push({
+          id: nextId(),
+          type: 'address',
+          category: 'location',
+          value: match[0],
+          start: match.index,
+          end: match.index + match[0].length,
+          confidence: 0.88,
+          suggested: '[ADDRESS REDACTED]',
+          redact: true
+        });
+      }
+    }
+  }
+
+  // ─── 14. Dates (Formal Document Dates, DOB, Numeric, Spans & Ranges) ────────
+  if (allowedTypes.has('date') || allowedTypes.has('dob')) {
+    const dateRegexes = [PATTERNS.DOCUMENT_DATE, PATTERNS.DATE_OF_BIRTH, PATTERNS.NUMERIC_DATE, PATTERNS.DATE_RANGE];
+    for (const dRegex of dateRegexes) {
+      let match;
+      const regex = new RegExp(dRegex);
+      while ((match = regex.exec(text)) !== null) {
+        rawEntities.push({
+          id: nextId(),
+          type: 'date',
+          category: 'date',
+          value: match[0],
+          start: match.index,
+          end: match.index + match[0].length,
+          confidence: 0.85,
+          suggested: '[DATE REDACTED]',
+          redact: true
+        });
+      }
+    }
+  }
+
+  // ─── 15. Financial Compensation & Salary ────────────────────────────────────
+  if (allowedTypes.has('salary')) {
     let match;
-    const regex = new RegExp(PATTERNS.ADDRESS);
+    const regex = new RegExp(PATTERNS.FINANCIAL_SALARY);
     while ((match = regex.exec(text)) !== null) {
       rawEntities.push({
         id: nextId(),
-        type: 'address',
-        category: 'location',
+        type: 'salary',
+        category: 'financial',
         value: match[0],
         start: match.index,
         end: match.index + match[0].length,
-        confidence: 0.88,
-        suggested: '[ADDRESS REDACTED]',
+        confidence: 0.95,
+        suggested: '[COMPENSATION REDACTED]',
+        redact: true
+      });
+    }
+
+    // Contextual salary search (e.g. "stipend ... 21,500" or "salary ... 50,000")
+    const contextSalaryRegex = /(?:stipend|salary|compensation|remuneration|ctc|package|fee)[\s\S]{0,60}?\b([0-9]{1,3}(?:,[0-9]{2,3})+(?:\.[0-9]{2})?)\b/gi;
+    while ((match = contextSalaryRegex.exec(text)) !== null) {
+      const amountVal = match[1];
+      const amountIdx = match.index + match[0].lastIndexOf(amountVal);
+      rawEntities.push({
+        id: nextId(),
+        type: 'salary',
+        category: 'financial',
+        value: amountVal,
+        start: amountIdx,
+        end: amountIdx + amountVal.length,
+        confidence: 0.93,
+        suggested: '[COMPENSATION REDACTED]',
         redact: true
       });
     }
   }
 
-  // ─── 14. Formal Document Dates ──────────────────────────────────────────────
-  if (allowedTypes.has('date')) {
+  // ─── 16. Geographic Locations (States, City-States & Metro Cities) ──────────
+  if (allowedTypes.has('location')) {
+    const locRegexes = [PATTERNS.CITY_STATE, PATTERNS.STATE_LOCATION, PATTERNS.METRO_CITY];
+    for (const lRegex of locRegexes) {
+      let match;
+      const regex = new RegExp(lRegex);
+      while ((match = regex.exec(text)) !== null) {
+        rawEntities.push({
+          id: nextId(),
+          type: 'location',
+          category: 'location',
+          value: match[0],
+          start: match.index,
+          end: match.index + match[0].length,
+          confidence: 0.88,
+          suggested: '[LOCATION REDACTED]',
+          redact: true
+        });
+      }
+    }
+  }
+
+  // ─── 17. Reference & Document Tracking IDs ──────────────────────────────────
+  if (allowedTypes.has('reference_id') || allowedTypes.has('id')) {
     let match;
-    const regex = new RegExp(PATTERNS.DOCUMENT_DATE);
+    const regex = new RegExp(PATTERNS.REFERENCE_ID);
     while ((match = regex.exec(text)) !== null) {
       rawEntities.push({
         id: nextId(),
-        type: 'date',
-        category: 'date',
+        type: 'reference_id',
+        category: 'identity',
         value: match[0],
         start: match.index,
         end: match.index + match[0].length,
-        confidence: 0.85,
-        suggested: '[DATE REDACTED]',
+        confidence: 0.90,
+        suggested: '[REF REDACTED]',
+        redact: true
+      });
+    }
+  }
+
+  // ─── 17. Educational Institutions & GPA ─────────────────────────────────────
+  if (allowedTypes.has('education')) {
+    let match;
+    const regex = new RegExp(PATTERNS.EDUCATIONAL_INSTITUTION);
+    while ((match = regex.exec(text)) !== null) {
+      rawEntities.push({
+        id: nextId(),
+        type: 'education',
+        category: 'identity',
+        value: match[0],
+        start: match.index,
+        end: match.index + match[0].length,
+        confidence: 0.90,
+        suggested: '[COLLEGE REDACTED]',
+        redact: true
+      });
+    }
+  }
+
+  if (allowedTypes.has('gpa')) {
+    let match;
+    const regex = new RegExp(PATTERNS.ACADEMIC_GPA);
+    while ((match = regex.exec(text)) !== null) {
+      rawEntities.push({
+        id: nextId(),
+        type: 'gpa',
+        category: 'identity',
+        value: match[0],
+        start: match.index,
+        end: match.index + match[0].length,
+        confidence: 0.92,
+        suggested: '[GPA REDACTED]',
+        redact: true
+      });
+    }
+  }
+
+  // ─── 18. Driving License ────────────────────────────────────────────────────
+  if (allowedTypes.has('driving_license')) {
+    let match;
+    const regex = new RegExp(PATTERNS.DRIVING_LICENSE);
+    while ((match = regex.exec(text)) !== null) {
+      rawEntities.push({
+        id: nextId(),
+        type: 'driving_license',
+        category: 'identity',
+        value: match[0],
+        start: match.index,
+        end: match.index + match[0].length,
+        confidence: 0.92,
+        suggested: '[DL REDACTED]',
         redact: true
       });
     }

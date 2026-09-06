@@ -25,7 +25,7 @@ const STOP_WORDS = new Set([
 const HONORIFIC_REGEX = /\b(?:Mr\.?|Mrs\.?|Ms\.?|Miss|Dr\.?|Prof\.?|Adv\.?|Advocate|CA|Shri|Smt\.?|Kumari|Hon\.?|Justice)\s+([A-Z][a-z]+(?:\s+[A-Z]\.?)?(?:\s+[A-Z][a-z]+)?)\b/g;
 
 // ─── 2. Name Detection via Contextual Labels ────────────────────────────────────
-const LABELLED_NAME_REGEX = /\b(?:Name|Full Name|Candidate Name|Patient Name|Client Name|Witness Name|Signatory|Signed by|Employee Name)[\s:]+([A-Z][a-z]+(?:\s+[A-Z]\.?)?(?:\s+[A-Z][a-z]+)?)\b/gi;
+const LABELLED_NAME_REGEX = /\b(?:Name|Full Name|Candidate Name|Patient Name|Client Name|Witness Name|Signatory|Signed by|Employee Name|Father(?:'s)?(?:\s+Name)?|Mother(?:'s)?(?:\s+Name)?|Husband(?:'s)?(?:\s+Name)?|Guardian(?:'s)?(?:\s+Name)?|S\/O|D\/O|W\/O|C\/O)[\s:]+([A-Z][a-z]+(?:[ \t]+[A-Z]\.?|[ \t]+[A-Z][a-z]+)*)\b/gi;
 
 // ─── 3. Name Detection via Salutations ("Dear Sakthivel" or "Dear , Sakthivel") ─
 const SALUTATION_NAME_REGEX = /\b(?:Dear|To|Attention|Attn|Kind Attn)\s*[,:]?\s*([A-Z][a-z]+)\b/g;
@@ -34,7 +34,7 @@ const SALUTATION_NAME_REGEX = /\b(?:Dear|To|Attention|Attn|Kind Attn)\s*[,:]?\s*
 const SIGNATORY_NAME_REGEX = /(?:Yours\s+sincerely|Yours\s+faithfully|Sincerely|Warm\s+regards|Best\s+regards|Regards)[\s\S]{0,120}?(?:[_~-]{3,}|\bFor\b[\s\S]{0,80}?[_~-]{3,})\s*([A-Z][a-z]{2,20}\s+[A-Z][a-z]{2,20})\s+(?:Vice\s+President|President|Managing\s+Director|Director|Officer|Lead|Manager|Partner|Authorized\s+Signatory)/g;
 
 // ─── 5. Organization / Company Detection ───────────────────────────────────────
-const ORG_REGEX = /\b([A-Z][a-zA-Z0-9&]+(?:\s+[A-Z][a-zA-Z0-9&]+){0,4}\s+(?:Inc\.?|LLC\.?|Ltd\.?|Pvt\.?\s+Ltd\.?|Private\s+Limited|LLP\.?|Corp\.?|Corporation|GmbH|Bank|Technologies|Solutions|Enterprises))\b/g;
+const ORG_REGEX = /\b([A-Z][a-zA-Z0-9&]+(?:\s+(?:and|&|of|for|[A-Z][a-zA-Z0-9&]+)){0,6}\s+(?:Inc\.?|LLC\.?|Ltd\.?|Pvt\.?\s+Ltd\.?|Private\s+Limited|LLP\.?|Corp\.?|Corporation|GmbH|Bank|Technologies|Solutions|Enterprises|(?:IT|Financial|Consulting|Technical|Professional)\s+Services))\b/g;
 
 /**
  * Extract names from email addresses found in the same document
@@ -222,13 +222,19 @@ export function detectContextualEntities(text) {
 
   // 7. Organizations
   while ((match = ORG_REGEX.exec(text)) !== null) {
-    const orgName = match[1];
+    let orgName = match[1];
+    let startIndex = match.index;
+    if (/^(?:For|To|At)\s+/i.test(orgName)) {
+      const prefixMatch = orgName.match(/^(?:For|To|At)\s+/i)[0];
+      orgName = orgName.slice(prefixMatch.length);
+      startIndex += prefixMatch.length;
+    }
     entities.push({
       type: 'organization',
       category: 'business',
       value: orgName,
-      start: match.index,
-      end: match.index + orgName.length,
+      start: startIndex,
+      end: startIndex + orgName.length,
       confidence: 0.92,
       suggested: '[ORG REDACTED]'
     });
