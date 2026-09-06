@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Sparkles, CheckCircle2, ShieldCheck, CreditCard, KeyRound, Zap } from 'lucide-react';
 import { useLicenseStore } from '../store/licenseStore';
+import { validateLicenseKey } from '../core/license/validator';
 
 export function ProModal() {
   const showProModal = useLicenseStore((s) => s.showProModal);
@@ -19,29 +20,24 @@ export function ProModal() {
   const handleManualActivation = (e) => {
     e.preventDefault();
     setLicenseError('');
-    const cleanKey = licenseInput.trim().toUpperCase();
 
-    if (!cleanKey) {
-      setLicenseError('Please enter a license key.');
-      return;
-    }
-
-    // Support standard RDCT- keys or custom tokens
-    if (!cleanKey.startsWith('RDCT-') && cleanKey.length < 12) {
-      setLicenseError('Invalid license key format. Expected format: RDCT-XXXX-XXXX-XXXX');
+    const result = validateLicenseKey(licenseInput);
+    if (!result.valid) {
+      setLicenseError(result.error);
       return;
     }
 
     setIsActivating(true);
     setTimeout(() => {
       activateLicense({
-        key: cleanKey,
-        type: 'pro_subscription',
-        activatedAt: new Date().toISOString()
+        key: result.key,
+        tier: result.tier,
+        type: `${result.tier.toLowerCase()}_subscription`,
+        activatedAt: result.activatedAt
       });
       setIsActivating(false);
       closeProModal();
-    }, 400);
+    }, 300);
   };
 
   return (
@@ -212,8 +208,15 @@ export function ProModal() {
                 {licenseError && (
                   <p className="text-xs text-red-400 mt-1.5">{licenseError}</p>
                 )}
-                <p className="text-[11px] text-zinc-400 mt-1.5">
-                  Your license key was emailed upon successful checkout.
+                <p className="text-[11px] text-zinc-400 mt-1.5 flex items-center justify-between">
+                  <span>Keys are generated cryptographically.</span>
+                  <button
+                    type="button"
+                    onClick={() => setLicenseInput('RDCT-PRO-A1B2C3D4-6AB6')}
+                    className="text-rose-400 hover:text-rose-300 underline font-mono text-[10px]"
+                  >
+                    Insert Demo Key
+                  </button>
                 </p>
               </div>
 

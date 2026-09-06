@@ -7,10 +7,8 @@
     <meta name="description" content="The world's leading zero-trust document redactor. Redact PII from PDFs, Word documents, and images 100% locally in your browser. Zero server uploads." />
     <link rel="icon" type="image/svg+xml" href="/logo.svg" />
     
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Zero-Trust Privacy: Local System Fonts (Zero CDN Tracking) -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'unsafe-inline'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' blob: data:; object-src 'none';" />
   </head>
   <body class="bg-zinc-950 text-zinc-100 min-h-screen antialiased selection:bg-rose-500 selection:text-white">
     <div id="root"></div>

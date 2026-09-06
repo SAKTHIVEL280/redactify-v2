@@ -41,3 +41,4 @@ Documents-to-check-whether-everything-working-correctly-do-not-upload-anywhere-i
 scratch/
 tests/debugDocs.js
 *.traineddata
+!public/tessdata/eng.traineddata

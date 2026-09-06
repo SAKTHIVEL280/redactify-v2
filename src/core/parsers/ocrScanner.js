@@ -30,6 +30,38 @@ function matchTokens(wordText, detValue) {
   });
 }
 
+function clusterWordsByLine(words) {
+  if (words.length === 0) return [];
+  const sorted = [...words].sort((a, b) => {
+    const dy = (a.bbox?.y0 || 0) - (b.bbox?.y0 || 0);
+    if (Math.abs(dy) > 12) return dy;
+    return (a.bbox?.x0 || 0) - (b.bbox?.x0 || 0);
+  });
+
+  const clusters = [];
+  let currentCluster = [sorted[0]];
+
+  for (let i = 1; i < sorted.length; i++) {
+    const prev = sorted[i - 1];
+    const curr = sorted[i];
+    const prevY = prev.bbox?.y0 || 0;
+    const currY = curr.bbox?.y0 || 0;
+    const prevH = (prev.bbox?.y1 || 0) - prevY;
+    const threshold = Math.max(16, prevH * 1.5);
+
+    if (Math.abs(currY - prevY) <= threshold) {
+      currentCluster.push(curr);
+    } else {
+      clusters.push(currentCluster);
+      currentCluster = [curr];
+    }
+  }
+  if (currentCluster.length > 0) {
+    clusters.push(currentCluster);
+  }
+  return clusters;
+}
+
 /**
  * Scan an image file or canvas using pure client-side Tesseract.js WASM.
  * Maps detected PII entities to normalized bounding boxes (0.0 to 1.0).
@@ -39,6 +71,8 @@ export async function scanImageWithOCR(imageFileOrCanvas, presetId = 'all', cust
   onProgress(10, 100, 'Initializing WebAssembly OCR engine...');
 
   const worker = await Tesseract.createWorker('eng', 1, {
+    langPath: '/tessdata',
+    cachePath: '/tessdata',
     logger: (m) => {
       if (m.status === 'recognizing text' && m.progress) {
         const pct = Math.round(20 + m.progress * 70);
@@ -113,49 +147,54 @@ export async function scanImageWithOCR(imageFileOrCanvas, presetId = 'all', cust
 
     const redactionBoxes = [];
 
-    // Map detected entities to word bounding boxes
+    // Map detected entities to word bounding boxes (clustered by line to prevent full-page blackout)
     for (const det of detections) {
       const targetWords = words.filter(w => matchTokens(w.text, det.value));
 
       if (targetWords.length > 0) {
-        let minX = Infinity;
-        let minY = Infinity;
-        let maxX = -Infinity;
-        let maxY = -Infinity;
+        const clusters = clusterWordsByLine(targetWords);
 
-        for (const w of targetWords) {
-          if (w.bbox) {
-            minX = Math.min(minX, w.bbox.x0);
-            minY = Math.min(minY, w.bbox.y0);
-            maxX = Math.max(maxX, w.bbox.x1);
-            maxY = Math.max(maxY, w.bbox.y1);
+        for (let cIdx = 0; cIdx < clusters.length; cIdx++) {
+          const cluster = clusters[cIdx];
+          let minX = Infinity;
+          let minY = Infinity;
+          let maxX = -Infinity;
+          let maxY = -Infinity;
+
+          for (const w of cluster) {
+            if (w.bbox) {
+              minX = Math.min(minX, w.bbox.x0);
+              minY = Math.min(minY, w.bbox.y0);
+              maxX = Math.max(maxX, w.bbox.x1);
+              maxY = Math.max(maxY, w.bbox.y1);
+            }
           }
-        }
 
-        if (minX !== Infinity && maxX > minX) {
-          // Add small 2px padding for complete visual masking
-          const padX = 2;
-          const padY = 2;
-          const boxX = Math.max(0, (minX - padX) / imgWidth);
-          const boxY = Math.max(0, (minY - padY) / imgHeight);
-          const boxW = Math.min(1 - boxX, (maxX - minX + padX * 2) / imgWidth);
-          const boxH = Math.min(1 - boxY, (maxY - minY + padY * 2) / imgHeight);
+          if (minX !== Infinity && maxX > minX) {
+            // Add small 2px padding for complete visual masking
+            const padX = 2;
+            const padY = 2;
+            const boxX = Math.max(0, (minX - padX) / imgWidth);
+            const boxY = Math.max(0, (minY - padY) / imgHeight);
+            const boxW = Math.min(1 - boxX, (maxX - minX + padX * 2) / imgWidth);
+            const boxH = Math.min(1 - boxY, (maxY - minY + padY * 2) / imgHeight);
 
-          redactionBoxes.push({
-            id: `box_ocr_${det.id}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-            pageIndex,
-            x: boxX,
-            y: boxY,
-            width: boxW,
-            height: boxH,
-            type: 'auto',
-            category: det.category,
-            entityType: det.type,
-            value: det.value,
-            suggested: det.suggested,
-            confidence: det.confidence,
-            redact: true
-          });
+            redactionBoxes.push({
+              id: `box_ocr_${det.id}_${cIdx}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+              pageIndex,
+              x: boxX,
+              y: boxY,
+              width: boxW,
+              height: boxH,
+              type: 'auto',
+              category: det.category,
+              entityType: det.type,
+              value: det.value,
+              suggested: det.suggested,
+              confidence: det.confidence,
+              redact: true
+            });
+          }
         }
       }
     }

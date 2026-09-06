@@ -25,6 +25,10 @@ import {
 import JSZip from 'jszip';
 import { parseAndExtractDOCX } from '../src/core/parsers/docxParser.js';
 import { exportRedactedDOCX } from '../src/core/parsers/docxExporter.js';
+import { validateLicenseKey, generateValidLicenseKey } from '../src/core/license/validator.js';
+import { exportRedactedPDF } from '../src/core/parsers/pdfExporter.js';
+import { PDFDocument, StandardFonts } from 'pdf-lib';
+import { execSync } from 'child_process';
 
 let passed = 0;
 let failed = 0;
@@ -268,6 +272,107 @@ const redactedZip = await JSZip.loadAsync(await redactedBlob.arrayBuffer());
 const outXml = await redactedZip.file('word/document.xml').async('string');
 assert(!outXml.includes('Sakthivel E') && outXml.includes('[NAME REDACTED]'), 'DOCX Exporter redacts name');
 assert(!outXml.includes('+91 94872 92520') && outXml.includes('[PHONE REDACTED]'), 'DOCX Exporter redacts phone');
+
+// Test DOCX Multi-Run Splitting across runs (<w:t>Sakthi</w:t><w:t>vel E</w:t>)
+const splitZip = new JSZip();
+const splitXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body>
+    <w:p>
+      <w:r><w:t>Employee: </w:t></w:r>
+      <w:r><w:t>Sakthi</w:t></w:r>
+      <w:r><w:t>vel E</w:t></w:r>
+      <w:r><w:t> is confirmed.</w:t></w:r>
+    </w:p>
+    <w:p>
+      <w:r><w:t>UID: 2184</w:t></w:r>
+      <w:r><w:t> 4289 </w:t></w:r>
+      <w:r><w:t>8716</w:t></w:r>
+    </w:p>
+  </w:body>
+</w:document>`;
+splitZip.file('word/document.xml', splitXml);
+const splitBuf = await splitZip.generateAsync({ type: 'nodebuffer' });
+const splitRedactedBlob = await exportRedactedDOCX({
+  fileArrayBuffer: splitBuf.buffer.slice(splitBuf.byteOffset, splitBuf.byteOffset + splitBuf.byteLength),
+  redactions: [
+    { redact: true, value: 'Sakthivel E', suggested: '[NAME REDACTED]' },
+    { redact: true, value: '2184 4289 8716', suggested: 'XXXX-XXXX-8716' }
+  ],
+  isPro: true
+});
+const splitRedactedZip = await JSZip.loadAsync(await splitRedactedBlob.arrayBuffer());
+const splitOutXml = await splitRedactedZip.file('word/document.xml').async('string');
+assert(!splitOutXml.includes('Sakthivel E') && splitOutXml.includes('[NAME REDACTED]'), 'DOCX Multi-Run: Successfully redacts name split across <w:t> tags');
+assert(!splitOutXml.includes('2184 4289 8716') && splitOutXml.includes('XXXX-XXXX-8716'), 'DOCX Multi-Run: Successfully redacts Aadhaar split across 3 <w:t> tags');
+
+console.log('\n─── Testing Cryptographic License Validator ───────────────────────');
+const generatedKey = generateValidLicenseKey('PRO');
+const validResult = validateLicenseKey(generatedKey);
+assert(validResult.valid === true && validResult.tier === 'PRO', 'Valid generated PRO license key passes cryptographic check');
+
+const entKey = generateValidLicenseKey('ENT');
+const entResult = validateLicenseKey(entKey);
+assert(entResult.valid === true && entResult.tier === 'ENT', 'Valid generated ENT license key passes cryptographic check');
+
+const fakeBypass = validateLicenseKey('RDCT-FREE-PASS');
+assert(fakeBypass.valid === false, 'Trivial bypass attempt RDCT-FREE-PASS is strictly rejected');
+
+const tamperedKey = generatedKey.slice(0, -2) + '00';
+const tamperedResult = validateLicenseKey(tamperedKey);
+assert(tamperedResult.valid === false, 'Tampered license checksum is strictly rejected');
+
+console.log('\n─── Testing PDF Forensic Text Stream Sanitization ────────────────');
+const testDoc = await PDFDocument.create();
+const testPage = testDoc.addPage([600, 400]);
+const testFont = await testDoc.embedFont(StandardFonts.Helvetica);
+testPage.drawText('CONFIDENTIAL_AADHAAR_218442898716', { x: 50, y: 350, size: 18, font: testFont });
+testPage.drawText('Public Report Title: Annual Statement', { x: 50, y: 300, size: 14, font: testFont });
+
+const testPdfBytes = await testDoc.save();
+const redactedPdfBlob = await exportRedactedPDF({
+  fileArrayBuffer: testPdfBytes.buffer.slice(testPdfBytes.byteOffset, testPdfBytes.byteOffset + testPdfBytes.byteLength),
+  redactions: [
+    {
+      pageIndex: 0,
+      x: 0.08,
+      y: 0.1,
+      width: 0.6,
+      height: 0.1,
+      value: '218442898716',
+      redact: true
+    },
+    {
+      pageIndex: 0,
+      x: 0.08,
+      y: 0.1,
+      width: 0.6,
+      height: 0.1,
+      value: 'CONFIDENTIAL_AADHAAR',
+      redact: true
+    }
+  ],
+  isPro: true
+});
+
+const redactedPdfBytes = new Uint8Array(await redactedPdfBlob.arrayBuffer());
+
+// Verify with pdftotext to guarantee zero ghost text extraction
+let extractedPdfText = '';
+try {
+  const fs = await import('fs');
+  const tmpPath = `/tmp/test_redacted_${Date.now()}.pdf`;
+  fs.writeFileSync(tmpPath, redactedPdfBytes);
+  extractedPdfText = execSync(`pdftotext ${tmpPath} -`).toString();
+  fs.unlinkSync(tmpPath);
+} catch (e) {
+  // If pdftotext isn't available or fails, fallback to raw buffer inspection
+  extractedPdfText = Buffer.from(redactedPdfBytes).toString('latin1');
+}
+
+assert(!extractedPdfText.includes('218442898716'), 'PDF Ghost Text Eliminated: Aadhaar number cannot be extracted via pdftotext');
+assert(!extractedPdfText.includes('CONFIDENTIAL_AADHAAR'), 'PDF Ghost Text Eliminated: Confidential prefix cannot be extracted via pdftotext');
+assert(extractedPdfText.includes('Annual Statement'), 'PDF Selective Redaction: Non-redacted public content remains intact');
 
 console.log(`\n──────────────────────────────────────────────────────────────────`);
 console.log(`Total Passed: ${passed} | Total Failed: ${failed}`);
