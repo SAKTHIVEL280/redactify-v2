@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, AlertCircle, X, ShieldAlert, Sparkles } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, AlertCircle, X, ShieldAlert, Sparkles, Loader2 } from 'lucide-react';
 import { useDocumentStore } from '../store/documentStore';
 import { useRedactionStore } from '../store/redactionStore';
+import { scanImageWithOCR } from '../core/parsers/ocrScanner';
 
 let pdfjsLib = null;
 async function getPdfJs() {
@@ -27,8 +28,11 @@ export function DocumentViewer() {
   const toggleRedaction = useRedactionStore((s) => s.toggleRedaction);
   const removeRedaction = useRedactionStore((s) => s.removeRedaction);
   const addRedaction = useRedactionStore((s) => s.addRedaction);
+  const setRedactions = useRedactionStore((s) => s.setRedactions);
   const isDrawingMode = useRedactionStore((s) => s.isDrawingMode);
   const style = useRedactionStore((s) => s.style);
+  const activePreset = useRedactionStore((s) => s.activePreset);
+  const customRules = useRedactionStore((s) => s.customRules);
 
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
@@ -36,6 +40,41 @@ export function DocumentViewer() {
   const [drawingStart, setDrawingStart] = useState(null);
   const [drawingBox, setDrawingBox] = useState(null);
   const [renderedDimensions, setRenderedDimensions] = useState({ width: 0, height: 0 });
+
+  const [isOcrScanning, setIsOcrScanning] = useState(false);
+  const [ocrProgress, setOcrProgress] = useState({ pct: 0, msg: '' });
+  const [ocrStatusMessage, setOcrStatusMessage] = useState(null);
+
+  const handleRunOcr = async () => {
+    if (!canvasRef.current && !file) return;
+    setIsOcrScanning(true);
+    setOcrStatusMessage(null);
+    try {
+      const target = canvasRef.current || file;
+      const result = await scanImageWithOCR(
+        target,
+        activePreset,
+        customRules,
+        currentPage - 1,
+        (pct, total, msg) => {
+          setOcrProgress({ pct, msg });
+        }
+      );
+
+      if (result.redactions && result.redactions.length > 0) {
+        const existing = redactions.filter(r => r.pageIndex !== (currentPage - 1) || r.type === 'manual');
+        setRedactions([...existing, ...result.redactions]);
+        setOcrStatusMessage(`Found ${result.redactions.length} PII entities!`);
+      } else {
+        setOcrStatusMessage('No PII entities detected in this image.');
+      }
+    } catch (err) {
+      console.error('OCR Error:', err);
+      setOcrStatusMessage(`OCR failed: ${err.message || 'Unknown error'}`);
+    } finally {
+      setIsOcrScanning(false);
+    }
+  };
 
   // Render PDF or Image page to canvas
   useEffect(() => {
@@ -217,16 +256,43 @@ export function DocumentViewer() {
 
       {/* Scanned Document / Image Helper Banner */}
       {(isScannedDocument || fileType === 'image') && (
-        <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2 flex items-center justify-between text-xs text-amber-300">
+        <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2 flex flex-wrap items-center justify-between gap-3 text-xs text-amber-300">
           <div className="flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
             <span>
-              <strong>Manual Redaction Active:</strong> Drag crosshairs across the document to blackout Aadhaar numbers, photos, stamps, or signatures.
+              <strong>Scanned / Image Document:</strong> Drag crosshair to redact areas, or run in-browser AI OCR.
             </span>
           </div>
-          <span className="text-[11px] font-mono text-amber-400/80 hidden md:inline">
-            Click box to toggle • Hover to delete
-          </span>
+
+          <div className="flex items-center gap-3">
+            {ocrStatusMessage && (
+              <span className="text-[11px] font-mono text-emerald-400">
+                {ocrStatusMessage}
+              </span>
+            )}
+
+            <button
+              onClick={handleRunOcr}
+              disabled={isOcrScanning}
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-500/30 text-xs font-medium transition-colors disabled:opacity-50"
+            >
+              {isOcrScanning ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-400" />
+                  <span>{ocrProgress.msg || `${ocrProgress.pct}%`}</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                  <span>⚡ Run AI Auto-OCR Scan (~15MB WASM)</span>
+                </>
+              )}
+            </button>
+
+            <span className="text-[11px] font-mono text-amber-400/80 hidden lg:inline">
+              Click box to toggle • Hover to delete
+            </span>
+          </div>
         </div>
       )}
 

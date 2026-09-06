@@ -10,7 +10,19 @@ import {
   validateVerhoeff,
   validateIBAN,
   validateUSRouting,
-  validateIndianPAN
+  validateIndianPAN,
+  validateGSTIN,
+  validateNHS,
+  validateCanadianSIN,
+  validateUSSSN,
+  validateUKNINO,
+  validateSpanishDNI,
+  validateFrenchNIR,
+  validateItalianCodiceFiscale,
+  validateAustralianTFN,
+  validateAustralianMedicare,
+  validateSingaporeNRIC,
+  validateUSNPI
 } from './algorithms.js';
 import { detectContextualEntities } from './heuristics.js';
 import { PRESETS } from './presets.js';
@@ -210,20 +222,58 @@ export function detectEntities(text, presetId = 'all', customRules = []) {
     }
   }
 
-  // ─── 8. US SSN, EIN, UK NINO, Canada SIN, Australia TFN ────────────────────
+  // ─── 8. US SSN, ITIN, EIN, UK NINO, Canada SIN, Australia TFN, Medicare, Singapore NRIC ───
   if (allowedTypes.has('ssn')) {
     let match;
     const regex = new RegExp(PATTERNS.US_SSN);
     while ((match = regex.exec(text)) !== null) {
+      if (validateUSSSN(match[0])) {
+        rawEntities.push({
+          id: nextId(),
+          type: 'ssn',
+          category: 'identity',
+          value: match[0],
+          start: match.index,
+          end: match.index + match[0].length,
+          confidence: 0.99,
+          suggested: '[SSN REDACTED]',
+          redact: true
+        });
+      }
+    }
+  }
+
+  if (allowedTypes.has('itin')) {
+    let match;
+    const regex = new RegExp(PATTERNS.US_ITIN);
+    while ((match = regex.exec(text)) !== null) {
       rawEntities.push({
         id: nextId(),
-        type: 'ssn',
+        type: 'itin',
         category: 'identity',
         value: match[0],
         start: match.index,
         end: match.index + match[0].length,
         confidence: 0.95,
-        suggested: '[SSN REDACTED]',
+        suggested: '[ITIN REDACTED]',
+        redact: true
+      });
+    }
+  }
+
+  if (allowedTypes.has('ein')) {
+    let match;
+    const regex = new RegExp(PATTERNS.US_EIN);
+    while ((match = regex.exec(text)) !== null) {
+      rawEntities.push({
+        id: nextId(),
+        type: 'ein',
+        category: 'identity',
+        value: match[0],
+        start: match.index,
+        end: match.index + match[0].length,
+        confidence: 0.92,
+        suggested: '[EIN REDACTED]',
         redact: true
       });
     }
@@ -233,17 +283,19 @@ export function detectEntities(text, presetId = 'all', customRules = []) {
     let match;
     const regex = new RegExp(PATTERNS.UK_NINO);
     while ((match = regex.exec(text)) !== null) {
-      rawEntities.push({
-        id: nextId(),
-        type: 'nino',
-        category: 'identity',
-        value: match[0],
-        start: match.index,
-        end: match.index + match[0].length,
-        confidence: 0.95,
-        suggested: '[NINO REDACTED]',
-        redact: true
-      });
+      if (validateUKNINO(match[0])) {
+        rawEntities.push({
+          id: nextId(),
+          type: 'nino',
+          category: 'identity',
+          value: match[0],
+          start: match.index,
+          end: match.index + match[0].length,
+          confidence: 0.98,
+          suggested: '[NINO REDACTED]',
+          redact: true
+        });
+      }
     }
   }
 
@@ -251,17 +303,19 @@ export function detectEntities(text, presetId = 'all', customRules = []) {
     let match;
     const regex = new RegExp(PATTERNS.CA_SIN);
     while ((match = regex.exec(text)) !== null) {
-      rawEntities.push({
-        id: nextId(),
-        type: 'sin',
-        category: 'identity',
-        value: match[0],
-        start: match.index,
-        end: match.index + match[0].length,
-        confidence: 0.92,
-        suggested: '[SIN REDACTED]',
-        redact: true
-      });
+      if (validateCanadianSIN(match[0])) {
+        rawEntities.push({
+          id: nextId(),
+          type: 'sin',
+          category: 'identity',
+          value: match[0],
+          start: match.index,
+          end: match.index + match[0].length,
+          confidence: 0.98,
+          suggested: '[SIN REDACTED]',
+          redact: true
+        });
+      }
     }
   }
 
@@ -269,15 +323,448 @@ export function detectEntities(text, presetId = 'all', customRules = []) {
     let match;
     const regex = new RegExp(PATTERNS.AU_TFN);
     while ((match = regex.exec(text)) !== null) {
+      if (validateAustralianTFN(match[0])) {
+        rawEntities.push({
+          id: nextId(),
+          type: 'tfn',
+          category: 'identity',
+          value: match[0],
+          start: match.index,
+          end: match.index + match[0].length,
+          confidence: 0.95,
+          suggested: '[TFN REDACTED]',
+          redact: true
+        });
+      }
+    }
+  }
+
+  if (allowedTypes.has('medicare')) {
+    let match;
+    const regex = new RegExp(PATTERNS.AU_MEDICARE);
+    while ((match = regex.exec(text)) !== null) {
+      if (validateAustralianMedicare(match[0])) {
+        rawEntities.push({
+          id: nextId(),
+          type: 'medicare',
+          category: 'medical',
+          value: match[0],
+          start: match.index,
+          end: match.index + match[0].length,
+          confidence: 0.98,
+          suggested: '[MEDICARE REDACTED]',
+          redact: true
+        });
+      }
+    }
+  }
+
+  if (allowedTypes.has('nric')) {
+    let match;
+    const regex = new RegExp(PATTERNS.SG_NRIC);
+    while ((match = regex.exec(text)) !== null) {
+      if (validateSingaporeNRIC(match[0])) {
+        rawEntities.push({
+          id: nextId(),
+          type: 'nric',
+          category: 'identity',
+          value: match[0],
+          start: match.index,
+          end: match.index + match[0].length,
+          confidence: 0.99,
+          suggested: '[NRIC REDACTED]',
+          redact: true
+        });
+      }
+    }
+  }
+
+  // ─── 8b-2. European Union & UK Compliance (GDPR) ───────────────────────────
+  if (allowedTypes.has('dni')) {
+    let match;
+    const regex = new RegExp(PATTERNS.ES_DNI);
+    while ((match = regex.exec(text)) !== null) {
+      if (validateSpanishDNI(match[0])) {
+        rawEntities.push({
+          id: nextId(),
+          type: 'dni',
+          category: 'identity',
+          value: match[0],
+          start: match.index,
+          end: match.index + match[0].length,
+          confidence: 0.98,
+          suggested: '[DNI/NIE REDACTED]',
+          redact: true
+        });
+      }
+    }
+  }
+
+  if (allowedTypes.has('nir')) {
+    let match;
+    const regex = new RegExp(PATTERNS.FR_NIR);
+    while ((match = regex.exec(text)) !== null) {
+      if (validateFrenchNIR(match[0])) {
+        rawEntities.push({
+          id: nextId(),
+          type: 'nir',
+          category: 'identity',
+          value: match[0],
+          start: match.index,
+          end: match.index + match[0].length,
+          confidence: 0.98,
+          suggested: '[NIR REDACTED]',
+          redact: true
+        });
+      }
+    }
+  }
+
+  if (allowedTypes.has('codice_fiscale')) {
+    let match;
+    const regex = new RegExp(PATTERNS.IT_CODICE_FISCALE);
+    while ((match = regex.exec(text)) !== null) {
+      if (validateItalianCodiceFiscale(match[0])) {
+        rawEntities.push({
+          id: nextId(),
+          type: 'codice_fiscale',
+          category: 'identity',
+          value: match[0],
+          start: match.index,
+          end: match.index + match[0].length,
+          confidence: 0.99,
+          suggested: '[CODICE FISCALE REDACTED]',
+          redact: true
+        });
+      }
+    }
+  }
+
+  if (allowedTypes.has('sort_code')) {
+    let match;
+    const regex = new RegExp(PATTERNS.UK_SORT_CODE);
+    while ((match = regex.exec(text)) !== null) {
       rawEntities.push({
         id: nextId(),
-        type: 'tfn',
+        type: 'sort_code',
+        category: 'financial',
+        value: match[0],
+        start: match.index,
+        end: match.index + match[0].length,
+        confidence: 0.90,
+        suggested: '[SORT CODE REDACTED]',
+        redact: true
+      });
+    }
+  }
+
+  if (allowedTypes.has('utr')) {
+    let match;
+    const regex = new RegExp(PATTERNS.UK_UTR);
+    while ((match = regex.exec(text)) !== null) {
+      const full = match[0];
+      const val = match[1] || full;
+      const offset = full.indexOf(val);
+      rawEntities.push({
+        id: nextId(),
+        type: 'utr',
+        category: 'financial',
+        value: val,
+        start: match.index + offset,
+        end: match.index + offset + val.length,
+        confidence: 0.96,
+        suggested: '[UTR REDACTED]',
+        redact: true
+      });
+    }
+  }
+
+  if (allowedTypes.has('eu_vat')) {
+    let match;
+    const regex = new RegExp(PATTERNS.EU_VAT);
+    while ((match = regex.exec(text)) !== null) {
+      rawEntities.push({
+        id: nextId(),
+        type: 'eu_vat',
+        category: 'financial',
+        value: match[0],
+        start: match.index,
+        end: match.index + match[0].length,
+        confidence: 0.95,
+        suggested: '[VAT ID REDACTED]',
+        redact: true
+      });
+    }
+  }
+
+  if (allowedTypes.has('idnr')) {
+    let match;
+    const regex = new RegExp(PATTERNS.DE_IDNR);
+    while ((match = regex.exec(text)) !== null) {
+      rawEntities.push({
+        id: nextId(),
+        type: 'idnr',
+        category: 'identity',
+        value: match[0],
+        start: match.index,
+        end: match.index + match[0].length,
+        confidence: 0.88,
+        suggested: '[IDNR REDACTED]',
+        redact: true
+      });
+    }
+  }
+
+  // ─── 8b-3. US Medical & Provider IDs (HIPAA) ───────────────────────────────
+  if (allowedTypes.has('npi')) {
+    let match;
+    const regex = new RegExp(PATTERNS.US_NPI);
+    while ((match = regex.exec(text)) !== null) {
+      if (validateUSNPI(match[0])) {
+        rawEntities.push({
+          id: nextId(),
+          type: 'npi',
+          category: 'medical',
+          value: match[0],
+          start: match.index,
+          end: match.index + match[0].length,
+          confidence: 0.98,
+          suggested: '[NPI REDACTED]',
+          redact: true
+        });
+      }
+    }
+  }
+
+  if (allowedTypes.has('dea')) {
+    let match;
+    const regex = new RegExp(PATTERNS.US_DEA);
+    while ((match = regex.exec(text)) !== null) {
+      rawEntities.push({
+        id: nextId(),
+        type: 'dea',
+        category: 'medical',
+        value: match[0],
+        start: match.index,
+        end: match.index + match[0].length,
+        confidence: 0.90,
+        suggested: '[DEA REDACTED]',
+        redact: true
+      });
+    }
+  }
+
+
+  // ─── 8b. Indian GSTIN & EPFO UAN ───────────────────────────────────────────
+  if (allowedTypes.has('gstin')) {
+    let match;
+    const regex = new RegExp(PATTERNS.GSTIN);
+    while ((match = regex.exec(text)) !== null) {
+      if (validateGSTIN(match[0])) {
+        rawEntities.push({
+          id: nextId(),
+          type: 'gstin',
+          category: 'financial',
+          value: match[0],
+          start: match.index,
+          end: match.index + match[0].length,
+          confidence: 0.96,
+          suggested: '[GSTIN REDACTED]',
+          redact: true
+        });
+      }
+    }
+  }
+
+  if (allowedTypes.has('epfo_uan')) {
+    let match;
+    const regex = new RegExp(PATTERNS.EPFO_UAN);
+    while ((match = regex.exec(text)) !== null) {
+      rawEntities.push({
+        id: nextId(),
+        type: 'epfo_uan',
+        category: 'identity',
+        value: match[0],
+        start: match.index,
+        end: match.index + match[0].length,
+        confidence: 0.92,
+        suggested: '[UAN REDACTED]',
+        redact: true
+      });
+    }
+  }
+
+  // ─── 8c. Bank Accounts & Vehicle Plates ─────────────────────────────────────
+  if (allowedTypes.has('bank_account')) {
+    let match;
+    const regex = new RegExp(PATTERNS.BANK_ACCOUNT);
+    while ((match = regex.exec(text)) !== null) {
+      const full = match[0];
+      const accNum = match[1];
+      const offset = full.indexOf(accNum);
+      rawEntities.push({
+        id: nextId(),
+        type: 'bank_account',
+        category: 'financial',
+        value: accNum,
+        start: match.index + offset,
+        end: match.index + offset + accNum.length,
+        confidence: 0.92,
+        suggested: '[ACCOUNT REDACTED]',
+        redact: true
+      });
+    }
+  }
+
+  if (allowedTypes.has('vehicle_registration')) {
+    let match;
+    const regex = new RegExp(PATTERNS.VEHICLE_REGISTRATION);
+    while ((match = regex.exec(text)) !== null) {
+      rawEntities.push({
+        id: nextId(),
+        type: 'vehicle_registration',
         category: 'identity',
         value: match[0],
         start: match.index,
         end: match.index + match[0].length,
         confidence: 0.90,
-        suggested: '[TFN REDACTED]',
+        suggested: '[VEHICLE REG REDACTED]',
+        redact: true
+      });
+    }
+  }
+
+  // ─── 8d. Medical & Health Records (HIPAA / NHS) ─────────────────────────────
+  if (allowedTypes.has('nhs')) {
+    let match;
+    const regex = new RegExp(PATTERNS.UK_NHS);
+    while ((match = regex.exec(text)) !== null) {
+      if (validateNHS(match[0])) {
+        rawEntities.push({
+          id: nextId(),
+          type: 'nhs',
+          category: 'medical',
+          value: match[0],
+          start: match.index,
+          end: match.index + match[0].length,
+          confidence: 0.95,
+          suggested: '[NHS REDACTED]',
+          redact: true
+        });
+      }
+    }
+  }
+
+  if (allowedTypes.has('medical_record')) {
+    let match;
+    const regex = new RegExp(PATTERNS.MEDICAL_RECORD);
+    while ((match = regex.exec(text)) !== null) {
+      const full = match[0];
+      const val = match[1];
+      const offset = full.indexOf(val);
+      rawEntities.push({
+        id: nextId(),
+        type: 'medical_record',
+        category: 'medical',
+        value: val,
+        start: match.index + offset,
+        end: match.index + offset + val.length,
+        confidence: 0.92,
+        suggested: '[MRN REDACTED]',
+        redact: true
+      });
+    }
+  }
+
+  if (allowedTypes.has('health_insurance')) {
+    let match;
+    const regex = new RegExp(PATTERNS.HEALTH_INSURANCE);
+    while ((match = regex.exec(text)) !== null) {
+      const full = match[0];
+      const val = match[1];
+      const offset = full.indexOf(val);
+      rawEntities.push({
+        id: nextId(),
+        type: 'health_insurance',
+        category: 'medical',
+        value: val,
+        start: match.index + offset,
+        end: match.index + offset + val.length,
+        confidence: 0.92,
+        suggested: '[INSURANCE REDACTED]',
+        redact: true
+      });
+    }
+  }
+
+  // ─── 8e. Developer Secrets & Cloud Credentials ──────────────────────────────
+  if (allowedTypes.has('secret_key')) {
+    const secretRegexes = [
+      { regex: PATTERNS.AWS_ACCESS_KEY, label: '[AWS KEY REDACTED]' },
+      { regex: PATTERNS.GITHUB_TOKEN, label: '[GITHUB TOKEN REDACTED]' },
+      { regex: PATTERNS.PRIVATE_KEY, label: '[PRIVATE KEY REDACTED]' }
+    ];
+    for (const sItem of secretRegexes) {
+      let match;
+      const regex = new RegExp(sItem.regex);
+      while ((match = regex.exec(text)) !== null) {
+        rawEntities.push({
+          id: nextId(),
+          type: 'secret_key',
+          category: 'secrets',
+          value: match[0],
+          start: match.index,
+          end: match.index + match[0].length,
+          confidence: 0.98,
+          suggested: sItem.label,
+          redact: true
+        });
+      }
+    }
+  }
+
+  // ─── 8e-2. API Tokens & Cloud Credentials (Stripe, Slack, Google, OpenAI, JWT) ──
+  if (allowedTypes.has('api_token')) {
+    const tokenRegexes = [
+      { regex: PATTERNS.STRIPE_KEY, label: '[STRIPE KEY REDACTED]' },
+      { regex: PATTERNS.SLACK_TOKEN, label: '[SLACK TOKEN REDACTED]' },
+      { regex: PATTERNS.GOOGLE_API_KEY, label: '[GOOGLE API KEY REDACTED]' },
+      { regex: PATTERNS.OPENAI_KEY, label: '[OPENAI KEY REDACTED]' },
+      { regex: PATTERNS.JWT_TOKEN, label: '[JWT REDACTED]' }
+    ];
+    for (const tItem of tokenRegexes) {
+      let match;
+      const regex = new RegExp(tItem.regex);
+      while ((match = regex.exec(text)) !== null) {
+        rawEntities.push({
+          id: nextId(),
+          type: 'api_token',
+          category: 'secrets',
+          value: match[0],
+          start: match.index,
+          end: match.index + match[0].length,
+          confidence: 0.99,
+          suggested: tItem.label,
+          redact: true
+        });
+      }
+    }
+  }
+
+  // ─── 8f. Cryptocurrency Wallets ─────────────────────────────────────────────
+  if (allowedTypes.has('crypto_wallet')) {
+    let match;
+    const regex = new RegExp(PATTERNS.CRYPTO_WALLET);
+    while ((match = regex.exec(text)) !== null) {
+      rawEntities.push({
+        id: nextId(),
+        type: 'crypto_wallet',
+        category: 'financial',
+        value: match[0],
+        start: match.index,
+        end: match.index + match[0].length,
+        confidence: 0.93,
+        suggested: '[CRYPTO REDACTED]',
         redact: true
       });
     }

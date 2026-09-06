@@ -87,6 +87,59 @@ export const PATTERNS = {
   // ─── 15. Reference & Document Tracking IDs ──────────────────────────────────
   REFERENCE_ID: /\b(?:HR|REF|ID|EMP|DOC|INV|REFNO)[\\/-][A-Z0-9\\/-]{3,20}\b/gi,
 
-  // ─── 16. Tech Startup Domains ───────────────────────────────────────────────
-  TECH_DOMAIN: /\b[a-zA-Z0-9-]+\.(?:ai|io|co|tech|app|dev)\b/gi
+  // ─── 16. Indian Tax & Employment IDs (GSTIN & EPFO UAN) ─────────────────────
+  GSTIN: /\b[0-3][0-9][A-Z]{3}[ABCFGHLJPT][A-Z]\d{4}[A-Z][1-9A-Z]Z[0-9A-Z]\b/g,
+  EPFO_UAN: /\b10\d{10}\b/g,
+
+  // ─── 17. Bank Accounts & Vehicle Plates ─────────────────────────────────────
+  BANK_ACCOUNT: /\b(?:A\/C|Account\s*(?:No\.?|Number)?)[\s:#]+([0-9]{9,18})\b/gi,
+  VEHICLE_REGISTRATION: /\b[A-Z]{2}[-\s]?[0-9]{1,2}[-\s]?[A-Z]{1,3}[-\s]?[0-9]{4}\b/g,
+
+  // ─── 18. Medical & HIPAA (MRN, NHS, Health Insurance) ────────────────────────
+  UK_NHS: /\b\d{3}\s?\d{3}\s?\d{4}\b/g,
+  MEDICAL_RECORD: /\b(?:MRN|Patient\s*ID|Chart\s*(?:ID|Number)|Health\s*Record)[\s:#]+([A-Z0-9-]{4,15})\b/gi,
+  HEALTH_INSURANCE: /\b(?:Policy\s*(?:No\.?|Number)|Member\s*ID|Insurance\s*ID|Group\s*Number)[\s:#]+([A-Z0-9-]{5,20})\b/gi,
+
+  // ─── 19. Cloud Secrets, Developer Keys & Crypto Wallets ─────────────────────
+  AWS_ACCESS_KEY: /\bAKIA[0-9A-Z]{16}\b/g,
+  GITHUB_TOKEN: /\b(?:ghp_[a-zA-Z0-9]{36}|github_pat_[a-zA-Z0-9_]{82})\b/g,
+  PRIVATE_KEY: /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----[\s\S]*?-----END (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/g,
+  CRYPTO_WALLET: /\b(?:0x[a-fA-F0-9]{40}|bc1[a-z0-9]{39,59}|[13][a-km-zA-HJ-NP-Z1-9]{25,34})\b/g,
+
+  // ─── 20. Tech Startup Domains ───────────────────────────────────────────────
+  TECH_DOMAIN: /\b[a-zA-Z0-9-]+\.(?:ai|io|co|tech|app|dev)\b/gi,
+
+  // ─── 21. Global Regional Identity Numbers ────────────────────────────────────
+  // US Individual Taxpayer Identification Number (ITIN)
+  US_ITIN: /\b9\d{2}[-\s]?(?:5\d|6[0-5]|7\d|8[0-8]|9[0-2]|9[4-9])[-\s]?\d{4}\b/g,
+  // US National Provider Identifier (NPI - HIPAA medical provider)
+  US_NPI: /\b[12]\d{9}\b/g,
+  // US Drug Enforcement Administration (DEA) Registration Number
+  US_DEA: /\b[A-Z]{2}[0-9]{7}\b/g,
+  // UK Unique Taxpayer Reference (UTR)
+  UK_UTR: /\b(?:UTR|Unique Taxpayer Reference)[\s:#]+([0-9]{10})\b/gi,
+  // UK Bank Sort Code (XX-XX-XX)
+  UK_SORT_CODE: /\b\d{2}[-\s]\d{2}[-\s]\d{2}\b/g,
+  // European Union VAT Identification Numbers
+  EU_VAT: /\b(?:ATU[0-9]{8}|BE[01][0-9]{9}|BG[0-9]{9,10}|CY[0-9]{8}[A-Z]|CZ[0-9]{8,10}|DE[0-9]{9}|DK[0-9]{8}|EE[0-9]{9}|EL[0-9]{9}|ES[A-Z0-9][0-9]{7}[A-Z0-9]|FI[0-9]{8}|FR[A-Z0-9]{2}[0-9]{9}|HR[0-9]{11}|HU[0-9]{8}|IE[0-9]{7}[A-W][A-I]?|IT[0-9]{11}|LT[0-9]{9,12}|LU[0-9]{8}|LV[0-9]{11}|MT[0-9]{8}|NL[0-9]{9}B[0-9]{2}|PL[0-9]{10}|PT[0-9]{9}|RO[0-9]{2,10}|SE[0-9]{12}|SI[0-9]{8}|SK[0-9]{10})\b/g,
+  // Spanish DNI / NIE
+  ES_DNI: /\b(?:[0-9]{8}[A-Z]|[XYZ][0-9]{7}[A-Z])\b/g,
+  // French NIR (Numéro de Sécurité Sociale)
+  FR_NIR: /\b[12]\s?\d{2}\s?(?:0[1-9]|1[0-2]|2[0-9])\s?\d{2}\s?\d{3}\s?\d{3}(?:\s?\d{2})?\b/g,
+  // Italian Codice Fiscale
+  IT_CODICE_FISCALE: /\b[A-Z]{6}[0-9]{2}[A-EHLMPR-T][0-9]{2}[A-Z][0-9]{3}[A-Z]\b/g,
+  // German Steuer-IdNr (Tax ID)
+  DE_IDNR: /\b[0-9]{2}\s?[0-9]{3}\s?[0-9]{3}\s?[0-9]{3}\b/g,
+  // Australian Medicare Number (10 digits starting with 2-6)
+  AU_MEDICARE: /\b[2-6]\d{3}\s?\d{5}\s?\d\b/g,
+  // Singapore NRIC / FIN
+  SG_NRIC: /\b[STFGM]\d{7}[A-Z]\b/g,
+
+  // ─── 22. Developer & Enterprise API Tokens / Cloud Secrets ───────────────────
+  STRIPE_KEY: /\b(?:sk|pk|rk)_(?:live|test)_[0-9a-zA-Z]{24,99}\b/g,
+  SLACK_TOKEN: /\bxox[baprs]-[0-9a-zA-Z-]{10,72}\b/g,
+  GOOGLE_API_KEY: /\bAIza[0-9A-Za-z\-_]{35}\b/g,
+  OPENAI_KEY: /\bsk-(?:proj-)?[a-zA-Z0-9_-]{32,}\b/g,
+  JWT_TOKEN: /\beyJ[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}\b/g
 };
+

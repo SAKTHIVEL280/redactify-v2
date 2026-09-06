@@ -8,7 +8,19 @@ import {
   validateVerhoeff,
   validateIBAN,
   validateIndianPAN,
-  validateUSRouting
+  validateUSRouting,
+  validateGSTIN,
+  validateNHS,
+  validateCanadianSIN,
+  validateUSSSN,
+  validateUKNINO,
+  validateSpanishDNI,
+  validateFrenchNIR,
+  validateItalianCodiceFiscale,
+  validateAustralianTFN,
+  validateAustralianMedicare,
+  validateSingaporeNRIC,
+  validateUSNPI
 } from '../src/core/engine/algorithms.js';
 import JSZip from 'jszip';
 import { parseAndExtractDOCX } from '../src/core/parsers/docxParser.js';
@@ -54,6 +66,56 @@ assert(validateIBAN('GB82WEST12345698765433') === false, 'Invalid UK IBAN fails'
 assert(validateUSRouting('011000015') === true, 'Valid Federal Reserve Routing passes');
 assert(validateUSRouting('011000016') === false, 'Invalid Federal Reserve Routing fails');
 
+// 6. Indian GSTIN Validation
+assert(validateGSTIN('29ABCPE1234F1Z5') === true, 'Valid Indian GSTIN passes');
+assert(validateGSTIN('99ABCPE1234F1Z5') === false, 'Invalid state code GSTIN fails');
+
+// 7. UK NHS Number Mod-11 Checksum
+assert(validateNHS('943 476 5919') === true, 'Valid UK NHS passes Mod-11');
+assert(validateNHS('943 476 5918') === false, 'Invalid UK NHS fails Mod-11');
+
+// 8. Canadian Social Insurance Number (SIN) Luhn Checksum
+assert(validateCanadianSIN('046-454-286') === true, 'Valid Canadian SIN passes Luhn');
+assert(validateCanadianSIN('046-454-287') === false, 'Invalid Canadian SIN fails Luhn');
+
+// 9. US SSN Structure Tests
+assert(validateUSSSN('123-45-6789') === true, 'Valid US SSN passes');
+assert(validateUSSSN('000-45-6789') === false, 'US SSN with Area 000 fails');
+assert(validateUSSSN('666-45-6789') === false, 'US SSN with Area 666 fails');
+assert(validateUSSSN('912-45-6789') === false, 'US SSN with Area 900+ fails');
+
+// 10. UK National Insurance Number (NINO) Tests
+assert(validateUKNINO('AB123456C') === true, 'Valid UK NINO passes');
+assert(validateUKNINO('BG123456C') === false, 'UK NINO starting with BG fails');
+
+// 11. Spanish DNI / NIE Mod-23 Tests
+assert(validateSpanishDNI('12345678Z') === true, 'Valid Spanish DNI passes Mod-23');
+assert(validateSpanishDNI('12345678A') === false, 'Invalid Spanish DNI fails Mod-23');
+assert(validateSpanishDNI('X1234567L') === true, 'Valid Spanish NIE passes Mod-23');
+
+// 12. French NIR Mod-97 Tests
+assert(validateFrenchNIR('1851234567890') === true, 'Valid French 13-digit NIR passes');
+
+// 13. Italian Codice Fiscale Tests
+assert(validateItalianCodiceFiscale('RSSMRA85M01H501Q') === true, 'Valid Italian Codice Fiscale passes check char');
+assert(validateItalianCodiceFiscale('RSSMRA85M01H501Z') === false, 'Invalid Italian Codice Fiscale fails check char');
+
+// 14. Australian TFN Mod-11 Tests
+assert(validateAustralianTFN('100000001') === true, 'Valid Australian 9-digit TFN passes Mod-11');
+assert(validateAustralianTFN('100000002') === false, 'Invalid Australian TFN fails Mod-11');
+
+// 15. Australian Medicare Number Tests
+assert(validateAustralianMedicare('2123456701') === true, 'Valid Australian Medicare passes check digit');
+assert(validateAustralianMedicare('2123456791') === false, 'Invalid Australian Medicare fails check digit');
+
+// 16. Singapore NRIC Mod-11 Tests
+assert(validateSingaporeNRIC('S1234567D') === true, 'Valid Singapore NRIC passes Mod-11');
+assert(validateSingaporeNRIC('S1234567A') === false, 'Invalid Singapore NRIC fails Mod-11');
+
+// 17. US NPI Luhn Checksum Tests
+assert(validateUSNPI('1234567893') === true, 'Valid US NPI passes Luhn checksum');
+assert(validateUSNPI('1234567894') === false, 'Invalid US NPI fails Luhn checksum');
+
 console.log('\n─── Testing Master Entity Detector ───────────────────────────────');
 
 const sampleText = `
@@ -98,8 +160,8 @@ assert(typesFound.has('name'), 'Detected Person Name via honorific heuristic');
 assert(typesFound.has('organization'), 'Detected Organization via corporate suffix');
 assert(typesFound.has('date'), 'Detected Numeric Date');
 
-// Test Salary & Education & Locations
-const salaryEduText = `Stipend is INR 21,500 / per month. Fixed package: ₹18,50,000. Studied at K.S. Rangasamy College of Technology with CGPA: 8.66 / 10.0. Contact: 080- 41940000. Office at Bengaluru. Reference: HR\\F\\JD46253. Graduated: 2023 – 2027. Father's Name: Elango. Voter ID: ZBC3989613.`;
+// Test Salary & Education & Locations & Global Enterprise PII
+const salaryEduText = `Stipend is INR 21,500 / per month. Fixed package: ₹18,50,000. Studied at K.S. Rangasamy College of Technology with CGPA: 8.66 / 10.0. Contact: 080- 41940000. Office at Bengaluru. Reference: HR\\F\\JD46253. Graduated: 2023 – 2027. Father's Name: Elango. Voter ID: ZBC3989613. GSTIN: 29ABCPE1234F1Z5. UAN: 100987654321. A/c: 012345678912. Plate: TN-37-AB-1234. NHS: 943 476 5919. MRN: 8934521. Policy Number: POL-987654. AWS: AKIAIOSFODNN7EXAMPLE. Token: ghp_1234567890abcdefghijklmnopqrstuvwxyz. Crypto: 0x71C634C2632530e79715dc423b0bAF9e26569742. SIN: 046-454-286.`;
 const salaryDets = detectEntities(salaryEduText, 'all');
 const salaryTypes = new Set(salaryDets.map(d => d.type));
 assert(salaryTypes.has('salary'), 'Detected Financial Compensation & Salary');
@@ -111,16 +173,69 @@ assert(salaryTypes.has('reference_id'), 'Detected Document Reference ID');
 assert(salaryTypes.has('date'), 'Detected Date Range (2023 – 2027)');
 assert(salaryTypes.has('name'), 'Detected Relative Name via contextual label');
 assert(salaryTypes.has('voter_id'), 'Detected Indian Voter ID (EPIC)');
+assert(salaryTypes.has('gstin'), 'Detected GSTIN with checksum check');
+assert(salaryTypes.has('epfo_uan'), 'Detected EPFO Universal Account Number');
+assert(salaryTypes.has('bank_account'), 'Detected Bank Account Number');
+assert(salaryTypes.has('vehicle_registration'), 'Detected Vehicle Registration');
+assert(salaryTypes.has('nhs'), 'Detected UK NHS with Mod-11 check');
+assert(salaryTypes.has('medical_record'), 'Detected Medical Record Number');
+assert(salaryTypes.has('health_insurance'), 'Detected Health Insurance Policy ID');
+assert(salaryTypes.has('secret_key'), 'Detected AWS Key and GitHub Token');
+assert(salaryTypes.has('crypto_wallet'), 'Detected Crypto Ethereum Wallet');
+assert(salaryTypes.has('sin'), 'Detected Canadian SIN with Luhn check');
 
 // Check Aadhaar masking format
 const aadhaarEntity = allDetections.find(d => d.type === 'aadhaar');
 assert(aadhaarEntity && aadhaarEntity.suggested === 'XXXX-XXXX-8716', 'Aadhaar masked first 8 digits as per UIDAI rule');
+
+// Test Global Enterprise & Regional Jurisdiction IDs
+const globalText = `
+US Person: ITIN 921-50-1234, EIN: 12-3456789, NPI: 1234567893, DEA: AB1234567.
+UK Citizen: NINO AB123456C, Sort Code: 12-34-56, UTR: 1234567890.
+EU Citizen: VAT DE123456789, Spanish DNI: 12345678Z, French NIR: 1851234567890, Italian Codice Fiscale: RSSMRA85M01H501Q, German IdNr: 12 345 678 901.
+APAC Citizen: Australia Medicare: 2123 45670 1, Singapore NRIC: S1234567D.
+Developer Secrets: Stripe pk_test_51Abcdefghijklmnopqrstuv, Slack xoxb-1234567890-abcdef123456, Google API AIzaSyD-1234567890abcdef1234567890ab, OpenAI sk-proj-1234567890abcdefghijklmnopqrstuvwxyz1234567890ab, JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c.
+`;
+const globalDets = detectEntities(globalText, 'all');
+const globalTypes = new Set(globalDets.map(d => d.type));
+assert(globalTypes.has('itin'), 'Detected US ITIN');
+assert(globalTypes.has('ein'), 'Detected US EIN');
+assert(globalTypes.has('npi'), 'Detected US NPI with Luhn check');
+assert(globalTypes.has('dea'), 'Detected US DEA Registration');
+assert(globalTypes.has('nino'), 'Detected UK NINO');
+assert(globalTypes.has('sort_code'), 'Detected UK Sort Code');
+assert(globalTypes.has('utr'), 'Detected UK UTR');
+assert(globalTypes.has('eu_vat'), 'Detected EU VAT');
+assert(globalTypes.has('dni'), 'Detected Spanish DNI with Mod-23');
+assert(globalTypes.has('nir'), 'Detected French NIR with Mod-97');
+assert(globalTypes.has('codice_fiscale'), 'Detected Italian Codice Fiscale');
+assert(globalTypes.has('idnr'), 'Detected German Tax IdNr');
+assert(globalTypes.has('medicare'), 'Detected Australian Medicare with check digit');
+assert(globalTypes.has('nric'), 'Detected Singapore NRIC with Mod-11');
+assert(globalTypes.has('api_token'), 'Detected API Tokens (Stripe, Slack, Google, OpenAI, JWT)');
 
 console.log('\n─── Testing Preset Filtering ─────────────────────────────────────');
 const kycOnly = detectEntities(sampleText, 'kyc');
 const kycTypes = new Set(kycOnly.map(d => d.type));
 assert(kycTypes.has('aadhaar') && kycTypes.has('pan'), 'KYC preset includes Aadhaar and PAN');
 assert(!kycTypes.has('credit_card') && !kycTypes.has('iban'), 'KYC preset excludes unrelated credit card & IBAN');
+
+const usPresetDets = detectEntities(globalText, 'us_compliance');
+const usPresetTypes = new Set(usPresetDets.map(d => d.type));
+assert(usPresetTypes.has('itin') && usPresetTypes.has('npi'), 'US Compliance preset includes ITIN and NPI');
+assert(!usPresetTypes.has('nino') && !usPresetTypes.has('dni'), 'US Compliance preset excludes UK/EU IDs');
+
+const euPresetDets = detectEntities(globalText, 'eu_uk_gdpr');
+const euPresetTypes = new Set(euPresetDets.map(d => d.type));
+assert(euPresetTypes.has('nino') && euPresetTypes.has('dni') && euPresetTypes.has('codice_fiscale'), 'EU & UK GDPR preset includes NINO, DNI, and Codice Fiscale');
+
+const apacPresetDets = detectEntities(globalText, 'apac_compliance');
+const apacPresetTypes = new Set(apacPresetDets.map(d => d.type));
+assert(apacPresetTypes.has('nric') && apacPresetTypes.has('medicare'), 'APAC preset includes Singapore NRIC and AU Medicare');
+
+const secretsPresetDets = detectEntities(globalText, 'secrets_dev');
+const secretsPresetTypes = new Set(secretsPresetDets.map(d => d.type));
+assert(secretsPresetTypes.has('api_token'), 'Secrets preset includes developer API tokens');
 
 console.log('\n─── Testing In-Memory DOCX Parser & Exporter ─────────────────────');
 const zip = new JSZip();

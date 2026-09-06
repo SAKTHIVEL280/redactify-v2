@@ -8,7 +8,7 @@
 export function validateLuhn(rawNumber) {
   if (!rawNumber) return false;
   const sanitized = String(rawNumber).replace(/[\s-]/g, '');
-  if (!/^\d{13,19}$/.test(sanitized)) return false;
+  if (!/^\d{2,20}$/.test(sanitized)) return false;
 
   let sum = 0;
   let shouldDouble = false;
@@ -128,3 +128,209 @@ export function validateIndianPAN(rawPAN) {
   if (!/^[A-Z]{3}[ABCFGHLJPT][A-Z]\d{4}[A-Z]$/.test(sanitized)) return false;
   return true;
 }
+
+// ─── 6. Indian GSTIN (Goods and Services Tax ID Number) Validation ──────────────
+// Format: 2-digit state code (01-37), 10-char PAN, 1 entity digit, 'Z', 1 check character
+export function validateGSTIN(rawGSTIN) {
+  if (!rawGSTIN) return false;
+  const sanitized = String(rawGSTIN).trim().toUpperCase();
+  if (!/^[0-3][0-9][A-Z]{3}[ABCFGHLJPT][A-Z]\d{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/.test(sanitized)) return false;
+  return true;
+}
+
+// ─── 7. UK NHS Number Mod-11 Validation ─────────────────────────────────────────
+// 10 digits formatted (e.g., 943 476 5919) validated via standard Mod-11 algorithm
+export function validateNHS(rawNHS) {
+  if (!rawNHS) return false;
+  const sanitized = String(rawNHS).replace(/[\s-]/g, '');
+  if (!/^\d{10}$/.test(sanitized)) return false;
+  const digits = sanitized.split('').map(Number);
+  const weights = [10, 9, 8, 7, 6, 5, 4, 3, 2];
+  let sum = 0;
+  for (let i = 0; i < 9; i++) {
+    sum += digits[i] * weights[i];
+  }
+  const remainder = sum % 11;
+  const check = 11 - remainder;
+  if (check === 11) return digits[9] === 0;
+  if (check === 10) return false; // Invalid NHS number
+  return digits[9] === check;
+}
+
+// ─── 8. Canadian Social Insurance Number (SIN) Luhn Validation ──────────────────
+export function validateCanadianSIN(rawSIN) {
+  if (!rawSIN) return false;
+  const sanitized = String(rawSIN).replace(/[\s-]/g, '');
+  if (!/^\d{9}$/.test(sanitized)) return false;
+  return validateLuhn(sanitized);
+}
+
+// ─── 9. US Social Security Number (SSN) Integrity Validation ───────────────────
+export function validateUSSSN(rawSSN) {
+  if (!rawSSN) return false;
+  const sanitized = String(rawSSN).replace(/[\s-]/g, '');
+  if (!/^\d{9}$/.test(sanitized)) return false;
+
+  const area = parseInt(sanitized.slice(0, 3), 10);
+  const group = parseInt(sanitized.slice(3, 5), 10);
+  const serial = parseInt(sanitized.slice(5, 9), 10);
+
+  // Area number cannot be 000, 666, or 900-999
+  if (area === 0 || area === 666 || area >= 900) return false;
+  // Group number cannot be 00
+  if (group === 0) return false;
+  // Serial number cannot be 0000
+  if (serial === 0) return false;
+
+  return true;
+}
+
+// ─── 10. UK National Insurance Number (NINO) Validation ────────────────────────
+export function validateUKNINO(rawNINO) {
+  if (!rawNINO) return false;
+  const sanitized = String(rawNINO).replace(/[\s-]/g, '').toUpperCase();
+  if (!/^[A-CEGHJ-PR-TW-Z]{2}\d{6}[A-D]$/.test(sanitized)) return false;
+
+  // Cannot start with BG, GB, KN, NK, NT, TN, ZZ
+  const disallowed = ['BG', 'GB', 'KN', 'NK', 'NT', 'TN', 'ZZ'];
+  if (disallowed.includes(sanitized.slice(0, 2))) return false;
+
+  return true;
+}
+
+// ─── 11. Spanish DNI / NIE Mod-23 Algorithm ────────────────────────────────────
+const DNI_LETTERS = 'TRWAGMYFPDXBNJZSQVHLCKE';
+
+export function validateSpanishDNI(rawDNI) {
+  if (!rawDNI) return false;
+  let sanitized = String(rawDNI).replace(/[\s-]/g, '').toUpperCase();
+
+  // NIE starts with X (0), Y (1), or Z (2)
+  if (/^[XYZ]\d{7}[A-Z]$/.test(sanitized)) {
+    const prefixMap = { X: '0', Y: '1', Z: '2' };
+    sanitized = prefixMap[sanitized[0]] + sanitized.slice(1);
+  }
+
+  if (!/^\d{8}[A-Z]$/.test(sanitized)) return false;
+
+  const number = parseInt(sanitized.slice(0, 8), 10);
+  return sanitized[8] === DNI_LETTERS[number % 23];
+}
+
+// ─── 12. French NIR (Social Security Number) Mod-97 Algorithm ──────────────────
+export function validateFrenchNIR(rawNIR) {
+  if (!rawNIR) return false;
+  const sanitized = String(rawNIR).replace(/[\s-]/g, '').toUpperCase();
+  if (!/^[12]\d{12}(\d{2})?$/.test(sanitized)) return false;
+
+  if (sanitized.length === 15) {
+    const numPart = BigInt(sanitized.slice(0, 13));
+    const controlKey = parseInt(sanitized.slice(13, 15), 10);
+    const expectedKey = Number(97n - (numPart % 97n));
+    return controlKey === expectedKey;
+  }
+  return true;
+}
+
+// ─── 13. Italian Codice Fiscale Check Character Algorithm ──────────────────────
+const CF_ODD = {
+  '0': 1, '1': 0, '2': 5, '3': 7, '4': 9, '5': 13, '6': 15, '7': 17, '8': 19, '9': 21,
+  'A': 1, 'B': 0, 'C': 5, 'D': 7, 'E': 9, 'F': 13, 'G': 15, 'H': 17, 'I': 19, 'J': 21,
+  'K': 2, 'L': 4, 'M': 18, 'N': 20, 'O': 11, 'P': 3, 'Q': 6, 'R': 8, 'S': 12, 'T': 14,
+  'U': 16, 'V': 10, 'W': 22, 'X': 25, 'Y': 24, 'Z': 23
+};
+const CF_EVEN = {};
+for (let i = 0; i < 10; i++) CF_EVEN[String(i)] = i;
+for (let i = 0; i < 26; i++) CF_EVEN[String.fromCharCode(65 + i)] = i;
+
+export function validateItalianCodiceFiscale(rawCF) {
+  if (!rawCF) return false;
+  const sanitized = String(rawCF).replace(/[\s-]/g, '').toUpperCase();
+  if (!/^[A-Z]{6}\d{2}[A-EHLMPR-T]\d{2}[A-Z]\d{3}[A-Z]$/.test(sanitized)) return false;
+
+  let sum = 0;
+  for (let i = 0; i < 15; i++) {
+    const ch = sanitized[i];
+    sum += (i % 2 === 0) ? (CF_ODD[ch] || 0) : (CF_EVEN[ch] || 0);
+  }
+
+  const expectedChar = String.fromCharCode(65 + (sum % 26));
+  return sanitized[15] === expectedChar;
+}
+
+// ─── 14. Australian Tax File Number (TFN) Mod-11 Algorithm ─────────────────────
+export function validateAustralianTFN(rawTFN) {
+  if (!rawTFN) return false;
+  const sanitized = String(rawTFN).replace(/[\s-]/g, '');
+  if (!/^\d{8,9}$/.test(sanitized)) return false;
+
+  const digits = sanitized.split('').map(Number);
+  if (digits.length === 9) {
+    const weights = [1, 4, 3, 7, 5, 8, 6, 9, 10];
+    const sum = digits.reduce((acc, d, i) => acc + d * weights[i], 0);
+    return sum % 11 === 0;
+  } else if (digits.length === 8) {
+    const weights = [10, 7, 8, 4, 6, 3, 5, 1];
+    const sum = digits.reduce((acc, d, i) => acc + d * weights[i], 0);
+    return sum % 11 === 0;
+  }
+  return false;
+}
+
+// ─── 15. Australian Medicare Number Validation ─────────────────────────────────
+export function validateAustralianMedicare(rawMedicare) {
+  if (!rawMedicare) return false;
+  const sanitized = String(rawMedicare).replace(/[\s-]/g, '');
+  if (!/^[2-6]\d{9}$/.test(sanitized)) return false;
+
+  const weights = [1, 3, 7, 9, 1, 3, 7, 9];
+  const digits = sanitized.split('').map(Number);
+  let sum = 0;
+  for (let i = 0; i < 8; i++) {
+    sum += digits[i] * weights[i];
+  }
+  return (sum % 10) === digits[8];
+}
+
+// ─── 16. Singapore NRIC / FIN Mod-11 Validation ────────────────────────────────
+export function validateSingaporeNRIC(rawNRIC) {
+  if (!rawNRIC) return false;
+  const sanitized = String(rawNRIC).trim().toUpperCase();
+  if (!/^[STFGM]\d{7}[A-Z]$/.test(sanitized)) return false;
+
+  const firstChar = sanitized[0];
+  const digits = sanitized.slice(1, 8).split('').map(Number);
+  const lastChar = sanitized[8];
+
+  const weights = [2, 7, 6, 5, 4, 3, 2];
+  let sum = (firstChar === 'T' || firstChar === 'G') ? 4 : (firstChar === 'M' ? 3 : 0);
+  for (let i = 0; i < 7; i++) {
+    sum += digits[i] * weights[i];
+  }
+
+  const remainder = sum % 11;
+  const stTable = ['J', 'Z', 'I', 'H', 'G', 'F', 'E', 'D', 'C', 'B', 'A'];
+  const fgTable = ['X', 'W', 'U', 'T', 'R', 'Q', 'P', 'N', 'M', 'L', 'K'];
+  const mTable  = ['X', 'W', 'U', 'T', 'R', 'Q', 'P', 'N', 'J', 'L', 'K'];
+
+  let expectedChar = '';
+  if (firstChar === 'S' || firstChar === 'T') {
+    expectedChar = stTable[remainder];
+  } else if (firstChar === 'F' || firstChar === 'G') {
+    expectedChar = fgTable[remainder];
+  } else if (firstChar === 'M') {
+    expectedChar = mTable[remainder];
+  }
+
+  return lastChar === expectedChar;
+}
+
+// ─── 17. US National Provider Identifier (NPI - HIPAA) Luhn Algorithm ─────────
+export function validateUSNPI(rawNPI) {
+  if (!rawNPI) return false;
+  const sanitized = String(rawNPI).replace(/[\s-]/g, '');
+  if (!/^[12]\d{9}$/.test(sanitized)) return false;
+  return validateLuhn('80840' + sanitized);
+}
+
+

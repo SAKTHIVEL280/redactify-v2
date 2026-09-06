@@ -169,7 +169,7 @@ export function Dropzone() {
         <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-2.5">
           Select Compliance Preset:
         </label>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
           {Object.values(PRESETS).map((p) => {
             const Icon = PRESET_ICONS[p.icon] || ShieldAlert;
             const isSelected = activePreset === p.id;

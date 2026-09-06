@@ -40,3 +40,4 @@ Documents-to-check-whether-everything-working-correctly-do-not-upload-anywhere-i
 # Scratch test files & local test outputs
 scratch/
 tests/debugDocs.js
+*.traineddata
