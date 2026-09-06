@@ -61,6 +61,9 @@ export function Dropzone() {
         });
 
         setRedactions(result.redactions);
+        if (result.isScannedDocument || result.redactions.length === 0) {
+          useRedactionStore.getState().setDrawingMode(true);
+        }
       } else if (fileType === 'docx' || fileType === 'text') {
         const text = await file.text();
         setProgress(50, 100, 'Scanning text for sensitive data...');
@@ -95,6 +98,7 @@ export function Dropzone() {
           isScannedDocument: true
         });
         setRedactions([]);
+        useRedactionStore.getState().setDrawingMode(true);
       }
 
       setProgress(100, 100, 'Done');

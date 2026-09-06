@@ -328,6 +328,82 @@ export function detectEntities(text, presetId = 'all', customRules = []) {
     }
   }
 
+  // ─── 11. Social Handles & URLs ──────────────────────────────────────────────
+  if (allowedTypes.has('url')) {
+    let match;
+    const regex = new RegExp(PATTERNS.SOCIAL_URL);
+    while ((match = regex.exec(text)) !== null) {
+      rawEntities.push({
+        id: nextId(),
+        type: 'url',
+        category: 'contact',
+        value: match[0],
+        start: match.index,
+        end: match.index + match[0].length,
+        confidence: 0.96,
+        suggested: '[URL REDACTED]',
+        redact: true
+      });
+    }
+  }
+
+  // ─── 12. Indian Pincodes ────────────────────────────────────────────────────
+  if (allowedTypes.has('pincode')) {
+    let match;
+    const regex = new RegExp(PATTERNS.INDIAN_PINCODE);
+    while ((match = regex.exec(text)) !== null) {
+      rawEntities.push({
+        id: nextId(),
+        type: 'pincode',
+        category: 'location',
+        value: match[0],
+        start: match.index,
+        end: match.index + match[0].length,
+        confidence: 0.90,
+        suggested: '[PINCODE REDACTED]',
+        redact: true
+      });
+    }
+  }
+
+  // ─── 13. Physical Addresses ────────────────────────────────────────────────
+  if (allowedTypes.has('address')) {
+    let match;
+    const regex = new RegExp(PATTERNS.ADDRESS);
+    while ((match = regex.exec(text)) !== null) {
+      rawEntities.push({
+        id: nextId(),
+        type: 'address',
+        category: 'location',
+        value: match[0],
+        start: match.index,
+        end: match.index + match[0].length,
+        confidence: 0.88,
+        suggested: '[ADDRESS REDACTED]',
+        redact: true
+      });
+    }
+  }
+
+  // ─── 14. Formal Document Dates ──────────────────────────────────────────────
+  if (allowedTypes.has('date')) {
+    let match;
+    const regex = new RegExp(PATTERNS.DOCUMENT_DATE);
+    while ((match = regex.exec(text)) !== null) {
+      rawEntities.push({
+        id: nextId(),
+        type: 'date',
+        category: 'date',
+        value: match[0],
+        start: match.index,
+        end: match.index + match[0].length,
+        confidence: 0.85,
+        suggested: '[DATE REDACTED]',
+        redact: true
+      });
+    }
+  }
+
   // ─── 11. Contextual Names & Organizations ──────────────────────────────────
   if (allowedTypes.has('name') || allowedTypes.has('organization')) {
     const contextual = detectContextualEntities(text);

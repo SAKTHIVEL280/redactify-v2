@@ -37,46 +37,74 @@ export function DocumentViewer() {
   const [drawingBox, setDrawingBox] = useState(null);
   const [renderedDimensions, setRenderedDimensions] = useState({ width: 0, height: 0 });
 
-  // Render PDF page to canvas
+  // Render PDF or Image page to canvas
   useEffect(() => {
-    if (!file || fileType !== 'pdf') return;
+    if (!file) return;
 
     let isMounted = true;
     let renderTask = null;
 
-    const renderPage = async () => {
-      try {
-        const lib = await getPdfJs();
-        const arrayBuffer = await file.arrayBuffer();
-        const pdf = await lib.getDocument({ data: arrayBuffer }).promise;
-        const page = await pdf.getPage(currentPage);
+    if (fileType === 'pdf') {
+      const renderPdfPage = async () => {
+        try {
+          const lib = await getPdfJs();
+          const arrayBuffer = await file.arrayBuffer();
+          const pdf = await lib.getDocument({ data: arrayBuffer }).promise;
+          const page = await pdf.getPage(currentPage);
 
+          if (!isMounted) return;
+
+          // Render at crisp scale
+          const scale = 1.5 * zoom;
+          const viewport = page.getViewport({ scale });
+          const canvas = canvasRef.current;
+          if (!canvas) return;
+
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          const ctx = canvas.getContext('2d');
+
+          renderTask = page.render({ canvasContext: ctx, viewport });
+          await renderTask.promise;
+
+          if (isMounted) {
+            setRenderedDimensions({ width: viewport.width, height: viewport.height });
+          }
+        } catch (err) {
+          if (err.name !== 'RenderingCancelledException') {
+            console.error('PDF render error:', err);
+          }
+        }
+      };
+
+      renderPdfPage();
+    } else if (fileType === 'image') {
+      const img = new Image();
+      const objectUrl = URL.createObjectURL(file);
+      img.onload = () => {
         if (!isMounted) return;
-
-        // Render at crisp 2x scale
-        const scale = 1.5 * zoom;
-        const viewport = page.getViewport({ scale });
         const canvas = canvasRef.current;
         if (!canvas) return;
 
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-        const ctx = canvas.getContext('2d');
+        const baseWidth = Math.min(img.naturalWidth || 800, 850);
+        const displayWidth = Math.round(baseWidth * zoom);
+        const displayHeight = Math.round(((img.naturalHeight || 600) / (img.naturalWidth || 800)) * displayWidth);
 
-        renderTask = page.render({ canvasContext: ctx, viewport });
-        await renderTask.promise;
+        canvas.width = displayWidth;
+        canvas.height = displayHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, displayWidth, displayHeight);
 
         if (isMounted) {
-          setRenderedDimensions({ width: viewport.width, height: viewport.height });
+          setRenderedDimensions({ width: displayWidth, height: displayHeight });
         }
-      } catch (err) {
-        if (err.name !== 'RenderingCancelledException') {
-          console.error('PDF render error:', err);
-        }
-      }
-    };
-
-    renderPage();
+        URL.revokeObjectURL(objectUrl);
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+      };
+      img.src = objectUrl;
+    }
 
     return () => {
       isMounted = false;
@@ -139,25 +167,31 @@ export function DocumentViewer() {
       {/* Viewer Top Toolbar (Pagination & Zoom) */}
       <div className="h-12 border-b border-zinc-800/80 bg-zinc-900/50 px-4 flex items-center justify-between">
         {/* Pagination */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-            disabled={currentPage <= 1}
-            className="p-1 rounded-lg hover:bg-zinc-800 disabled:opacity-30 text-zinc-300 transition-colors"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <span className="text-xs font-mono text-zinc-300">
-            Page <strong className="text-white">{currentPage}</strong> of {pageCount}
-          </span>
-          <button
-            onClick={() => setCurrentPage(Math.min(pageCount, currentPage + 1))}
-            disabled={currentPage >= pageCount}
-            className="p-1 rounded-lg hover:bg-zinc-800 disabled:opacity-30 text-zinc-300 transition-colors"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
+        {pageCount > 1 ? (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+              disabled={currentPage <= 1}
+              className="p-1 rounded-lg hover:bg-zinc-800 disabled:opacity-30 text-zinc-300 transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <span className="text-xs font-mono text-zinc-300">
+              Page <strong className="text-white">{currentPage}</strong> of {pageCount}
+            </span>
+            <button
+              onClick={() => setCurrentPage(Math.min(pageCount, currentPage + 1))}
+              disabled={currentPage >= pageCount}
+              className="p-1 rounded-lg hover:bg-zinc-800 disabled:opacity-30 text-zinc-300 transition-colors"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        ) : (
+          <div className="text-xs font-mono text-zinc-400">
+            {fileType === 'image' ? '📸 Image Mode — Drag crosshair to blackout areas' : 'Single Page Document'}
+          </div>
+        )}
 
         {/* Zoom Controls */}
         <div className="flex items-center gap-2">
@@ -181,31 +215,34 @@ export function DocumentViewer() {
         </div>
       </div>
 
-      {/* Scanned Document Helper Banner */}
-      {isScannedDocument && (
+      {/* Scanned Document / Image Helper Banner */}
+      {(isScannedDocument || fileType === 'image') && (
         <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2 flex items-center justify-between text-xs text-amber-300">
           <div className="flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
             <span>
-              <strong>Scanned document detected:</strong> This file has no selectable text layer. Use the <strong>+ Manual Box</strong> tool in the top bar to drag blackout boxes over signatures, stamps, and sensitive areas.
+              <strong>Manual Redaction Active:</strong> Drag crosshairs across the document to blackout Aadhaar numbers, photos, stamps, or signatures.
             </span>
           </div>
+          <span className="text-[11px] font-mono text-amber-400/80 hidden md:inline">
+            Click box to toggle • Hover to delete
+          </span>
         </div>
       )}
 
       {/* Canvas & Overlay Viewport */}
-      <div className="flex-1 overflow-auto p-4 sm:p-8 flex items-center justify-center bg-zinc-950/60 relative">
+      <div className="flex-1 overflow-auto p-4 sm:p-8 flex justify-center bg-zinc-950/60 relative">
         <div
           ref={containerRef}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
-          className={`relative shadow-2xl rounded-lg border border-zinc-800 overflow-hidden bg-white max-w-full transition-transform ${
+          className={`my-auto relative shadow-2xl rounded-lg border border-zinc-800 overflow-hidden bg-white max-w-full transition-transform ${
             isDrawingMode ? 'cursor-crosshair' : 'cursor-default'
           }`}
           style={{ width: renderedDimensions.width ? `${renderedDimensions.width}px` : 'auto' }}
         >
-          {fileType === 'pdf' ? (
+          {(fileType === 'pdf' || fileType === 'image') ? (
             <canvas ref={canvasRef} className="block max-w-full" />
           ) : (
             <div className="p-8 text-zinc-900 bg-white min-h-[500px] w-[600px] font-mono text-xs whitespace-pre-wrap">

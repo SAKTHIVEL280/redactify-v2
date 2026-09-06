@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Header } from './components/Header';
-import { Dropzone } from './components/Dropzone';
+import { LandingPage } from './components/LandingPage';
 import { DocumentViewer } from './components/DocumentViewer';
 import { StyleToolbar } from './components/StyleToolbar';
 import { EntityInspector } from './components/EntityInspector';
@@ -21,7 +21,7 @@ export function App() {
       <main className="flex-1 flex overflow-hidden relative">
         {!file ? (
           <div className="flex-1 overflow-y-auto">
-            <Dropzone />
+            <LandingPage />
           </div>
         ) : (
           <div className="flex-1 flex flex-col h-full overflow-hidden">

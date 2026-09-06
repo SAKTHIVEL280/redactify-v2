@@ -7,12 +7,12 @@ export const PRESETS = {
   ALL: {
     id: 'all',
     name: 'Universal Full Scan',
-    description: 'Scans and redacts all international PII, financial, identity, and contact information.',
+    description: 'Scans and redacts all international PII, financial, identity, addresses, and contact information.',
     icon: 'ShieldAlert',
     types: [
       'email', 'phone', 'credit_card', 'iban', 'swift', 'routing',
       'aadhaar', 'pan', 'passport', 'voter_id', 'ssn', 'ein', 'nino',
-      'sin', 'tfn', 'ip', 'dob', 'name', 'organization'
+      'sin', 'tfn', 'ip', 'dob', 'name', 'organization', 'url', 'address', 'pincode', 'date'
     ]
   },
   KYC: {
@@ -20,14 +20,14 @@ export const PRESETS = {
     name: 'Indian KYC & DPDP',
     description: 'Complies with UIDAI & DPDP: masks Aadhaar (first 8 digits), PAN cards, voter IDs, and passports.',
     icon: 'BadgeCheck',
-    types: ['aadhaar', 'pan', 'passport', 'voter_id', 'phone', 'dob', 'name']
+    types: ['aadhaar', 'pan', 'passport', 'voter_id', 'phone', 'dob', 'name', 'address', 'pincode']
   },
   LEGAL: {
     id: 'legal',
     name: 'Legal & Court Filings',
-    description: 'Sanitizes witness/party names, organizations, confidential terms, settlements, and contact details.',
+    description: 'Sanitizes witness/party names, organizations, addresses, settlements, and contact details.',
     icon: 'Scale',
-    types: ['name', 'organization', 'email', 'phone', 'ssn', 'aadhaar', 'dob']
+    types: ['name', 'organization', 'email', 'phone', 'ssn', 'aadhaar', 'dob', 'address', 'pincode', 'date']
   },
   FINANCIAL: {
     id: 'financial',
@@ -41,13 +41,13 @@ export const PRESETS = {
     name: 'Medical & HIPAA',
     description: 'Redacts patient names, dates of birth, identification numbers, and contact information.',
     icon: 'Activity',
-    types: ['name', 'dob', 'ssn', 'aadhaar', 'phone', 'email']
+    types: ['name', 'dob', 'ssn', 'aadhaar', 'phone', 'email', 'address']
   },
   RESUME: {
     id: 'resume',
     name: 'Bias-Free Resume Screening',
-    description: 'Redacts candidate name, email, phone, age, and identifiers for blind merit recruitment.',
+    description: 'Redacts candidate name, email, phone, age, social URLs, and identifiers for blind merit recruitment.',
     icon: 'UserCheck',
-    types: ['name', 'email', 'phone', 'dob', 'ip']
+    types: ['name', 'email', 'phone', 'dob', 'ip', 'url', 'address', 'pincode']
   }
 };

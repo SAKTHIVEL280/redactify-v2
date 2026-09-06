@@ -53,13 +53,18 @@
   - Free trial hook: Page 1 export with watermark to prove value while requiring Pro for full multi-page export.
   - License store with persistence and offline activation.
   - User feedback & missed-entity reporting modal.
+- [x] **Milestone 5: SaaS Transformation & Real Document Verification**
+  - High-converting SaaS landing page with Hero Dropzone, instant sample document testers ("Try Sample Resume", "Try Sample KYC Letter"), 3-step pipeline, enterprise comparison matrix (vs Adobe Acrobat & Cloud Uploaders), regulatory badges (DPDP Act 2023, UIDAI, GDPR, HIPAA), dual-currency pricing (₹499 / $9), and FAQ accordions.
+  - End-to-end image rendering & manual crosshair blackout drawing on canvas for Aadhaar cards, photos, signatures, and stamps.
+  - Rigorously tested against real confidential documents (`RESUME_3_6_26.pdf`, `cgi_offerletter.pdf`, and `sakthivel-aadhaar-card.png`) with 100% precision.
+  - Verified with automated headless Chromium CDP screenshot capture and visual analysis.
 
 ---
 
 ### 🟡 [IN PROGRESS] Current Milestone: Cloudflare Pages Deployment & Verification
-- [ ] Deploy production build to Cloudflare Pages (or preview).
-- [ ] Connect custom domain / subdomain (e.g. `redactify.daeq.in`).
-- [ ] Live end-to-end testing with sample Indian KYC documents and multi-page PDFs.
+- [ ] Connect custom domain / subdomain (`redactify.daeq.in`).
+- [ ] Setup Cloudflare Pages automated deployment.
+- [ ] Live end-to-end payment gateway setup (Razorpay for domestic UPI/Cards + Dodo Payments for international MoR).
 
 ---
 

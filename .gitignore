@@ -33,3 +33,10 @@ lerna-debug.log*
 
 # Legacy Reference (not committed to V2)
 legacy/
+
+# Confidential Test Documents (Strictly local, NEVER commit)
+Documents-to-check-whether-everything-working-correctly-do-not-upload-anywhere-in-git-or-other-untrusted-sources/
+
+# Scratch test files & local test outputs
+scratch/
+tests/debugDocs.js

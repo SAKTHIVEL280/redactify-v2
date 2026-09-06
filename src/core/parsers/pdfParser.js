@@ -9,11 +9,15 @@ let pdfjsLib = null;
 
 async function getPdfJs() {
   if (pdfjsLib) return pdfjsLib;
-  pdfjsLib = await import('pdfjs-dist');
-  pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-    'pdfjs-dist/build/pdf.worker.min.mjs',
-    import.meta.url
-  ).toString();
+  if (typeof window !== 'undefined') {
+    pdfjsLib = await import('pdfjs-dist');
+    pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+      'pdfjs-dist/build/pdf.worker.min.mjs',
+      import.meta.url
+    ).toString();
+  } else {
+    pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs');
+  }
   return pdfjsLib;
 }
 
