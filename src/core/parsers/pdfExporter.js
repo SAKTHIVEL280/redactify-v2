@@ -255,13 +255,23 @@ export async function exportRedactedPDF({
             );
           }
 
-          // Convert canvas to JPEG buffer
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
-          const base64Data = dataUrl.split(',')[1];
-          const binaryStr = atob(base64Data);
-          const imgBytes = new Uint8Array(binaryStr.length);
-          for (let k = 0; k < binaryStr.length; k++) {
-            imgBytes[k] = binaryStr.charCodeAt(k);
+          // Convert canvas to JPEG buffer efficiently via Blob/ArrayBuffer when available
+          let imgBytes = null;
+          if (typeof canvas.toBlob === 'function') {
+            const blob = await new Promise((res) => canvas.toBlob(res, 'image/jpeg', 0.92));
+            if (blob) {
+              const buf = await blob.arrayBuffer();
+              imgBytes = new Uint8Array(buf);
+            }
+          }
+          if (!imgBytes) {
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+            const base64Data = dataUrl.split(',')[1];
+            const binaryStr = atob(base64Data);
+            imgBytes = new Uint8Array(binaryStr.length);
+            for (let k = 0; k < binaryStr.length; k++) {
+              imgBytes[k] = binaryStr.charCodeAt(k);
+            }
           }
 
           // Embed image and replace old page containing the leaked text stream
@@ -275,6 +285,11 @@ export async function exportRedactedPDF({
           });
           pdfDoc.removePage(i + 1); // Permanently delete original page & its text stream
           rasterizedSuccessfully = true;
+
+          // Free canvas and page memory
+          if (jsPage && typeof jsPage.cleanup === 'function') jsPage.cleanup();
+          canvas.width = 0;
+          canvas.height = 0;
         } catch (renderErr) {
           console.warn('Canvas rasterization fallback to stream scrubbing:', renderErr);
         }
@@ -358,5 +373,14 @@ export async function exportRedactedPDF({
   pdfDoc.setKeywords([]);
 
   const pdfBytes = await pdfDoc.save();
+
+  if (pdfJsDoc && typeof pdfJsDoc.destroy === 'function') {
+    try {
+      await pdfJsDoc.destroy();
+    } catch (e) {
+      // Non-critical worker destruction error
+    }
+  }
+
   return new Blob([pdfBytes], { type: 'application/pdf' });
 }

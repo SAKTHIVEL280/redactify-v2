@@ -306,6 +306,36 @@ const splitOutXml = await splitRedactedZip.file('word/document.xml').async('stri
 assert(!splitOutXml.includes('Sakthivel E') && splitOutXml.includes('[NAME REDACTED]'), 'DOCX Multi-Run: Successfully redacts name split across <w:t> tags');
 assert(!splitOutXml.includes('2184 4289 8716') && splitOutXml.includes('XXXX-XXXX-8716'), 'DOCX Multi-Run: Successfully redacts Aadhaar split across 3 <w:t> tags');
 
+// Test DOCX Auxiliary Headers & Footers & Metadata Sanitization
+const auxZip = new JSZip();
+auxZip.file('word/document.xml', `<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:r><w:t>Body content here</w:t></w:r></w:p></w:body></w:document>`);
+auxZip.file('word/header1.xml', `<w:hdr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:p><w:r><w:t>CONFIDENTIAL HEADER: SSN 123-45-6789</w:t></w:r></w:p></w:hdr>`);
+auxZip.file('word/footer1.xml', `<w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:p><w:r><w:t>Internal use only - Author: alex.vance@acmetech.io</w:t></w:r></w:p></w:ftr>`);
+auxZip.file('docProps/core.xml', `<?xml version="1.0"?><cp:coreProperties xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/coreProperties"><dc:creator>Alexander Vance</dc:creator><cp:lastModifiedBy>Secret Admin</cp:lastModifiedBy></cp:coreProperties>`);
+
+const auxBuf = await auxZip.generateAsync({ type: 'nodebuffer' });
+const dummyAuxDocx = { arrayBuffer: async () => auxBuf.buffer.slice(auxBuf.byteOffset, auxBuf.byteOffset + auxBuf.byteLength) };
+const parsedAux = await parseAndExtractDOCX(dummyAuxDocx);
+assert(parsedAux.rawText.includes('123-45-6789'), 'DOCX Parser: Extracts SSN from header1.xml');
+assert(parsedAux.rawText.includes('alex.vance@acmetech.io'), 'DOCX Parser: Extracts email from footer1.xml');
+
+const auxRedactedBlob = await exportRedactedDOCX({
+  fileArrayBuffer: auxBuf.buffer.slice(auxBuf.byteOffset, auxBuf.byteOffset + auxBuf.byteLength),
+  redactions: [
+    { redact: true, value: '123-45-6789', suggested: '[SSN REDACTED]' },
+    { redact: true, value: 'alex.vance@acmetech.io', suggested: '[EMAIL REDACTED]' }
+  ],
+  isPro: true
+});
+const auxRedactedZip = await JSZip.loadAsync(await auxRedactedBlob.arrayBuffer());
+const outHdrXml = await auxRedactedZip.file('word/header1.xml').async('string');
+const outFtrXml = await auxRedactedZip.file('word/footer1.xml').async('string');
+const outCoreXml = await auxRedactedZip.file('docProps/core.xml').async('string');
+
+assert(!outHdrXml.includes('123-45-6789') && outHdrXml.includes('[SSN REDACTED]'), 'DOCX Exporter: Redacts sensitive text in header1.xml');
+assert(!outFtrXml.includes('alex.vance@acmetech.io') && outFtrXml.includes('[EMAIL REDACTED]'), 'DOCX Exporter: Redacts sensitive text in footer1.xml');
+assert(!outCoreXml.includes('Alexander Vance') && outCoreXml.includes('Redactify Zero-Trust Engine'), 'DOCX Metadata Sanitization: Strips author and replaces with Redactify Zero-Trust Engine');
+
 console.log('\n─── Testing Cryptographic License Validator ───────────────────────');
 const generatedKey = generateValidLicenseKey('PRO');
 const validResult = validateLicenseKey(generatedKey);

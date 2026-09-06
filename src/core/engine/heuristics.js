@@ -95,6 +95,13 @@ export function extractTopHeaderNames(text) {
 export function detectContextualEntities(text) {
   const entities = [];
 
+  // Reset module regex indices to guarantee zero cross-call state contamination
+  SALUTATION_NAME_REGEX.lastIndex = 0;
+  SIGNATORY_NAME_REGEX.lastIndex = 0;
+  HONORIFIC_REGEX.lastIndex = 0;
+  LABELLED_NAME_REGEX.lastIndex = 0;
+  ORG_REGEX.lastIndex = 0;
+
   // 1. Top Header Names (e.g. "Sakthivel E")
   const headerNames = extractTopHeaderNames(text);
   for (const name of headerNames) {

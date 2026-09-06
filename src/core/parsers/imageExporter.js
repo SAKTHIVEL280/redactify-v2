@@ -6,7 +6,8 @@
 export async function exportRedactedImage({
   imageFile,
   redactions,
-  style = { color: '#09090b', textColor: '#ffffff', label: '[REDACTED]', showLabel: false }
+  style = { color: '#09090b', textColor: '#ffffff', label: '[REDACTED]', showLabel: false },
+  isPro = false
 }) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -47,6 +48,23 @@ export async function exportRedactedImage({
               ctx.fillText(labelText, x + (w / 2), y + (h / 2));
             }
           }
+        }
+
+        // Trial watermark banner for free tier
+        if (!isPro) {
+          const wmHeight = Math.max(24, Math.round(canvas.height * 0.035));
+          ctx.fillStyle = '#f4f4f5';
+          ctx.fillRect(0, canvas.height - wmHeight, canvas.width, wmHeight);
+          ctx.fillStyle = '#52525b';
+          const fontSize = Math.max(10, Math.round(wmHeight * 0.45));
+          ctx.font = `bold ${fontSize}px sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(
+            'Trial Version — Redacted with Redactify (redactify.daeq.in) — Upgrade to Pro for Clean Commercial Exports',
+            canvas.width / 2,
+            canvas.height - (wmHeight / 2)
+          );
         }
 
         canvas.toBlob((blob) => {

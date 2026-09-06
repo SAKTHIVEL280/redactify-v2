@@ -36,6 +36,8 @@ export function DocumentViewer() {
 
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
+  const pdfDocRef = useRef(null);
+  const pdfFileRef = useRef(null);
   const [zoom, setZoom] = useState(1.0);
   const [drawingStart, setDrawingStart] = useState(null);
   const [drawingBox, setDrawingBox] = useState(null);
@@ -82,28 +84,45 @@ export function DocumentViewer() {
 
     let isMounted = true;
     let renderTask = null;
+    let pageObj = null;
 
     if (fileType === 'pdf') {
       const renderPdfPage = async () => {
         try {
           const lib = await getPdfJs();
-          const arrayBuffer = await file.arrayBuffer();
-          const pdf = await lib.getDocument({ data: arrayBuffer }).promise;
-          const page = await pdf.getPage(currentPage);
 
-          if (!isMounted) return;
+          // Reuse cached PDF document if file hasn't changed
+          if (pdfFileRef.current !== file || !pdfDocRef.current) {
+            if (pdfDocRef.current && typeof pdfDocRef.current.destroy === 'function') {
+              try { await pdfDocRef.current.destroy(); } catch (e) {}
+            }
+            const arrayBuffer = await file.arrayBuffer();
+            pdfDocRef.current = await lib.getDocument({ data: arrayBuffer }).promise;
+            pdfFileRef.current = file;
+          }
+
+          const pdf = pdfDocRef.current;
+          pageObj = await pdf.getPage(currentPage);
+
+          if (!isMounted) {
+            if (pageObj.cleanup) pageObj.cleanup();
+            return;
+          }
 
           // Render at crisp scale
           const scale = 1.5 * zoom;
-          const viewport = page.getViewport({ scale });
+          const viewport = pageObj.getViewport({ scale });
           const canvas = canvasRef.current;
-          if (!canvas) return;
+          if (!canvas) {
+            if (pageObj.cleanup) pageObj.cleanup();
+            return;
+          }
 
           canvas.width = viewport.width;
           canvas.height = viewport.height;
           const ctx = canvas.getContext('2d');
 
-          renderTask = page.render({ canvasContext: ctx, viewport });
+          renderTask = pageObj.render({ canvasContext: ctx, viewport });
           await renderTask.promise;
 
           if (isMounted) {
@@ -148,8 +167,20 @@ export function DocumentViewer() {
     return () => {
       isMounted = false;
       if (renderTask && renderTask.cancel) renderTask.cancel();
+      if (pageObj && pageObj.cleanup) pageObj.cleanup();
     };
   }, [file, fileType, currentPage, zoom]);
+
+  // Clean up PDF document proxy when unmounting or clearing document
+  useEffect(() => {
+    return () => {
+      if (pdfDocRef.current && typeof pdfDocRef.current.destroy === 'function') {
+        try { pdfDocRef.current.destroy(); } catch (e) {}
+        pdfDocRef.current = null;
+        pdfFileRef.current = null;
+      }
+    };
+  }, []);
 
   // Current page normalized redactions
   const pageRedactions = redactions.filter(

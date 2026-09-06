@@ -140,6 +140,51 @@ function redactParagraphXml(pXml, activeItems, defaultLabel) {
   return reconstructed;
 }
 
+function processXmlFile(content, activeItems, defaultLabel, addTrialBanner = false) {
+  if (typeof DOMParser !== 'undefined' && typeof XMLSerializer !== 'undefined') {
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(content, 'application/xml');
+    const paragraphs = Array.from(xmlDoc.getElementsByTagName('w:p'));
+
+    for (const p of paragraphs) {
+      const tNodes = Array.from(p.getElementsByTagName('w:t'));
+      if (tNodes.length === 0) continue;
+
+      for (const item of activeItems) {
+        const targetValue = item.value;
+        const replacement = item.suggested || defaultLabel || '[REDACTED]';
+        redactNodesInParagraph(tNodes, targetValue, replacement);
+      }
+    }
+
+    if (addTrialBanner) {
+      const body = xmlDoc.getElementsByTagName('w:body')[0];
+      if (body) {
+        const trialParagraph = xmlDoc.createElement('w:p');
+        const r = xmlDoc.createElement('w:r');
+        const t = xmlDoc.createElement('w:t');
+        t.textContent = 'Trial Version — Redacted with Redactify (redactify.daeq.in) — Upgrade to Pro for Clean Commercial Exports';
+        r.appendChild(t);
+        trialParagraph.appendChild(r);
+        body.insertBefore(trialParagraph, body.firstChild);
+      }
+    }
+
+    const serializer = new XMLSerializer();
+    return serializer.serializeToString(xmlDoc);
+  } else {
+    let newXml = content.replace(/<w:p\b([^>]*)>([\s\S]*?)<\/w:p>/g, (pMatch) => {
+      return redactParagraphXml(pMatch, activeItems, defaultLabel || '[REDACTED]');
+    });
+
+    if (addTrialBanner) {
+      const trialXml = `<w:p><w:r><w:t>Trial Version — Redacted with Redactify (redactify.daeq.in) — Upgrade to Pro for Clean Commercial Exports</w:t></w:r></w:p>`;
+      newXml = newXml.replace(/<w:body>/, `<w:body>${trialXml}`);
+    }
+    return newXml;
+  }
+}
+
 export async function exportRedactedDOCX({
   fileArrayBuffer,
   redactions,
@@ -159,53 +204,46 @@ export async function exportRedactedDOCX({
     .filter(r => r.redact && r.value && r.value.trim().length > 0)
     .sort((a, b) => b.value.length - a.value.length);
 
-  let newXml = '';
+  // 1. Redact main document
+  const redactedDocXml = processXmlFile(docXmlContent, activeItems, style.label, !isPro);
+  zip.file(documentXmlPath, redactedDocXml);
 
-  if (typeof DOMParser !== 'undefined' && typeof XMLSerializer !== 'undefined') {
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(docXmlContent, 'application/xml');
-    const paragraphs = Array.from(xmlDoc.getElementsByTagName('w:p'));
-
-    for (const p of paragraphs) {
-      const tNodes = Array.from(p.getElementsByTagName('w:t'));
-      if (tNodes.length === 0) continue;
-
-      for (const item of activeItems) {
-        const targetValue = item.value;
-        const replacement = item.suggested || style.label || '[REDACTED]';
-        redactNodesInParagraph(tNodes, targetValue, replacement);
-      }
-    }
-
-    // Free Tier limitation: Add trial header banner if not Pro
-    if (!isPro) {
-      const body = xmlDoc.getElementsByTagName('w:body')[0];
-      if (body) {
-        const trialParagraph = xmlDoc.createElement('w:p');
-        const r = xmlDoc.createElement('w:r');
-        const t = xmlDoc.createElement('w:t');
-        t.textContent = 'Trial Version — Redacted with Redactify (redactify.daeq.in) — Upgrade to Pro for Clean Commercial Exports';
-        r.appendChild(t);
-        trialParagraph.appendChild(r);
-        body.insertBefore(trialParagraph, body.firstChild);
-      }
-    }
-
-    const serializer = new XMLSerializer();
-    newXml = serializer.serializeToString(xmlDoc);
-  } else {
-    // Isomorphic multi-run replacement inside <w:p> blocks
-    newXml = docXmlContent.replace(/<w:p\b([^>]*)>([\s\S]*?)<\/w:p>/g, (pMatch) => {
-      return redactParagraphXml(pMatch, activeItems, style.label || '[REDACTED]');
-    });
-
-    if (!isPro) {
-      const trialXml = `<w:p><w:r><w:t>Trial Version — Redacted with Redactify (redactify.daeq.in) — Upgrade to Pro for Clean Commercial Exports</w:t></w:r></w:p>`;
-      newXml = newXml.replace(/<w:body>/, `<w:body>${trialXml}`);
+  // 2. Redact auxiliary XMLs (headers, footers, footnotes)
+  const auxiliaryFiles = zip.file(/^word\/(header\d*|footer\d*|footnotes\d*)\.xml$/);
+  for (const auxFile of auxiliaryFiles) {
+    try {
+      const auxXml = await auxFile.async('string');
+      const redactedAuxXml = processXmlFile(auxXml, activeItems, style.label, false);
+      zip.file(auxFile.name, redactedAuxXml);
+    } catch (err) {
+      // Non-critical auxiliary parsing error
     }
   }
 
-  zip.file(documentXmlPath, newXml);
+  // 3. Strict Metadata Sanitization: Strip author & company from docProps
+  try {
+    const corePropsPath = 'docProps/core.xml';
+    let coreXml = await zip.file(corePropsPath)?.async('string');
+    if (coreXml) {
+      coreXml = coreXml
+        .replace(/<dc:creator\b[^>]*>[\s\S]*?<\/dc:creator>/gi, '<dc:creator>Redactify Zero-Trust Engine</dc:creator>')
+        .replace(/<cp:lastModifiedBy\b[^>]*>[\s\S]*?<\/cp:lastModifiedBy>/gi, '<cp:lastModifiedBy>Redactify Zero-Trust Engine</cp:lastModifiedBy>')
+        .replace(/<dc:title\b[^>]*>[\s\S]*?<\/dc:title>/gi, '<dc:title>Redacted Document</dc:title>');
+      zip.file(corePropsPath, coreXml);
+    }
+
+    const appPropsPath = 'docProps/app.xml';
+    let appXml = await zip.file(appPropsPath)?.async('string');
+    if (appXml) {
+      appXml = appXml
+        .replace(/<Company\b[^>]*>[\s\S]*?<\/Company>/gi, '<Company>Sanitized via Redactify</Company>')
+        .replace(/<Manager\b[^>]*>[\s\S]*?<\/Manager>/gi, '');
+      zip.file(appPropsPath, appXml);
+    }
+  } catch (metaErr) {
+    // Metadata stripping non-fatal
+  }
+
   const outputBlob = await zip.generateAsync({
     type: 'blob',
     mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'

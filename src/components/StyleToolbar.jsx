@@ -56,13 +56,17 @@ export function StyleToolbar() {
         outputBlob = await exportRedactedImage({
           imageFile: file,
           redactions,
-          style
+          style,
+          isPro
         });
       } else {
         // Plain text
         let cleanText = await file.text();
         for (const r of redactions.filter(item => item.redact)) {
           if (r.value) cleanText = cleanText.replaceAll(r.value, style.label || '[REDACTED]');
+        }
+        if (!isPro) {
+          cleanText = `[Trial Version — Redacted with Redactify (redactify.daeq.in) — Upgrade to Pro for Clean Commercial Exports]\n\n` + cleanText;
         }
         outputBlob = new Blob([cleanText], { type: 'text/plain' });
       }
