@@ -415,6 +415,18 @@ assert(ocrCode.includes("workerPath: '/tessdata/worker.min.js'"), 'Offline OCR: 
 assert(ocrCode.includes("corePath: '/tessdata'"), 'Offline OCR: corePath configured to local self-hosted asset');
 assert(ocrCode.includes("workerBlobURL: false"), 'Offline OCR: workerBlobURL disabled for strict CSP compliance');
 
+console.log('\n─── Testing CORS & Domain Security Headers ───────────────────────');
+const headersContent = fs.readFileSync('public/_headers', 'utf8');
+assert(headersContent.includes('Access-Control-Allow-Origin: https://redactify.daeq.in'), 'Headers: Locked to https://redactify.daeq.in');
+assert(!headersContent.includes('Access-Control-Allow-Origin: *'), 'Headers: Wildcard CORS strictly forbidden');
+assert(headersContent.includes('Cross-Origin-Opener-Policy: same-origin'), 'Headers: COOP same-origin isolation enforced');
+assert(headersContent.includes('Cross-Origin-Resource-Policy: same-origin'), 'Headers: CORP same-origin resource protection enforced');
+
+const vercelContent = fs.readFileSync('vercel.json', 'utf8');
+assert(vercelContent.includes('"value": "https://redactify.daeq.in"'), 'Vercel: CORS locked to https://redactify.daeq.in');
+assert(!vercelContent.includes('"value": "*"'), 'Vercel: Wildcard CORS strictly forbidden');
+assert(vercelContent.includes('"value": "same-origin"'), 'Vercel: COOP/CORP same-origin isolation enforced');
+
 console.log(`\n──────────────────────────────────────────────────────────────────`);
 console.log(`Total Passed: ${passed} | Total Failed: ${failed}`);
 
