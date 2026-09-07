@@ -1,4 +1,4 @@
-# AGENT.md — Forward Deployed Engineer (FDE) Operational Protocol
+# AGENT.md: Forward Deployed Engineer (FDE) Operational Protocol
 > **Project**: Redactify V2 (`https://redactify.daeq.in`)  
 > **Founder**: Sakthivel E (`SAKTHIVEL280`)  
 > **Role**: Dedicated Forward Deployed Engineer (FDE) & Lead Architect  
@@ -47,7 +47,7 @@ Redactify is **NOT** a free charity utility; the free tier is strictly a **trial
 | :--- | :--- | :--- |
 | **Document Upload & AI Scan** | Unlimited preview & entity inspection | Unlimited preview & entity inspection |
 | **Manual Box Tool** | Fully functional in editor | Fully functional in editor |
-| **Document Export** | **Page 1 only** + Top/Bottom Watermark (*"Trial — Redacted with Redactify"*)| **Unlimited Pages**, 100% Clean Vector Export (Zero Watermarks) |
+| **Document Export** | **Page 1 only** + Top/Bottom Watermark (*"Trial: Redacted with Redactify"*)| **Unlimited Pages**, 100% Clean Vector Export (Zero Watermarks) |
 | **Batch Folder Processing** | Locked (1 file at a time) | **Unlocked** (Drop 20+ files at once $\rightarrow$ ZIP export) |
 | **Custom Redaction Styles** | Basic Blackout only | **Full Color Palette + Custom Text Labels** |
 | **Compliance Presets** | General PII only | **Aadhaar/PAN KYC, Legal, Financial & HIPAA Presets** |

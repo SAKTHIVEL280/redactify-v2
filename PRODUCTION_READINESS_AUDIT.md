@@ -1,8 +1,8 @@
-#  Redactify V2 — Production Readiness Audit Report
+#  Redactify V2 - Production Readiness Audit Report
 
 > **Evaluation Date:** September 6, 2026 
 > **Target Version:** `2.0.0 (Production Hardened)` 
-> **Overall Production Readiness Score:** **100 / 100 (Enterprise Ready — Certified Sovereign Zero-Trust)** 
+> **Overall Production Readiness Score:** **100 / 100 (Enterprise Ready - Certified Sovereign Zero-Trust)** 
 > **Status:** [COMPLETE] **CERTIFIED FOR ENTERPRISE PRODUCTION DEPLOYMENT & GLOBAL COMPLIANCE (India DPDP Act 2023, EU GDPR, HIPAA)**
 
 ---
@@ -11,7 +11,7 @@
 
 Redactify V2 has completed comprehensive Forward Deployed Engineer (FDE) security hardening, forensic stream sanitization, and enterprise compliance remediation.
 
-All previously identified P0, P1, and P2 blockers—including the critical "Ghost Text" PDF stream vulnerability, DOCX multi-run text splitting bypass, remote font leaks, and unauthenticated licensing—have been **completely eliminated and forensically validated**.
+All previously identified P0, P1, and P2 blockers-including the critical "Ghost Text" PDF stream vulnerability, DOCX multi-run text splitting bypass, remote font leaks, and unauthenticated licensing-have been **completely eliminated and forensically validated**.
 
 The automated test suite now executes **108/108 passing tests** in <190ms with zero regressions. The production build compiles cleanly in ~3s with zero external cloud dependencies.
 

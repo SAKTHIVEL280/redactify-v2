@@ -14,7 +14,7 @@ Redactify V2 is architecturally distinct from 99% of web applications: **it is a
 
 ### The Bottom Line
 * **Server Scalability**: Virtually **infinite / unconstrained**. Because all document compute is distributed to client devices, your Cloudflare Pages origin only serves static assets (HTML, JS, CSS, WASM). It can withstand **100,000+ concurrent users** and millions of monthly visits with **$0 infrastructure costs**.
-* **Client-Side Scalability**: **Constrained by browser RAM and V8 heap limits**. The real bottleneck is not your servers—it is the user’s device (CPU cores, RAM, and mobile browser limits).
+* **Client-Side Scalability**: **Constrained by browser RAM and V8 heap limits**. The real bottleneck is not your servers-it is the user’s device (CPU cores, RAM, and mobile browser limits).
 * **Forensic Security**: Extremely high. Redactify enforces dual-layer true vector scrubbing and canvas rasterization, completely eliminating "ghost text" PDF vulnerabilities where amateur tools merely draw black visual overlays over live text streams.
 
 ---

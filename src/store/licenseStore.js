@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { validateLicenseKey } from '../core/license/validator';
 
 const LICENSE_STORAGE_KEY = 'redactify_pro_license';
 
@@ -11,10 +12,12 @@ export const useLicenseStore = create((set, get) => {
     const saved = localStorage.getItem(LICENSE_STORAGE_KEY);
     if (saved) {
       const parsed = JSON.parse(saved);
-      // Verify expiry if present
-      if (!parsed.expiresAt || new Date(parsed.expiresAt).getTime() > Date.now()) {
-        initialLicense = parsed;
-        isPro = true;
+      // Verify key and expiry if present
+      if (parsed?.key && validateLicenseKey(parsed.key).valid) {
+        if (!parsed.expiresAt || new Date(parsed.expiresAt).getTime() > Date.now()) {
+          initialLicense = parsed;
+          isPro = true;
+        }
       }
     }
   } catch (e) {

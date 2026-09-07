@@ -14,20 +14,81 @@ async function getTesseract() {
   return tesseractLib;
 }
 
-function matchTokens(wordText, detValue) {
-  const cw = wordText.trim().toLowerCase().replace(/[^a-z0-9]/gi, '');
-  if (cw.length < 2) return false;
+function cleanWord(str) {
+  return (str || '').trim().toLowerCase().replace(/[^a-z0-9]/gi, '');
+}
+
+/**
+ * Finds all occurrences of detValue across words as contiguous phrase matches.
+ * Returns an array of word-groups, where each group represents a single occurrence of the phrase.
+ */
+export function findPhraseWordGroups(words, detValue) {
+  if (!words || words.length === 0 || !detValue) return [];
+
   const detTokens = detValue
     .split(/[\s,/:;()\-]+/)
-    .map(t => t.trim().toLowerCase().replace(/[^a-z0-9]/gi, ''))
-    .filter(t => t.length >= 2);
+    .map(cleanWord)
+    .filter(t => t.length > 0);
 
-  return detTokens.some(tok => {
-    if (cw === tok) return true;
-    if (tok.length >= 4 && cw.includes(tok)) return true;
-    if (cw.length >= 4 && tok.includes(cw)) return true;
-    return false;
-  });
+  if (detTokens.length === 0) return [];
+
+  const occurrences = [];
+
+  // Case 1: Single-token entity (e.g. email, phone, single word name, PAN, code)
+  if (detTokens.length === 1) {
+    const target = detTokens[0];
+    for (let i = 0; i < words.length; i++) {
+      const cw = cleanWord(words[i].text);
+      if (!cw) continue;
+
+      if (cw === target || (target.length >= 5 && cw.includes(target)) || (cw.length >= 5 && target.includes(cw))) {
+        occurrences.push([words[i]]);
+      }
+    }
+    return occurrences;
+  }
+
+  // Case 2: Multi-token phrase (e.g. "Alexander Vance" or "2184 4289 8716")
+  // Search with a sliding window across words to find the exact contiguous sequence
+  for (let i = 0; i < words.length; i++) {
+    const firstWordClean = cleanWord(words[i].text);
+    if (!firstWordClean) continue;
+
+    // Check if words[i] matches detTokens[0]
+    if (firstWordClean === detTokens[0] || (detTokens[0].length >= 4 && firstWordClean.includes(detTokens[0]))) {
+      let matched = true;
+      const matchedGroup = [words[i]];
+      let tokenIdx = 1;
+      let wordOffset = 1;
+
+      while (tokenIdx < detTokens.length && (i + wordOffset) < words.length) {
+        const nextWord = words[i + wordOffset];
+        const nextClean = cleanWord(nextWord.text);
+        if (!nextClean) {
+          wordOffset++;
+          continue;
+        }
+
+        const targetTok = detTokens[tokenIdx];
+        if (nextClean === targetTok || (targetTok.length >= 4 && nextClean.includes(targetTok))) {
+          matchedGroup.push(nextWord);
+          tokenIdx++;
+          wordOffset++;
+        } else {
+          matched = false;
+          break;
+        }
+      }
+
+      if (matched && tokenIdx === detTokens.length) {
+        occurrences.push(matchedGroup);
+        // Advance i to skip the matched phrase
+        i += Math.max(0, wordOffset - 1);
+      }
+    }
+  }
+
+  return occurrences;
 }
 
 function clusterWordsByLine(words) {
@@ -150,12 +211,13 @@ export async function scanImageWithOCR(imageFileOrCanvas, presetId = 'all', cust
 
     const redactionBoxes = [];
 
-    // Map detected entities to word bounding boxes (clustered by line to prevent full-page blackout)
+    // Map detected entities to word bounding boxes using sequential phrase matching
     for (const det of detections) {
-      const targetWords = words.filter(w => matchTokens(w.text, det.value));
+      const phraseGroups = findPhraseWordGroups(words, det.value);
 
-      if (targetWords.length > 0) {
-        const clusters = clusterWordsByLine(targetWords);
+      for (let gIdx = 0; gIdx < phraseGroups.length; gIdx++) {
+        const group = phraseGroups[gIdx];
+        const clusters = clusterWordsByLine(group);
 
         for (let cIdx = 0; cIdx < clusters.length; cIdx++) {
           const cluster = clusters[cIdx];
@@ -183,7 +245,7 @@ export async function scanImageWithOCR(imageFileOrCanvas, presetId = 'all', cust
             const boxH = Math.min(1 - boxY, (maxY - minY + padY * 2) / imgHeight);
 
             redactionBoxes.push({
-              id: `box_ocr_${det.id}_${cIdx}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+              id: `box_ocr_${det.id}_${gIdx}_${cIdx}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
               pageIndex,
               x: boxX,
               y: boxY,

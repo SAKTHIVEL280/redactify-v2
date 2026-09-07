@@ -21,7 +21,7 @@ export function App() {
   const handleNavigateToPricing = () => setActivePage('pricing');
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#edede8] text-[#292929] selection:bg-[#dbdbd2]">
+    <div className="flex flex-col h-screen w-screen overflow-hidden bg-warm-bone text-charcoal selection:bg-electric-indigo selection:text-white">
       {/* Universal Top Header */}
       <Header activePage={activePage} setActivePage={setActivePage} />
 
@@ -29,7 +29,7 @@ export function App() {
       <main className="flex-1 flex overflow-hidden relative">
         <ErrorBoundary>
           {activePage === 'overview' && (
-            <div className="flex-1 overflow-y-auto bg-[#edede8]">
+            <div className="flex-1 overflow-y-auto bg-warm-bone">
               <LandingPage 
                 onNavigateToStudio={handleNavigateToStudio}
                 onNavigateToPricing={handleNavigateToPricing}
@@ -38,7 +38,7 @@ export function App() {
           )}
 
           {activePage === 'pricing' && (
-            <div className="flex-1 overflow-y-auto bg-[#edede8]">
+            <div className="flex-1 overflow-y-auto bg-warm-bone">
               <PricingPage onNavigateToStudio={handleNavigateToStudio} />
             </div>
           )}

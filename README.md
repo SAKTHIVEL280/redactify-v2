@@ -13,7 +13,7 @@
 
 ## Executive Summary
 
-Traditional document redaction platforms (such as Adobe Acrobat, Smallpdf, or iLovePDF) require users to upload sensitive files—contracts, tax filings, Aadhaar cards, medical histories, and employee resumes—to third-party cloud servers. This exposes organizations to devastating security breaches, regulatory penalties under GDPR, DPDP, HIPAA, and unauthorized AI training on confidential data.
+Traditional document redaction platforms (such as Adobe Acrobat, Smallpdf, or iLovePDF) require users to upload sensitive files (contracts, tax filings, Aadhaar cards, medical histories, and employee resumes) to third-party cloud servers. This exposes organizations to devastating security breaches, regulatory penalties under GDPR, DPDP, HIPAA, and unauthorized AI training on confidential data.
 
 **Redactify** eliminates cloud exposure entirely. Operating as a pure client-side application, Redactify executes document parsing, mathematical PII detection, OCR scanning, and vector burn-in directly inside browser memory (WASM + Web Workers). 
 
@@ -21,7 +21,7 @@ Traditional document redaction platforms (such as Adobe Acrobat, Smallpdf, or iL
 
 ## Zero-Knowledge Privacy Guarantee
 
-* **Zero Server Uploads**: Network requests containing document bytes are physically impossible. The entire lifecycle—from drag-and-drop to export—happens in local RAM.
+* **Zero Server Uploads**: Network requests containing document bytes are physically impossible. The entire lifecycle (from drag-and-drop to export) happens in local RAM.
 * **Offline-First Resilience**: Once loaded, Redactify works seamlessly with no internet connection (airplane mode compatible).
 * **True Vector & XML Burn-In**: Redactions are not merely visual masks or floating HTML overlays. Text tokens and coordinates are permanently stripped from the underlying PDF streams and DOCX XML trees before export.
 

@@ -94,10 +94,20 @@ function redactParagraphXml(pXml, activeItems, defaultLabel) {
     }
 
     let searchIndex = 0;
+    const xmlTarget = (targetValue.includes('&') || targetValue.includes('<') || targetValue.includes('>'))
+      ? targetValue.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      : null;
+
     while (true) {
-      const matchStart = pText.indexOf(targetValue, searchIndex);
+      let matchStart = pText.indexOf(targetValue, searchIndex);
+      let matchLen = targetValue.length;
+
+      if (matchStart === -1 && xmlTarget) {
+        matchStart = pText.indexOf(xmlTarget, searchIndex);
+        matchLen = xmlTarget.length;
+      }
       if (matchStart === -1) break;
-      const matchEnd = matchStart + targetValue.length;
+      const matchEnd = matchStart + matchLen;
 
       const overlapping = spans.filter(s => s.start < matchEnd && s.end > matchStart);
       if (overlapping.length === 1) {
@@ -163,7 +173,7 @@ function processXmlFile(content, activeItems, defaultLabel, addTrialBanner = fal
         const trialParagraph = xmlDoc.createElement('w:p');
         const r = xmlDoc.createElement('w:r');
         const t = xmlDoc.createElement('w:t');
-        t.textContent = 'Trial Version — Redacted with Redactify (redactify.daeq.in) — Upgrade to Pro for Clean Commercial Exports';
+        t.textContent = 'Trial Version: Redacted with Redactify (redactify.daeq.in). Upgrade to Pro for clean exports';
         r.appendChild(t);
         trialParagraph.appendChild(r);
         body.insertBefore(trialParagraph, body.firstChild);
@@ -178,7 +188,7 @@ function processXmlFile(content, activeItems, defaultLabel, addTrialBanner = fal
     });
 
     if (addTrialBanner) {
-      const trialXml = `<w:p><w:r><w:t>Trial Version — Redacted with Redactify (redactify.daeq.in) — Upgrade to Pro for Clean Commercial Exports</w:t></w:r></w:p>`;
+      const trialXml = `<w:p><w:r><w:t>Trial Version: Redacted with Redactify (redactify.daeq.in). Upgrade to Pro for clean exports</w:t></w:r></w:p>`;
       newXml = newXml.replace(/<w:body>/, `<w:body>${trialXml}`);
     }
     return newXml;

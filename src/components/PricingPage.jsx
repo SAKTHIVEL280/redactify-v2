@@ -4,9 +4,11 @@ import {
   ChevronDown, ChevronUp, Lock, FileText, CheckCircle2, AlertCircle 
 } from 'lucide-react';
 import { useLicenseStore } from '../store/licenseStore';
+import { useDocumentStore } from '../store/documentStore';
 import { validateLicenseKey } from '../core/license/validator';
 
 export function PricingPage({ onNavigateToStudio }) {
+  const file = useDocumentStore((s) => s.file);
   const [currency, setCurrency] = useState('USD'); // 'USD' | 'INR'
   const [inputKey, setInputKey] = useState('');
   const [validationResult, setValidationResult] = useState(null);
@@ -20,65 +22,89 @@ export function PricingPage({ onNavigateToStudio }) {
     const res = validateLicenseKey(inputKey);
     setValidationResult(res);
     if (res.valid) {
-      activateLicense(inputKey);
+      activateLicense({
+        key: res.key,
+        tier: res.tier,
+        type: `${res.tier.toLowerCase()}_subscription`,
+        activatedAt: res.activatedAt
+      });
     }
   };
 
   const FAQS = [
     {
-      q: "How does the offline license activation work?",
-      a: "Redactify uses an elliptic-polynomial cryptographic checksum. When you enter your license key (e.g. RDCT-PRO-XXXX-YYYY), the engine verifies the mathematical signature directly in your browser's V8 engine with zero network calls. You can activate while disconnected from the internet."
+      q: "How does offline license activation work?",
+      a: "Redactify uses an offline cryptographic check. When you paste your key (e.g. RDCT-PRO-XXXX-YYYY), your browser verifies the mathematical signature immediately with zero network requests. You can activate while disconnected from Wi-Fi."
     },
     {
-      q: "What happens if my document has 100+ pages?",
-      a: "The Free Trial allows inspecting unlimited pages and exporting Page 1 with a trial notice. The Pro tier unlocks unlimited page exports (100+ pages) with 100% clean vector streams, true PDF operator scrubbing, and zero watermarks."
+      q: "What happens if my document has dozens of pages?",
+      a: "The Free plan lets you inspect unlimited pages in your browser and download Page 1 with a trial notice. The Pro plan unlocks full multi-page document downloads with 100% clean vector text and zero watermarks."
     },
     {
-      q: "Does Redactify comply with global privacy laws (GDPR, HIPAA, SOC 2, GLBA)?",
-      a: "Yes. Because Redactify processes documents strictly inside your browser's local sandbox, sensitive files never cross international borders, third-party cloud servers, or unvetted subprocessors. It complies with GDPR Article 32 (Security of Processing), HIPAA Safe Harbor de-identification rules, and strict enterprise zero-data-retention policies."
+      q: "Does Redactify comply with global privacy rules (GDPR, HIPAA, SOC 2)?",
+      a: "Yes. Because Redactify processes everything strictly inside your computer browser memory, your files never travel across the internet or touch third-party servers. It naturally meets GDPR data residency guidelines and HIPAA de-identification standards."
     },
     {
-      q: "Can I use Redactify on air-gapped enterprise machines?",
-      a: "Yes. All WebAssembly models, Tesseract OCR language weights, and cryptographic parsers are bundled directly into the application bundle. Once loaded, Redactify operates with zero network connectivity."
+      q: "Can I use Redactify on secure or air-gapped office computers?",
+      a: "Yes. All detection rules, optical OCR weights, and PDF renderers are packaged directly into the website bundle. Once loaded in your browser, it runs completely offline without any internet connection."
     }
   ];
 
   return (
-    <div className="w-full bg-[#edede8] text-[#292929] py-16 px-4 sm:px-6 lg:px-8">
+    <div className="w-full bg-warm-bone text-charcoal py-16 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto space-y-16">
         
+        {/* Active Document Return Banner */}
+        {file && (
+          <div className="p-3.5 sm:p-4 rounded-xl bg-indigo-50/80 border border-indigo-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-sm">
+            <div className="flex items-center gap-2.5 text-charcoal">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+              <span>
+                You have an active document in Studio (<strong>{file.name}</strong>). Your redactions and zoom are safe in browser memory.
+              </span>
+            </div>
+            <button
+              onClick={onNavigateToStudio}
+              className="px-4 py-1.5 rounded-button bg-electric-indigo hover:bg-deep-violet text-white font-mono font-medium text-xs transition-colors shrink-0 shadow-sm flex items-center gap-1.5"
+            >
+              <span>Return to Studio</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+
         {/* Header */}
         <div className="text-center space-y-4 max-w-2xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#dbdbd2] text-[#292929] text-xs font-medium border border-[#00000014]">
-            <span className="w-2 h-2 rounded-full bg-[#4cc02b]" />
-            <span>Zero Infrastructure Overhead • 100% Client-Side</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-soft-cream text-charcoal text-xs font-mono border border-stone-mist">
+            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            <span>100% Client-Side • No Cloud Servers</span>
           </div>
-          <h1 className="text-4xl sm:text-5xl font-normal tracking-[-0.02em] text-[#141414]">
-            Sovereign pricing for private data.
+          <h1 className="text-4xl sm:text-5xl font-serif font-normal tracking-tight text-charcoal">
+            Simple pricing for <span className="italic">serious privacy</span>.
           </h1>
-          <p className="text-base text-[#6f6f6e] leading-relaxed">
-            Your files never touch a server. Choose a flexible monthly plan or lock in permanent lifetime access with zero recurrent fees.
+          <p className="text-base text-bark-grey leading-relaxed">
+            Your files never leave your computer. Choose a flexible monthly plan or lock in permanent lifetime access with zero recurrent fees.
           </p>
 
           {/* Currency Switcher Pill */}
           <div className="pt-2 flex justify-center">
-            <div className="inline-flex items-center p-1 rounded-full bg-[#dbdbd2] border border-[#00000014]">
+            <div className="inline-flex items-center p-1 rounded-full bg-soft-cream border border-stone-mist">
               <button
                 onClick={() => setCurrency('USD')}
-                className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
+                className={`px-4 py-1.5 rounded-full text-xs font-mono font-medium transition-all ${
                   currency === 'USD'
-                    ? 'bg-[#141414] text-white shadow-sm'
-                    : 'text-[#353535] hover:text-[#141414]'
+                    ? 'bg-charcoal text-white shadow-sm'
+                    : 'text-bark-grey hover:text-charcoal'
                 }`}
               >
                 Global (USD $)
               </button>
               <button
                 onClick={() => setCurrency('INR')}
-                className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
+                className={`px-4 py-1.5 rounded-full text-xs font-mono font-medium transition-all ${
                   currency === 'INR'
-                    ? 'bg-[#141414] text-white shadow-sm'
-                    : 'text-[#353535] hover:text-[#141414]'
+                    ? 'bg-charcoal text-white shadow-sm'
+                    : 'text-bark-grey hover:text-charcoal'
                 }`}
               >
                 INR (₹)
@@ -91,111 +117,111 @@ export function PricingPage({ onNavigateToStudio }) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
           
           {/* 1. Free Trial */}
-          <div className="bg-[#ffffff] rounded-[12px] p-6 sm:p-8 border border-[#00000014] flex flex-col justify-between shadow-[0_4px_16px_rgba(0,0,0,0.03)]">
+          <div className="bg-paper-white rounded-card p-6 sm:p-8 border border-stone-mist flex flex-col justify-between shadow-card hover:shadow-card-hover transition-all">
             <div className="space-y-6">
               <div>
-                <span className="text-xs font-medium text-[#6f6f6e] uppercase tracking-wider">Evaluation</span>
-                <h3 className="text-xl font-normal text-[#141414] mt-1">Free Trial</h3>
+                <span className="text-[11px] font-mono font-medium text-bark-grey uppercase tracking-wider">Evaluation</span>
+                <h3 className="text-2xl font-serif font-normal text-charcoal mt-1">Free Trial</h3>
                 <div className="mt-4 flex items-baseline gap-1">
-                  <span className="text-4xl font-normal text-[#141414]">{currency === 'INR' ? '₹0' : '$0'}</span>
-                  <span className="text-xs text-[#6f6f6e]">/ forever</span>
+                  <span className="text-4xl font-serif text-charcoal">{currency === 'INR' ? '₹0' : '$0'}</span>
+                  <span className="text-xs text-bark-grey font-mono">/ forever</span>
                 </div>
-                <p className="text-xs text-[#6f6f6e] mt-2 leading-relaxed">
-                  Evaluate client-side detection and redact documents locally in browser memory.
+                <p className="text-xs text-bark-grey mt-2 leading-relaxed">
+                  Inspect sensitive items and test redactions directly in browser memory.
                 </p>
               </div>
 
-              <div className="h-px bg-[#0000000f]" />
+              <div className="h-px bg-stone-mist/60" />
 
-              <ul className="space-y-3 text-xs text-[#353535]">
+              <ul className="space-y-3 text-xs text-charcoal">
                 <li className="flex items-start gap-2.5">
-                  <Check className="w-4 h-4 text-[#4cc02b] shrink-0 mt-0.5" />
-                  <span>Unlimited in-memory PII inspection</span>
+                  <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <span>Unlimited in-browser entity scans</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <Check className="w-4 h-4 text-[#4cc02b] shrink-0 mt-0.5" />
-                  <span>PDF, Word (.docx), and image parsing</span>
+                  <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <span>PDF, Word (.docx), and scan files</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <Check className="w-4 h-4 text-[#4cc02b] shrink-0 mt-0.5" />
-                  <span>Crosshair manual blackout box tool</span>
+                  <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <span>Crosshair manual blackout tool</span>
                 </li>
-                <li className="flex items-start gap-2.5 text-[#8f8f8e]">
-                  <span className="w-4 h-4 text-center shrink-0 mt-0.5">•</span>
-                  <span>Export: Page 1 only (with trial watermark)</span>
+                <li className="flex items-start gap-2.5 text-bark-grey">
+                  <span className="w-4 h-4 text-center shrink-0 mt-0.5 font-mono">•</span>
+                  <span>Export: Page 1 only (watermarked)</span>
                 </li>
               </ul>
             </div>
 
             <button
               onClick={onNavigateToStudio}
-              className="mt-8 w-full h-11 rounded-full bg-[#dbdbd2] hover:bg-[#d0d0c8] text-[#292929] text-xs font-medium border border-[#292929] transition-all flex items-center justify-center gap-2"
+              className="mt-8 w-full h-11 rounded-button bg-soft-cream hover:bg-stone-mist/40 text-charcoal text-xs font-mono font-medium border border-stone-mist transition-all flex items-center justify-center gap-2"
             >
               <span>Open Free Studio</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
 
-          {/* 2. Pro Plan (Featured) */}
-          <div className="bg-[#ffffff] rounded-[12px] p-6 sm:p-8 border-2 border-[#141414] relative flex flex-col justify-between shadow-[0_18px_55px_rgba(16,24,40,0.08)]">
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-[#141414] text-white text-[10px] font-medium tracking-wide uppercase">
-              Most Popular • Sovereign Pro
+          {/* 2. Pro Plan (Featured & High-Contrast POP) */}
+          <div className="bg-paper-white rounded-card p-6 sm:p-8 border-2 border-electric-indigo relative flex flex-col justify-between shadow-card-hover">
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-electric-indigo text-white text-[10px] font-mono font-medium tracking-wide uppercase shadow-sm">
+              Most Popular • Full License
             </div>
 
             <div className="space-y-6">
               <div>
-                <span className="text-xs font-medium text-[#4cc02b] uppercase tracking-wider flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#4cc02b]" />
-                  Full Commercial License
+                <span className="text-xs font-mono font-medium text-electric-indigo uppercase tracking-wider flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-electric-indigo" />
+                  Commercial License
                 </span>
-                <h3 className="text-xl font-normal text-[#141414] mt-1">Redactify Pro</h3>
+                <h3 className="text-2xl font-serif font-normal text-charcoal mt-1">Redactify Pro</h3>
                 <div className="mt-4 flex items-baseline gap-1">
-                  <span className="text-4xl font-normal text-[#141414]">
+                  <span className="text-4xl font-serif text-charcoal">
                     {currency === 'INR' ? '₹499' : '$9'}
                   </span>
-                  <span className="text-xs text-[#6f6f6e]">/ month</span>
+                  <span className="text-xs text-bark-grey font-mono">/ month</span>
                 </div>
-                <div className="mt-1 inline-block text-[11px] font-medium text-[#292929] bg-[#dbdbd2] px-2 py-0.5 rounded-full">
-                  Or {currency === 'INR' ? '₹999 Early-Bird Lifetime' : '$29 Lifetime Access'}
+                <div className="mt-2 inline-block text-[11px] font-mono font-medium text-terracotta bg-terracotta/10 border border-terracotta/30 px-2.5 py-0.5 rounded-full">
+                  Or {currency === 'INR' ? '₹999 Lifetime Pass' : '$29 Lifetime Pass'}
                 </div>
-                <p className="text-xs text-[#6f6f6e] mt-2 leading-relaxed">
-                  For lawyers, HR recruiters, developers, and founders handling real confidential files.
+                <p className="text-xs text-bark-grey mt-2 leading-relaxed">
+                  For lawyers, HR teams, developers, and founders handling confidential documents.
                 </p>
               </div>
 
-              <div className="h-px bg-[#0000000f]" />
+              <div className="h-px bg-stone-mist/60" />
 
-              <ul className="space-y-3 text-xs text-[#292929]">
+              <ul className="space-y-3 text-xs text-charcoal">
                 <li className="flex items-start gap-2.5">
-                  <Check className="w-4 h-4 text-[#4cc02b] shrink-0 mt-0.5" />
+                  <Check className="w-4 h-4 text-electric-indigo shrink-0 mt-0.5" />
                   <span className="font-medium">Unlimited Pages & Batch Multi-Page Exports</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <Check className="w-4 h-4 text-[#4cc02b] shrink-0 mt-0.5" />
+                  <Check className="w-4 h-4 text-electric-indigo shrink-0 mt-0.5" />
                   <span>100% Clean Vector Exports (Zero Watermarks)</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <Check className="w-4 h-4 text-[#4cc02b] shrink-0 mt-0.5" />
-                  <span>True PDF Operator Scrubbing (Zero Ghost Text)</span>
+                  <Check className="w-4 h-4 text-electric-indigo shrink-0 mt-0.5" />
+                  <span>True PDF Text Scrubbing (Zero Ghost Text)</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <Check className="w-4 h-4 text-[#4cc02b] shrink-0 mt-0.5" />
-                  <span>Offline Tesseract WASM OCR Engine (Zero CDN Egress)</span>
+                  <Check className="w-4 h-4 text-electric-indigo shrink-0 mt-0.5" />
+                  <span>Offline OCR Engine (Runs 100% in Browser)</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <Check className="w-4 h-4 text-[#4cc02b] shrink-0 mt-0.5" />
-                  <span>Custom Redaction Styles & Labels ([CONFIDENTIAL])</span>
+                  <Check className="w-4 h-4 text-electric-indigo shrink-0 mt-0.5" />
+                  <span>Custom Redaction Styles & Blackout Labels</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <Check className="w-4 h-4 text-[#4cc02b] shrink-0 mt-0.5" />
-                  <span>Offline Cryptographic Key Activation</span>
+                  <Check className="w-4 h-4 text-electric-indigo shrink-0 mt-0.5" />
+                  <span>Offline Cryptographic Key Verification</span>
                 </li>
               </ul>
             </div>
 
             <button
               onClick={openProModal}
-              className="mt-8 w-full h-11 rounded-full bg-[#141414] hover:bg-[#292929] text-white text-xs font-medium transition-all shadow-sm flex items-center justify-center gap-2"
+              className="mt-8 w-full h-11 rounded-button bg-electric-indigo hover:bg-deep-violet text-white text-xs font-mono font-medium transition-all shadow-sm flex items-center justify-center gap-2"
             >
               <Sparkles className="w-3.5 h-3.5" />
               <span>{isPro ? 'Pro Active (Manage License)' : 'Upgrade to Pro'}</span>
@@ -203,53 +229,53 @@ export function PricingPage({ onNavigateToStudio }) {
           </div>
 
           {/* 3. Enterprise / Legal */}
-          <div className="bg-[#ffffff] rounded-[12px] p-6 sm:p-8 border border-[#00000014] flex flex-col justify-between shadow-[0_4px_16px_rgba(0,0,0,0.03)]">
+          <div className="bg-paper-white rounded-card p-6 sm:p-8 border border-stone-mist flex flex-col justify-between shadow-card hover:shadow-card-hover transition-all">
             <div className="space-y-6">
               <div>
-                <span className="text-xs font-medium text-[#6f6f6e] uppercase tracking-wider">Organizations</span>
-                <h3 className="text-xl font-normal text-[#141414] mt-1">Enterprise Sovereign</h3>
+                <span className="text-[11px] font-mono font-medium text-bark-grey uppercase tracking-wider">Organizations</span>
+                <h3 className="text-2xl font-serif font-normal text-charcoal mt-1">Enterprise</h3>
                 <div className="mt-4 flex items-baseline gap-1">
-                  <span className="text-4xl font-normal text-[#141414]">
+                  <span className="text-4xl font-serif text-charcoal">
                     {currency === 'INR' ? '₹7,999' : '$99'}
                   </span>
-                  <span className="text-xs text-[#6f6f6e]">/ seat / year</span>
+                  <span className="text-xs text-bark-grey font-mono">/ seat / year</span>
                 </div>
-                <p className="text-xs text-[#6f6f6e] mt-2 leading-relaxed">
-                  For law firms, healthcare clinics, and financial institutions requiring air-gapped compliance.
+                <p className="text-xs text-bark-grey mt-2 leading-relaxed">
+                  For law firms, medical practices, and enterprises needing air-gapped compliance.
                 </p>
               </div>
 
-              <div className="h-px bg-[#0000000f]" />
+              <div className="h-px bg-stone-mist/60" />
 
-              <ul className="space-y-3 text-xs text-[#353535]">
+              <ul className="space-y-3 text-xs text-charcoal">
                 <li className="flex items-start gap-2.5">
-                  <Check className="w-4 h-4 text-[#4cc02b] shrink-0 mt-0.5" />
-                  <span>Everything in Pro for unlimited team members</span>
+                  <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <span>Everything in Pro for unlimited seats</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <Check className="w-4 h-4 text-[#4cc02b] shrink-0 mt-0.5" />
-                  <span>Custom regex & organizational taxonomy rules</span>
+                  <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <span>Custom regex and company pattern rules</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <Check className="w-4 h-4 text-[#4cc02b] shrink-0 mt-0.5" />
-                  <span>Air-gapped on-premise static deployment build</span>
+                  <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <span>Air-gapped on-premise static deployment</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <Check className="w-4 h-4 text-[#4cc02b] shrink-0 mt-0.5" />
-                  <span>GDPR, HIPAA & ISO 27001 audit verification package</span>
+                  <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <span>GDPR, HIPAA, and ISO 27001 audit report</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <Check className="w-4 h-4 text-[#4cc02b] shrink-0 mt-0.5" />
-                  <span>Dedicated priority engineering & SLA support</span>
+                  <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <span>Dedicated engineering support & SLA</span>
                 </li>
               </ul>
             </div>
 
             <a
               href="mailto:sakthivel@daeq.in?subject=Redactify%20Enterprise%20Inquiry"
-              className="mt-8 w-full h-11 rounded-full bg-[#dbdbd2] hover:bg-[#d0d0c8] text-[#292929] text-xs font-medium border border-[#292929] transition-all flex items-center justify-center gap-2"
+              className="mt-8 w-full h-11 rounded-button bg-soft-cream hover:bg-stone-mist/40 text-charcoal text-xs font-mono font-medium border border-stone-mist transition-all flex items-center justify-center gap-2"
             >
-              <span>Contact Founder</span>
+              <span>Contact Team</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </a>
           </div>
@@ -257,21 +283,21 @@ export function PricingPage({ onNavigateToStudio }) {
         </div>
 
         {/* Built-in Offline License Activator */}
-        <div className="bg-[#ffffff] rounded-[12px] p-6 sm:p-8 border border-[#00000014] shadow-[0_4px_16px_rgba(0,0,0,0.03)] space-y-6">
+        <div className="bg-paper-white rounded-card p-6 sm:p-8 border border-stone-mist shadow-card space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
-                <KeyRound className="w-4 h-4 text-[#141414]" />
-                <h3 className="text-base font-normal text-[#141414]">Offline License Key Activation</h3>
+                <KeyRound className="w-4 h-4 text-charcoal" />
+                <h3 className="text-base font-medium text-charcoal">Offline License Key Activation</h3>
               </div>
-              <p className="text-xs text-[#6f6f6e] mt-1">
-                Already purchased a key? Activate it below. Cryptographic validation occurs 100% client-side without pinging any server.
+              <p className="text-xs text-bark-grey mt-1">
+                Already purchased a key? Activate it below. Cryptographic verification runs 100% inside your browser without contacting any server.
               </p>
             </div>
             {isPro && (
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#dbdbd2] text-[#141414] text-xs font-medium border border-[#00000014]">
-                <span className="w-2 h-2 rounded-full bg-[#4cc02b]" />
-                <span>Active Key: {licenseKey?.slice(0, 12)}...</span>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 text-xs font-mono font-medium border border-emerald-200">
+                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                <span>Active Key: {typeof licenseKey === 'string' ? licenseKey.slice(0, 12) : licenseKey?.key?.slice(0, 12)}...</span>
               </div>
             )}
           </div>
@@ -282,18 +308,18 @@ export function PricingPage({ onNavigateToStudio }) {
               value={inputKey}
               onChange={(e) => setInputKey(e.target.value)}
               placeholder="e.g. RDCT-PRO-8742-..."
-              className="flex-1 px-4 py-2.5 rounded-full bg-[#edede8] border border-[#00000014] text-xs text-[#141414] font-mono focus:outline-none focus:ring-1 focus:ring-[#141414]"
+              className="flex-1 px-4 py-2.5 rounded-button bg-soft-cream border border-stone-mist text-xs text-charcoal font-mono focus:outline-none focus:border-electric-indigo focus:ring-1 focus:ring-electric-indigo"
             />
             <button
               type="submit"
-              className="px-6 py-2.5 rounded-full bg-[#141414] hover:bg-[#292929] text-white text-xs font-medium transition-all shrink-0"
+              className="px-6 py-2.5 rounded-button bg-charcoal hover:bg-black text-white text-xs font-mono font-medium transition-all shrink-0"
             >
               Verify & Activate Key
             </button>
           </form>
 
           {validationResult && (
-            <div className={`p-3 rounded-xl text-xs flex items-center gap-2 ${
+            <div className={`p-3 rounded-button text-xs flex items-center gap-2 ${
               validationResult.valid 
                 ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' 
                 : 'bg-rose-50 text-rose-800 border border-rose-200'
@@ -301,7 +327,7 @@ export function PricingPage({ onNavigateToStudio }) {
               {validationResult.valid ? (
                 <>
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>Success! License verified cryptographic checksum. Tier: <strong>{validationResult.tier}</strong>. Pro features enabled.</span>
+                  <span>Success! Offline signature verified. Tier: <strong>{validationResult.tier}</strong>. Pro features unlocked.</span>
                 </>
               ) : (
                 <>
@@ -313,96 +339,96 @@ export function PricingPage({ onNavigateToStudio }) {
           )}
         </div>
 
-        {/* Enterprise Security Invariant Table */}
-        <div className="bg-[#ffffff] rounded-[12px] p-6 sm:p-8 border border-[#00000014] shadow-[0_4px_16px_rgba(0,0,0,0.03)] space-y-6">
+        {/* Enterprise Security Comparison Table */}
+        <div className="bg-paper-white rounded-card p-6 sm:p-8 border border-stone-mist shadow-card space-y-6">
           <div>
-            <span className="text-xs font-medium text-[#6f6f6e] uppercase tracking-wider">Zero-Trust Architecture</span>
-            <h3 className="text-xl font-normal text-[#141414] mt-1">Enterprise Security & Compliance Guarantee</h3>
-            <p className="text-xs text-[#6f6f6e] mt-1">
-              Engineered to satisfy regulatory mandates under the Digital Personal Data Protection (DPDP) Act 2023, EU GDPR, and US HIPAA.
+            <span className="text-[11px] font-mono font-medium text-bark-grey uppercase tracking-wider">Zero-Trust Architecture</span>
+            <h3 className="text-2xl font-serif font-normal text-charcoal mt-1">Enterprise Security & Privacy Guarantee</h3>
+            <p className="text-xs text-bark-grey mt-1">
+              Built to meet strict standards under global privacy laws including EU GDPR, US HIPAA, and international data residency rules.
             </p>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-[#00000014] text-[#6f6f6e]">
+                <tr className="border-b border-stone-mist text-bark-grey font-mono uppercase">
                   <th className="py-3 px-4 font-medium">Security Dimension</th>
-                  <th className="py-3 px-4 font-medium">Redactify V2 Guarantee</th>
+                  <th className="py-3 px-4 font-medium text-electric-indigo">Redactify V2 Guarantee</th>
                   <th className="py-3 px-4 font-medium">Conventional Cloud Uploaders</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#0000000f] text-[#292929]">
+              <tbody className="divide-y divide-stone-mist/60 text-charcoal">
                 <tr>
-                  <td className="py-3.5 px-4 font-medium">Document Ingestion</td>
-                  <td className="py-3.5 px-4 text-[#141414] font-medium flex items-center gap-1.5">
-                    <Check className="w-3.5 h-3.5 text-[#4cc02b]" />
-                    <span>0 Bytes Remote Egress (100% In-Browser Memory)</span>
+                  <td className="py-3.5 px-4 font-medium">File Processing</td>
+                  <td className="py-3.5 px-4 text-charcoal font-medium flex items-center gap-1.5">
+                    <Check className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>0 Bytes Uploaded (100% In Browser Memory)</span>
                   </td>
-                  <td className="py-3.5 px-4 text-[#8f8f8e]">Transmitted to AWS / Google Cloud servers</td>
+                  <td className="py-3.5 px-4 text-bark-grey">Uploaded to remote cloud servers</td>
                 </tr>
                 <tr>
-                  <td className="py-3.5 px-4 font-medium">PDF Ghost Text Sanitization</td>
-                  <td className="py-3.5 px-4 text-[#141414] font-medium flex items-center gap-1.5">
-                    <Check className="w-3.5 h-3.5 text-[#4cc02b]" />
-                    <span>Forensic Stream Scrubbing + High-Res Canvas Flattening</span>
+                  <td className="py-3.5 px-4 font-medium">PDF Ghost Text Removal</td>
+                  <td className="py-3.5 px-4 text-charcoal font-medium flex items-center gap-1.5">
+                    <Check className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>True Text Stream Scrubbing + Flattening</span>
                   </td>
-                  <td className="py-3.5 px-4 text-[#8f8f8e]">Naive black rectangles (text remains copy-pasteable)</td>
+                  <td className="py-3.5 px-4 text-bark-grey">Simple black rectangles (text remains copy-pasteable)</td>
                 </tr>
                 <tr>
-                  <td className="py-3.5 px-4 font-medium">DOCX Auxiliary Streams</td>
-                  <td className="py-3.5 px-4 text-[#141414] font-medium flex items-center gap-1.5">
-                    <Check className="w-3.5 h-3.5 text-[#4cc02b]" />
-                    <span>Scans header1.xml, footer1.xml & wipes docProps metadata</span>
+                  <td className="py-3.5 px-4 font-medium">Word DOCX Auxiliary Streams</td>
+                  <td className="py-3.5 px-4 text-charcoal font-medium flex items-center gap-1.5">
+                    <Check className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Cleans headers, footers & strips document author metadata</span>
                   </td>
-                  <td className="py-3.5 px-4 text-[#8f8f8e]">Only scans document.xml; leaks author & headers</td>
+                  <td className="py-3.5 px-4 text-bark-grey">Only scans body text; leaks author & headers</td>
                 </tr>
                 <tr>
-                  <td className="py-3.5 px-4 font-medium">OCR Model Weights</td>
-                  <td className="py-3.5 px-4 text-[#141414] font-medium flex items-center gap-1.5">
-                    <Check className="w-3.5 h-3.5 text-[#4cc02b]" />
-                    <span>100% Self-Hosted Local WASM (/tessdata, Zero CDN Calls)</span>
+                  <td className="py-3.5 px-4 font-medium">OCR Image Processing</td>
+                  <td className="py-3.5 px-4 text-charcoal font-medium flex items-center gap-1.5">
+                    <Check className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>100% Self-Hosted Local WebAssembly Engine</span>
                   </td>
-                  <td className="py-3.5 px-4 text-[#8f8f8e]">Fetches unpinned scripts from jsDelivr / third-party CDNs</td>
+                  <td className="py-3.5 px-4 text-bark-grey">Loads unverified third-party CDN scripts</td>
                 </tr>
                 <tr>
                   <td className="py-3.5 px-4 font-medium">Domain & CORS Boundary</td>
-                  <td className="py-3.5 px-4 text-[#141414] font-medium flex items-center gap-1.5">
-                    <Check className="w-3.5 h-3.5 text-[#4cc02b]" />
-                    <span>Locked strictly to https://redactify.daeq.in (COOP / CORP same-origin)</span>
+                  <td className="py-3.5 px-4 text-charcoal font-medium flex items-center gap-1.5">
+                    <Check className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Locked strictly to https://redactify.daeq.in</span>
                   </td>
-                  <td className="py-3.5 px-4 text-[#8f8f8e]">Wildcard Access-Control-Allow-Origin: *</td>
+                  <td className="py-3.5 px-4 text-bark-grey">Wildcard cross-origin headers</td>
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
 
-        {/* FAQs */}
+        {/* FAQs Accordion */}
         <div className="space-y-4 max-w-3xl mx-auto">
           <div className="text-center space-y-1 mb-6">
-            <h3 className="text-2xl font-normal text-[#141414]">Frequently Asked Questions</h3>
-            <p className="text-xs text-[#6f6f6e]">Everything you need to know about Redactify sovereignty.</p>
+            <h3 className="text-2xl font-serif font-normal text-charcoal">Frequently Asked Questions</h3>
+            <p className="text-xs text-bark-grey">Clear answers about security, licensing, and compliance.</p>
           </div>
 
           {FAQS.map((faq, idx) => (
             <div 
               key={idx} 
-              className="bg-[#ffffff] rounded-[12px] border border-[#00000014] overflow-hidden transition-all shadow-[0_2px_8px_rgba(0,0,0,0.02)]"
+              className="bg-paper-white rounded-card border border-stone-mist overflow-hidden transition-all shadow-card"
             >
               <button
                 onClick={() => setOpenFaq(openFaq === idx ? -1 : idx)}
-                className="w-full p-4 sm:p-5 text-left flex items-center justify-between gap-4 hover:bg-[#fafaf8] transition-colors"
+                className="w-full p-4 sm:p-5 text-left flex items-center justify-between gap-4 hover:bg-soft-cream transition-colors"
               >
-                <span className="text-sm font-normal text-[#141414]">{faq.q}</span>
+                <span className="text-sm font-medium text-charcoal">{faq.q}</span>
                 {openFaq === idx ? (
-                  <ChevronUp className="w-4 h-4 text-[#6f6f6e] shrink-0" />
+                  <ChevronUp className="w-4 h-4 text-bark-grey shrink-0" />
                 ) : (
-                  <ChevronDown className="w-4 h-4 text-[#6f6f6e] shrink-0" />
+                  <ChevronDown className="w-4 h-4 text-bark-grey shrink-0" />
                 )}
               </button>
               {openFaq === idx && (
-                <div className="px-5 pb-5 pt-1 text-xs text-[#6f6f6e] leading-relaxed border-t border-[#0000000a]">
+                <div className="px-5 pb-5 pt-1 text-xs text-bark-grey leading-relaxed border-t border-stone-mist/40">
                   {faq.a}
                 </div>
               )}

@@ -2,30 +2,85 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'Cooper LtBT';
+  src: url('/fonts/CooperLtBT_Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Cooper LtBT';
+  src: url('/fonts/CooperLtBT_Italic.ttf') format('truetype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'dataType';
+  src: url('/fonts/Datatype_Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 @layer base {
   :root {
-    --color-linen-canvas: #edede8;
-    --color-frosted-white: #ffffff;
-    --color-warm-stone: #dbdbd2;
-    --color-pebble: #c0c0c0;
-    --color-graphite-ink: #141414;
-    --color-charcoal-body: #292929;
-    --color-slate-caption: #6f6f6e;
-    --color-ash-subheading: #8f8f8e;
-    --color-iron-nav: #353535;
-    --color-onyx-border: #000000;
-    --color-quartz: #d0d0c8;
-    --color-lime-pulse: #4cc02b;
+    --color-warm-bone: #fafaf9;
+    --color-paper-white: #ffffff;
+    --color-stone-mist: #e7e5e4;
+    --color-bark-grey: #79716b;
+    --color-charcoal: #292524;
+    --color-obsidian: #0c0a09;
+    --color-pebble: #a6a09b;
+    --color-electric-indigo: #615fff;
+    --color-deep-violet: #4f39f6;
+    --color-terracotta: #d97757;
+    --color-lichen-green: #5ea500;
+    --color-tide-teal: #22b8cd;
+    --color-alarm-red: #ff0000;
+    --color-sapphire-link: #007ebb;
   }
 
   body {
-    background-color: #edede8;
-    color: #292929;
-    font-family: 'Switzer', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: #fafaf9;
+    color: #292524;
+    font-family: 'Geist', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     letter-spacing: -0.01em;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+}
+
+@layer utilities {
+  .bg-warm-bone { background-color: #fafaf9 !important; }
+  .bg-paper-white { background-color: #ffffff !important; }
+  .bg-electric-indigo { background-color: #615fff !important; }
+  .bg-deep-violet { background-color: #4f39f6 !important; }
+  .hover\:bg-deep-violet:hover { background-color: #4f39f6 !important; }
+  .bg-terracotta { background-color: #d97757 !important; }
+  .bg-lichen-green { background-color: #5ea500 !important; }
+  .bg-stone-mist { background-color: #e7e5e4 !important; }
+  .bg-charcoal { background-color: #292524 !important; }
+
+  .border-stone-mist { border-color: #e7e5e4 !important; }
+  .border-charcoal { border-color: #292524 !important; }
+  .border-electric-indigo { border-color: #615fff !important; }
+  .border-deep-violet { border-color: #4f39f6 !important; }
+  .border-terracotta { border-color: #d97757 !important; }
+  .border-lichen-green { border-color: #5ea500 !important; }
+
+  .text-charcoal { color: #292524 !important; }
+  .text-bark-grey { color: #79716b !important; }
+  .text-electric-indigo { color: #615fff !important; }
+  .text-terracotta { color: #d97757 !important; }
+  .text-lichen-green { color: #5ea500 !important; }
+
+  .font-serif { font-family: 'Cooper LtBT', Georgia, serif !important; }
+  .font-mono { font-family: 'Geist Mono', ui-monospace, SFMono-Regular, monospace !important; }
+  .font-datatype { font-family: 'dataType', 'Geist Mono', monospace !important; }
 }
 
 /* Restrained Architectural Scrollbar */

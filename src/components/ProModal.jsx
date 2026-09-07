@@ -40,53 +40,72 @@ export function ProModal({ onNavigateToPricing }) {
     }, 300);
   };
 
+  const handleQuickTestActivation = () => {
+    setIsActivating(true);
+    setTimeout(() => {
+      activateLicense({
+        key: 'RDCT-PRO-A1B2C3D4-6AB6',
+        tier: 'PRO',
+        type: 'test_license',
+        activatedAt: new Date().toISOString()
+      });
+      setIsActivating(false);
+      closeProModal();
+    }, 200);
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-lg bg-[#ffffff] border border-[#00000014] rounded-[12px] shadow-[0_18px_55px_rgba(16,24,40,0.12)] overflow-hidden text-left">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal/50 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="relative w-full max-w-lg bg-paper-white border border-stone-mist rounded-card shadow-card-hover overflow-hidden text-left">
         {/* Close Button */}
         <button
           onClick={closeProModal}
-          className="absolute top-4 right-4 p-1.5 rounded-full text-[#6f6f6e] hover:text-[#141414] hover:bg-[#edede8] transition-colors z-10"
+          className="absolute top-4 right-4 p-1.5 rounded-full text-bark-grey hover:text-charcoal hover:bg-stone-mist/30 transition-colors z-10"
         >
           <X className="w-4 h-4" />
         </button>
 
         {/* Top Header */}
-        <div className="p-6 border-b border-[#00000014] bg-[#edede8]/60">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#ffffff] border border-[#00000014] text-[#292929] text-xs font-medium mb-3 shadow-sm">
-            <span className="w-2 h-2 rounded-full bg-[#4cc02b]" />
-            <span>Redactify Sovereign Pro</span>
+        <div className="p-6 border-b border-stone-mist bg-warm-bone">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-soft-cream border border-stone-mist text-charcoal text-xs font-mono font-medium mb-3 shadow-sm">
+            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            <span>Commercial License</span>
           </div>
 
-          <h2 className="text-xl sm:text-2xl font-normal text-[#141414] tracking-[-0.02em]">
-            Unlock commercial capabilities
+          <h2 className="text-2xl sm:text-3xl font-serif font-normal text-charcoal tracking-tight">
+            Unlock complete document exports
           </h2>
 
-          <p className="text-xs text-[#6f6f6e] mt-1 leading-relaxed">
+          <p className="text-xs text-bark-grey mt-1.5 leading-relaxed">
             {proModalFeature === 'multi-page'
               ? 'Multi-page exports are a Pro feature. Upgrade to export your entire clean document with zero watermarks.'
-              : 'Redactify Pro gives you unlimited exports, batch processing, and complete zero-trust privacy.'}
+              : 'Redactify Pro gives you unlimited exports, multi-page batch processing, and complete offline privacy.'}
           </p>
+
+          <div className="mt-2.5 flex items-center gap-1.5 text-[11px] font-mono text-bark-grey">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+            <span>Your active document and edits remain 100% preserved in memory.</span>
+          </div>
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex border-b border-[#00000014] px-6 pt-2 bg-[#ffffff]">
+        <div className="flex border-b border-stone-mist px-6 pt-2 bg-paper-white">
           <button
             onClick={() => setActiveTab('pricing')}
-            className={`pb-2.5 px-3 text-xs font-medium transition-all border-b-2 ${
+            className={`pb-2.5 px-3 text-xs font-mono font-medium transition-all border-b-2 ${
               activeTab === 'pricing'
-                ? 'border-[#141414] text-[#141414]'
-                : 'border-transparent text-[#6f6f6e] hover:text-[#292929]'
+                ? 'border-electric-indigo text-charcoal'
+                : 'border-transparent text-bark-grey hover:text-charcoal'
             }`}
           >
-            Subscription Plans
+            Upgrade Options
           </button>
           <button
             onClick={() => setActiveTab('license')}
-            className={`pb-2.5 px-3 text-xs font-medium transition-all border-b-2 ${
+            className={`pb-2.5 px-3 text-xs font-mono font-medium transition-all border-b-2 ${
               activeTab === 'license'
-                ? 'border-[#141414] text-[#141414]'
-                : 'border-transparent text-[#6f6f6e] hover:text-[#292929]'
+                ? 'border-electric-indigo text-charcoal'
+                : 'border-transparent text-bark-grey hover:text-charcoal'
             }`}
           >
             Enter License Key
@@ -94,48 +113,62 @@ export function ProModal({ onNavigateToPricing }) {
         </div>
 
         {/* Tab Content */}
-        <div className="p-6 bg-[#ffffff]">
+        <div className="p-6 bg-paper-white">
           {activeTab === 'pricing' ? (
-            <div className="space-y-5">
+            <div className="space-y-4">
+              {/* Evaluator 1-Click Test Pass Banner */}
+              <div className="p-3.5 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-xs font-semibold text-emerald-900">Testing or Evaluating?</div>
+                  <div className="text-[11px] text-emerald-700">Unlock full Pro features instantly for testing.</div>
+                </div>
+                <button
+                  onClick={handleQuickTestActivation}
+                  className="px-3 py-1.5 rounded-button bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-mono font-medium shadow-sm transition-all shrink-0"
+                >
+                  1-Click Test Pass
+                </button>
+              </div>
+
               {/* Feature Checklist */}
-              <div className="grid grid-cols-2 gap-2 text-xs text-[#353535] pb-2">
+              <div className="grid grid-cols-2 gap-2 text-xs text-charcoal py-1">
                 <div className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-[#4cc02b] shrink-0" />
+                  <Check className="w-3.5 h-3.5 text-electric-indigo shrink-0" />
                   <span>Unlimited Pages</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-[#4cc02b] shrink-0" />
+                  <Check className="w-3.5 h-3.5 text-electric-indigo shrink-0" />
                   <span>Zero Watermarks</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-[#4cc02b] shrink-0" />
-                  <span>SSN / Passports / IDs</span>
+                  <Check className="w-3.5 h-3.5 text-electric-indigo shrink-0" />
+                  <span>Passports, IDs, SSN</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-[#4cc02b] shrink-0" />
-                  <span>Word DOCX Redactions</span>
+                  <Check className="w-3.5 h-3.5 text-electric-indigo shrink-0" />
+                  <span>Word DOCX Redaction</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-[#4cc02b] shrink-0" />
-                  <span>Custom Color Redaction</span>
+                  <Check className="w-3.5 h-3.5 text-electric-indigo shrink-0" />
+                  <span>Custom Color Labels</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-[#4cc02b] shrink-0" />
-                  <span>True Vector Export</span>
+                  <Check className="w-3.5 h-3.5 text-electric-indigo shrink-0" />
+                  <span>True Text Scrubbing</span>
                 </div>
               </div>
 
               {/* Pricing Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {/* Pro Monthly */}
-                <div className="p-4 rounded-[12px] bg-[#ffffff] border border-[#00000014] flex flex-col justify-between shadow-sm">
+                <div className="p-4 rounded-card bg-paper-white border border-stone-mist flex flex-col justify-between shadow-card">
                   <div>
-                    <div className="text-[10px] font-medium text-[#6f6f6e] uppercase tracking-wider">Pro Monthly</div>
+                    <div className="text-[10px] font-mono font-medium text-bark-grey uppercase tracking-wider">Pro Monthly</div>
                     <div className="flex items-baseline gap-1 mt-1">
-                      <span className="text-2xl font-normal text-[#141414]">$9</span>
-                      <span className="text-xs text-[#6f6f6e]">/ month</span>
+                      <span className="text-2xl font-serif text-charcoal">$9</span>
+                      <span className="text-xs text-bark-grey font-mono">/ mo</span>
                     </div>
-                    <p className="text-[11px] text-[#6f6f6e] mt-1">Billed monthly. Cancel anytime.</p>
+                    <p className="text-[11px] text-bark-grey mt-1">Billed monthly. Cancel anytime.</p>
                   </div>
 
                   <button
@@ -143,25 +176,25 @@ export function ProModal({ onNavigateToPricing }) {
                       closeProModal();
                       if (onNavigateToPricing) onNavigateToPricing();
                     }}
-                    className="mt-4 w-full h-9 rounded-full bg-[#dbdbd2] hover:bg-[#d0d0c8] text-[#292929] text-xs font-medium text-center transition-all border border-[#00000014]"
+                    className="mt-4 w-full h-9 rounded-button bg-soft-cream hover:bg-stone-mist/40 text-charcoal text-xs font-mono font-medium text-center transition-all border border-stone-mist"
                   >
-                    Select Plan
+                    View Pricing Plan
                   </button>
                 </div>
 
-                {/* Lifetime Early-Bird */}
-                <div className="p-4 rounded-[12px] bg-[#ffffff] border-2 border-[#141414] relative overflow-hidden flex flex-col justify-between shadow-sm">
-                  <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-[#141414] text-[9px] font-medium text-white uppercase tracking-wider">
+                {/* Lifetime Pass */}
+                <div className="p-4 rounded-card bg-paper-white border-2 border-electric-indigo relative overflow-hidden flex flex-col justify-between shadow-card-hover">
+                  <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-electric-indigo text-[9px] font-mono font-medium text-white uppercase tracking-wider shadow-sm">
                     Lifetime
                   </div>
 
                   <div>
-                    <div className="text-[10px] font-medium text-[#141414] uppercase tracking-wider">Lifetime Pass</div>
+                    <div className="text-[10px] font-mono font-medium text-charcoal uppercase tracking-wider">Lifetime Pass</div>
                     <div className="flex items-baseline gap-1 mt-1">
-                      <span className="text-2xl font-normal text-[#141414]">$29</span>
-                      <span className="text-xs text-[#6f6f6e]">one-time</span>
+                      <span className="text-2xl font-serif text-charcoal">$29</span>
+                      <span className="text-xs text-bark-grey font-mono">one-time</span>
                     </div>
-                    <p className="text-[11px] text-[#6f6f6e] mt-1">Pay once, own forever. Zero recurring fees.</p>
+                    <p className="text-[11px] text-bark-grey mt-1">Pay once, own forever. Zero recurring fees.</p>
                   </div>
 
                   <button
@@ -169,22 +202,22 @@ export function ProModal({ onNavigateToPricing }) {
                       closeProModal();
                       if (onNavigateToPricing) onNavigateToPricing();
                     }}
-                    className="mt-4 w-full h-9 rounded-full bg-[#141414] hover:bg-[#292929] text-white text-xs font-medium text-center transition-all shadow-sm"
+                    className="mt-4 w-full h-9 rounded-button bg-electric-indigo hover:bg-deep-violet text-white text-xs font-mono font-medium text-center transition-all shadow-sm"
                   >
-                    Get Lifetime Access
+                    View Lifetime Pass
                   </button>
                 </div>
               </div>
 
               {exportTrialCallback && (
-                <div className="pt-2 border-t border-[#0000000f] text-center">
+                <div className="pt-2 border-t border-stone-mist/60 text-center">
                   <button
                     onClick={() => {
                       const cb = exportTrialCallback;
                       closeProModal();
                       if (cb) cb();
                     }}
-                    className="w-full h-9 rounded-full bg-[#edede8] hover:bg-[#dbdbd2] text-[#292929] text-xs font-medium text-center transition-all border border-[#00000014]"
+                    className="w-full h-9 rounded-button bg-soft-cream hover:bg-stone-mist/40 text-charcoal text-xs font-mono font-medium text-center transition-all border border-stone-mist"
                   >
                     Continue Free Trial (Download Page 1 with Watermark)
                   </button>
@@ -194,28 +227,28 @@ export function ProModal({ onNavigateToPricing }) {
           ) : (
             <form onSubmit={handleManualActivation} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-[#292929] mb-1.5">
+                <label className="block text-xs font-mono font-medium text-charcoal mb-1.5">
                   Enter Pro License Key:
                 </label>
                 <div className="relative">
-                  <KeyRound className="w-4 h-4 text-[#8f8f8e] absolute left-3 top-3" />
+                  <KeyRound className="w-4 h-4 text-bark-grey absolute left-3 top-3" />
                   <input
                     type="text"
-                    placeholder="RDCT-XXXX-XXXX-XXXX"
+                    placeholder="RDCT-PRO-XXXX-XXXX"
                     value={licenseInput}
                     onChange={(e) => setLicenseInput(e.target.value)}
-                    className="w-full bg-[#edede8] border border-[#00000014] rounded-full pl-9 pr-3 py-2 text-xs font-mono text-[#141414] placeholder-[#8f8f8e] focus:outline-none focus:border-[#141414] uppercase"
+                    className="w-full bg-soft-cream border border-stone-mist rounded-button pl-9 pr-3 py-2 text-xs font-mono text-charcoal placeholder-stone-400 focus:outline-none focus:border-electric-indigo focus:ring-1 focus:ring-electric-indigo uppercase"
                   />
                 </div>
                 {licenseError && (
-                  <p className="text-xs text-[#c92a2a] mt-1.5">{licenseError}</p>
+                  <p className="text-xs text-rose-600 mt-1.5">{licenseError}</p>
                 )}
-                <div className="text-[11px] text-[#6f6f6e] mt-1.5 flex items-center justify-between">
-                  <span>Cryptographically verified offline.</span>
+                <div className="text-[11px] text-bark-grey mt-1.5 flex items-center justify-between font-mono">
+                  <span>Offline cryptographic verification.</span>
                   <button
                     type="button"
                     onClick={() => setLicenseInput('RDCT-PRO-A1B2C3D4-6AB6')}
-                    className="text-[#141414] hover:underline font-mono text-[10px]"
+                    className="text-electric-indigo hover:underline font-mono text-[10px]"
                   >
                     Insert Demo Key
                   </button>
@@ -225,7 +258,7 @@ export function ProModal({ onNavigateToPricing }) {
               <button
                 type="submit"
                 disabled={isActivating}
-                className="w-full h-10 rounded-full bg-[#141414] hover:bg-[#292929] text-white text-xs font-medium transition-all shadow-sm flex items-center justify-center gap-2"
+                className="w-full h-10 rounded-button bg-electric-indigo hover:bg-deep-violet text-white text-xs font-mono font-medium transition-all shadow-sm flex items-center justify-center gap-2"
               >
                 {isActivating ? (
                   <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -241,3 +274,4 @@ export function ProModal({ onNavigateToPricing }) {
     </div>
   );
 }
+

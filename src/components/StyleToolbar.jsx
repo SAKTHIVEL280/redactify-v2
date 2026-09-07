@@ -44,7 +44,8 @@ export function StyleToolbar() {
           fileArrayBuffer: arrayBuffer,
           redactions,
           style,
-          isPro
+          isPro,
+          rotation
         });
       } else if (fileType === 'docx') {
         outputBlob = await exportRedactedDOCX({
@@ -68,7 +69,7 @@ export function StyleToolbar() {
           if (r.value) cleanText = cleanText.replaceAll(r.value, style.label || '[REDACTED]');
         }
         if (!isPro) {
-          cleanText = `[Trial Version — Redacted with Redactify (redactify.daeq.in) — Upgrade to Pro for Clean Commercial Exports]\n\n` + cleanText;
+          cleanText = `[Trial Version: Redacted with Redactify (redactify.daeq.in). Upgrade to Pro for clean commercial exports]\n\n` + cleanText;
         }
         outputBlob = new Blob([cleanText], { type: 'text/plain' });
       }
@@ -93,21 +94,21 @@ export function StyleToolbar() {
   };
 
   return (
-    <div className="h-16 border-t border-[#00000014] bg-[#ffffff]/95 backdrop-blur-md px-4 sm:px-8 flex items-center justify-between gap-4 z-20">
+    <div className="h-16 border-t border-stone-mist bg-paper-white/95 backdrop-blur-md px-4 sm:px-8 flex items-center justify-between gap-4 z-20">
       {/* Left: Style & Color Controls */}
       <div className="flex items-center gap-3 overflow-x-auto py-1">
-        <span className="text-xs font-medium text-[#6f6f6e] hidden md:block uppercase tracking-wider">
+        <span className="text-xs font-mono font-medium text-bark-grey hidden md:block uppercase tracking-wider">
           Style:
         </span>
 
         {/* Color Palette */}
-        <div className="flex items-center gap-1.5 bg-[#edede8] border border-[#00000014] rounded-full p-1">
+        <div className="flex items-center gap-1.5 bg-soft-cream border border-stone-mist rounded-full p-1">
           {REDACTION_COLORS.map((c) => (
             <button
               key={c.id}
               onClick={() => setStyle({ color: c.hex, textColor: c.textHex })}
               className={`w-6 h-6 rounded-full border transition-transform flex items-center justify-center ${
-                style.color === c.hex ? 'scale-110 border-[#141414] shadow-sm' : 'border-transparent hover:scale-105'
+                style.color === c.hex ? 'scale-110 border-charcoal shadow-sm' : 'border-transparent hover:scale-105'
               }`}
               style={{ backgroundColor: c.hex }}
               title={c.label}
@@ -120,11 +121,11 @@ export function StyleToolbar() {
         </div>
 
         {/* Label Mode Switcher */}
-        <div className="flex items-center gap-1 bg-[#edede8] border border-[#00000014] rounded-full p-1">
+        <div className="flex items-center gap-1 bg-soft-cream border border-stone-mist rounded-full p-1 font-mono">
           <button
             onClick={() => setStyle({ showLabel: false, mode: 'blackout' })}
             className={`px-3 py-1 text-xs font-medium rounded-full transition-all ${
-              !style.showLabel ? 'bg-[#ffffff] text-[#141414] shadow-sm' : 'text-[#6f6f6e] hover:text-[#141414]'
+              !style.showLabel ? 'bg-paper-white text-charcoal shadow-sm' : 'text-bark-grey hover:text-charcoal'
             }`}
           >
             Blackout
@@ -132,34 +133,52 @@ export function StyleToolbar() {
           <button
             onClick={() => setStyle({ showLabel: true, mode: 'label' })}
             className={`px-3 py-1 text-xs font-medium rounded-full transition-all ${
-              style.showLabel ? 'bg-[#ffffff] text-[#141414] shadow-sm' : 'text-[#6f6f6e] hover:text-[#141414]'
+              style.showLabel ? 'bg-paper-white text-charcoal shadow-sm' : 'text-bark-grey hover:text-charcoal'
             }`}
           >
             Text Label
           </button>
         </div>
 
-        {/* Label Dropdown (if Text Label enabled) */}
+        {/* Label Dropdown & Custom Input (if Text Label enabled) */}
         {style.showLabel && (
-          <select
-            value={style.label}
-            onChange={(e) => setStyle({ label: e.target.value })}
-            className="bg-[#edede8] border border-[#00000014] text-[#141414] text-xs rounded-full px-3 py-1 focus:outline-none focus:border-[#141414] font-mono"
-          >
-            {REDACTION_LABELS.map((lbl) => (
-              <option key={lbl} value={lbl}>{lbl}</option>
-            ))}
-          </select>
+          <div className="flex items-center gap-1.5 animate-in fade-in duration-150">
+            <select
+              value={REDACTION_LABELS.includes(style.label) ? style.label : 'custom'}
+              onChange={(e) => {
+                if (e.target.value !== 'custom') {
+                  setStyle({ label: e.target.value });
+                }
+              }}
+              className="bg-soft-cream border border-stone-mist text-charcoal text-xs rounded-button px-2.5 py-1 focus:outline-none focus:border-electric-indigo font-mono cursor-pointer"
+            >
+              {REDACTION_LABELS.map((lbl) => (
+                <option key={lbl} value={lbl}>{lbl}</option>
+              ))}
+              {!REDACTION_LABELS.includes(style.label) && (
+                <option value="custom">Custom Label...</option>
+              )}
+            </select>
+
+            <input
+              type="text"
+              value={style.label}
+              onChange={(e) => setStyle({ label: e.target.value })}
+              placeholder="Custom label..."
+              className="bg-paper-white border border-stone-mist text-charcoal text-xs rounded-button px-2.5 py-1 w-32 focus:outline-none focus:border-electric-indigo font-mono shadow-sm"
+              title="Type any custom blackout label"
+            />
+          </div>
         )}
       </div>
 
       {/* Right: Counters & Export Trigger */}
       <div className="flex items-center gap-4 shrink-0">
-        <div className="text-right hidden sm:block">
-          <div className="text-xs font-medium text-[#141414] font-mono">
+        <div className="text-right hidden sm:block font-mono">
+          <div className="text-xs font-medium text-charcoal">
             {activeCount} of {redactions.length} masked
           </div>
-          <div className="text-[10px] text-[#6f6f6e]">
+          <div className="text-[10px] text-bark-grey">
             {pageCount > 1 ? `${pageCount} pages detected` : '1 page'}
           </div>
         </div>
@@ -167,12 +186,12 @@ export function StyleToolbar() {
         <button
           onClick={handleExport}
           disabled={isExporting}
-          className="h-10 px-6 rounded-full bg-[#141414] hover:bg-[#292929] text-white font-medium text-xs tracking-wide shadow-sm transition-all flex items-center gap-2"
+          className="h-10 px-6 rounded-button bg-electric-indigo hover:bg-deep-violet text-white font-mono font-medium text-xs tracking-wide shadow-sm transition-all flex items-center gap-2"
         >
           {isExporting ? (
             <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
           ) : (
-            <Download className="w-3.5 h-3.5 text-[#4cc02b]" />
+            <Download className="w-3.5 h-3.5" />
           )}
           <span>{isExporting ? 'Exporting...' : 'Export Redacted Document'}</span>
         </button>

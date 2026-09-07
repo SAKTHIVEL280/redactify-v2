@@ -3,7 +3,8 @@ import {
   UploadCloud, ShieldAlert, ShieldCheck, BadgeCheck, Scale, Landmark, 
   Activity, UserCheck, WifiOff, FileText, CheckCircle2, Zap, ArrowRight, 
   ChevronDown, ChevronUp, Lock, Sparkles, Check, HelpCircle, EyeOff, 
-  Layers, Download, ServerOff, FileCheck, ExternalLink, AlertCircle, RefreshCw
+  Layers, Download, ServerOff, FileCheck, ExternalLink, AlertCircle, RefreshCw,
+  RotateCw, RotateCcw, Crosshair
 } from 'lucide-react';
 import { useDocumentStore } from '../store/documentStore';
 import { useRedactionStore } from '../store/redactionStore';
@@ -12,27 +13,28 @@ import { PRESETS } from '../core/engine/presets';
 import { parseAndScanPDF } from '../core/parsers/pdfParser';
 import { parseAndExtractDOCX } from '../core/parsers/docxParser';
 import { detectEntities } from '../core/engine/detector';
+import { createSampleOfferLetterPdf } from '../core/parsers/samplePdfGenerator';
 
 const FAQS = [
   {
-    q: "How can I mathematically verify that my documents are never uploaded to any server?",
-    a: "You do not have to trust us — you can verify it in 10 seconds. Open your browser's Developer Tools (F12 or Ctrl+Shift+I), navigate to the 'Network' tab, and drop your document. You will observe exactly 0 HTTP requests. Alternatively, turn off your Wi-Fi or disconnect your network cable: Redactify will continue to parse, redact, and export at full speed because the entire engine executes locally in your browser's WebAssembly and JavaScript memory."
+    q: "How can I verify that my documents are never uploaded to any server?",
+    a: "You can test this in 10 seconds. Open your browser Developer Tools (press F12 or right-click and choose Inspect), click the Network tab, and drop your document. You will see exactly 0 HTTP requests. You can also turn off your Wi-Fi or unplug your internet: Redactify will continue to redact and export your documents at full speed because the entire engine runs inside your browser."
   },
   {
-    q: "Can someone inspect or remove the black boxes in exported PDFs to read the original text?",
-    a: "No. Unlike superficial redaction tools that merely draw a black rectangle on top of the text, Redactify permanently incinerates the underlying text stream in the PDF vector structure using pdf-lib. The sensitive character glyphs are destroyed and replaced with solid vector coordinates. Furthermore, all hidden PDF metadata (author, creation software, revision history, and timestamps) are completely scrubbed."
+    q: "Can someone remove the black boxes in exported PDFs to see the hidden text?",
+    a: "No. Superficial tools only place a black visual shape over the text, which means anyone can copy the text underneath. Redactify completely deletes the underlying letters and words from the PDF vector file. In addition, all hidden file metadata (author name, revision history, and creation dates) is scrubbed clean."
   },
   {
-    q: "Does Redactify comply with international data privacy laws (GDPR, HIPAA, SOC 2)?",
-    a: "Yes. Because Redactify processes documents exclusively inside your browser's local sandbox, sensitive files never cross international borders, third-party clouds, or unvetted subprocessors. It complies with GDPR Article 32 (Security of Processing), HIPAA Safe Harbor de-identification rules, and strict enterprise zero-data-retention mandates."
+    q: "Does Redactify comply with privacy laws like GDPR and HIPAA?",
+    a: "Yes. Because your files never leave your computer, no sensitive data crosses international borders or gets stored on cloud servers. This complies with GDPR Article 32, HIPAA Safe Harbor de-identification rules, and strict corporate data retention policies."
   },
   {
-    q: "How does Redactify handle scanned documents and ID photos?",
-    a: "If your document is a scanned image or photo without an embedded text layer (such as driver licenses, national ID cards, stamped agreements, or signatures), Redactify supports interactive 90-degree rotation, crosshair manual box drawing, and self-hosted client-side Tesseract WASM OCR. Blackout boxes are permanently burned into pixel bitmap data upon export."
+    q: "How does Redactify handle phone photos and scanned IDs?",
+    a: "If your document is a camera photo or scanned image without searchable text, Redactify includes built-in offline OCR that reads the text directly on your device. You can rotate sideways phone photos with one click and use the manual crosshair tool to black out signatures, stamps, and ID card photos."
   },
   {
-    q: "Can I use Redactify on air-gapped enterprise machines?",
-    a: "Yes. All WebAssembly models, Tesseract OCR language weights, and cryptographic parsers are bundled directly into the application bundle. Once loaded, Redactify operates with zero network connectivity."
+    q: "Can I use Redactify offline without an internet connection?",
+    a: "Yes. Once the page is loaded, Redactify is 100% self-contained. All text processing models and OCR files are stored locally in your browser. It runs seamlessly on air-gapped computers."
   }
 ];
 
@@ -102,7 +104,7 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
 
     setFile(file, fileType);
     if (onNavigateToStudio) onNavigateToStudio();
-    setProgress(0, 100, 'Reading document in browser memory...');
+    setProgress(0, 100, 'Reading document on your device...');
 
     try {
       if (fileType === 'pdf') {
@@ -120,9 +122,9 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
           useRedactionStore.getState().setDrawingMode(true);
         }
       } else if (fileType === 'docx') {
-        setProgress(30, 100, 'Unzipping DOCX document in browser memory...');
+        setProgress(30, 100, 'Opening Word document in memory...');
         const { rawText } = await parseAndExtractDOCX(file);
-        setProgress(60, 100, 'Scanning text for sensitive data...');
+        setProgress(60, 100, 'Scanning text for sensitive details...');
         const detections = detectEntities(rawText, activePreset, customRules);
 
         const redactions = detections.map((det, i) => ({
@@ -148,7 +150,7 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
         setRedactions(redactions);
       } else if (fileType === 'text') {
         const text = await file.text();
-        setProgress(50, 100, 'Scanning text for sensitive data...');
+        setProgress(50, 100, 'Scanning text for sensitive details...');
         const detections = detectEntities(text, activePreset, customRules);
         
         const redactions = detections.map((det, i) => ({
@@ -168,7 +170,7 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
         }));
 
         setDocumentData({
-          rawText,
+          rawText: text,
           pageCount: 1
         });
         setRedactions(redactions);
@@ -177,702 +179,758 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
           pageCount: 1,
           isScannedDocument: true
         });
-        setRedactions([]);
         useRedactionStore.getState().setDrawingMode(true);
+        setRedactions([]);
       }
 
-      setProgress(100, 100, 'Done');
+      setProgress(100, 100, 'Ready');
     } catch (err) {
       console.error('File parsing error:', err);
-      setError(`Failed to read document: ${err.message || 'Unknown error'}`);
+      setError(`Failed to open document: ${err.message || 'Unknown format'}`);
     }
-  }, [activePreset, customRules, setFile, setDocumentData, setProgress, setRedactions, setError, onNavigateToStudio]);
+  }, [activePreset, customRules, onNavigateToStudio, setDocumentData, setError, setFile, setProgress, setRedactions]);
 
   const handleDrop = useCallback((e) => {
     e.preventDefault();
     setIsDragging(false);
-    const file = e.dataTransfer.files?.[0];
+    const file = e.dataTransfer.files[0];
     if (file) processFile(file);
   }, [processFile]);
 
   const handleFileInput = useCallback((e) => {
-    const file = e.target.files?.[0];
+    const file = e.target.files[0];
     if (file) processFile(file);
   }, [processFile]);
 
-  const loadSampleOfferLetter = () => {
-    const sampleOfferText = `STRICTLY CONFIDENTIAL - EMPLOYMENT AGREEMENT & OFFER
-Date: September 4, 2026
-
-Candidate: David M. Sterling
-Home Address: 742 Evergreen Terrace, Suite 400, Seattle, WA 98101
-Social Security Number: 987-65-4320
-Phone: +1 (206) 555-0194 | Email: d.sterling@apexglobal.io
-
-Dear David,
-We are thrilled to offer you the position of Principal Architect at Apex Global Technologies Inc.
-
-1. Compensation & Terms:
-- Fixed Annual Base Salary: $185,000 USD (paid semi-monthly).
-- One-time Signing Bonus: $25,000 USD.
-- Direct Deposit Payroll: Routing Number 021000021, Account Number 8492019482.
-
-2. Confidentiality:
-You agree that all proprietary algorithms, client lists, and confidential intellectual property remain the sole property of Apex Global Technologies Inc.
-
-Yours sincerely,
-Apex Global Technologies Inc.
-Katherine Vance
-Executive Vice President, Legal & HR Operations`;
-
-    const file = new File([sampleOfferText], 'Sample_Executive_Offer_Letter.txt', { type: 'text/plain' });
-    processFile(file);
+  const loadSampleOfferLetter = async () => {
+    try {
+      const file = await createSampleOfferLetterPdf();
+      processFile(file);
+    } catch (err) {
+      console.error('Failed to load sample PDF:', err);
+    }
   };
 
   const loadSampleMedicalRecord = () => {
-    const sampleMedicalText = `CLINICAL HEALTHCARE RECORD & DISCHARGE SUMMARY
-FACILITY: Metro General Medical Center
-CONFIDENTIAL - PROTECTED HEALTH INFORMATION (HIPAA SECURE)
+    const sampleMedicalText = `PATIENT MEDICAL RECORD & DISCHARGE SUMMARY
+FACILITY: Metro Health Center
+CONFIDENTIAL - PROTECTED HEALTH INFORMATION
 
-PATIENT DEMOGRAPHICS:
+PATIENT DETAILS:
 Patient Name: Sarah Jenkins
 Date of Birth: 14-04-1988
-Medical Record Number (MRN): MRN-8849201
-National Identity / SSN: 987-12-8941
-Health Insurance ID: BCBS-994820194
+Medical Record Number: MRN-8849201
+National ID / SSN: 987-12-8941
+Insurance Policy ID: BCBS-994820194
 Primary Phone: +1 (415) 555-0182
 Email: sarah.j.health@providermail.com
 
 CLINICAL EVALUATION:
 Attending Physician: Dr. Robert Harrison, MD (NPI: 1487295103)
-Diagnostic Assessment: Routine preventative evaluation. No acute contraindications.
-Prescription: Amoxicillin 500mg, oral daily for 7 days.
+Diagnostic Notes: Annual preventative exam completed. All indicators normal.
+Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
 
-NOTICE: Unauthorized disclosure of this document violates federal HIPAA regulations.`;
-
-    const file = new File([sampleMedicalText], 'Sample_Patient_Medical_Record.txt', { type: 'text/plain' });
+    const file = new File([sampleMedicalText], 'Sample_Patient_Record.txt', { type: 'text/plain' });
     processFile(file);
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#edede8] text-[#292929] selection:bg-[#dbdbd2]">
+    <div className="flex flex-col min-h-screen bg-warm-bone text-charcoal">
       
       {/* ─────────────────────────────────────────────────────────────
-          1. ARCHITECTURAL HERO SECTION
+          1. AUTOSEND HERO SECTION
       ────────────────────────────────────────────────────────────── */}
-      <section className="pt-16 pb-16 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto flex flex-col items-center text-center">
+      <section className="pt-16 pb-12 px-4 md:px-6 max-w-6xl mx-auto w-full flex flex-col items-center text-center">
         
-        {/* Status Pill */}
-        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#ffffff] border border-[#00000014] text-xs text-[#292929] mb-8 shadow-sm">
-          <span className="w-2 h-2 rounded-full bg-[#4cc02b]" />
-          <span className="font-medium">Sovereign Redaction • 100% In-Memory WASM</span>
-          <span className="text-[#8f8f8e]">•</span>
-          <span className="text-[#6f6f6e] font-mono">0 Bytes Uploaded</span>
+        {/* Announcement Tag */}
+        <div className="inline-flex items-center rounded-lg border border-charcoal bg-paper-white mb-8 overflow-hidden shadow-sm hover:bg-stone-mist/30 transition-all cursor-pointer" onClick={onNavigateToStudio}>
+          <span className="bg-charcoal text-white font-mono font-medium text-xs px-3.5 py-1.5 uppercase tracking-wider">
+            New
+          </span>
+          <span className="text-charcoal font-sans font-medium text-xs sm:text-sm px-4 py-1.5">
+            Client-Side Redaction: Zero files ever leave your device.
+          </span>
         </div>
 
-        {/* Quiet Display Headline (Gleap style: Weight 400, tight tracking) */}
-        <h1 className="text-4xl sm:text-6xl font-normal tracking-[-0.02em] text-[#141414] max-w-3xl leading-[1.1] mb-6">
-          Sovereign document redaction. <br className="hidden sm:inline" />
-          Zero telemetry.
+        {/* Display Headline in Cooper LtBT serif */}
+        <h1 className="font-serif text-[42px] sm:text-[68px] lg:text-[76px] leading-[1.1] text-charcoal font-normal max-w-4xl tracking-normal mb-6">
+          Document redaction for <em>teams</em> who <br className="hidden md:inline" />
+          care about <em>privacy</em>
         </h1>
 
-        {/* Architectural Subtitle */}
-        <p className="text-base sm:text-lg text-[#6f6f6e] max-w-2xl mb-8 leading-relaxed font-normal">
-          Permanently incinerate Social Security Numbers, Tax IDs, Passports, confidential salary figures, client PII, and medical records inside your local browser memory. No cloud roundtrips, no server logs, mathematically zero bytes transmitted.
+        {/* Human, approachable subtext */}
+        <p className="text-bark-grey text-base sm:text-xl max-w-2xl leading-relaxed font-sans mb-8">
+          Permanently remove confidential names, IDs, credit cards, and banking numbers from PDFs, Word documents, and scans. Runs 100% locally on your computer.
         </p>
 
-        {/* Dual Pill Action Buttons */}
-        <div className="flex flex-wrap items-center justify-center gap-3 mb-12">
+        {/* CTA Pair (AutoSend style) */}
+        <div className="flex items-center justify-center gap-4 mb-12">
+          <button
+            onClick={loadSampleOfferLetter}
+            className="cursor-pointer font-semibold font-mono uppercase border text-xs sm:text-sm rounded-xl px-5 py-2.5 bg-paper-white border-stone-mist hover:bg-stone-mist/40 text-charcoal shadow-sm active:scale-95 transition-all"
+          >
+            Try Sample File
+          </button>
           <button
             onClick={onNavigateToStudio}
-            className="h-11 px-7 rounded-full bg-[#141414] hover:bg-[#292929] text-white text-xs font-medium transition-all flex items-center gap-2 shadow-sm"
+            className="cursor-pointer font-semibold font-mono uppercase border text-xs sm:text-sm rounded-xl px-6 py-2.5 text-white bg-electric-indigo border-deep-violet hover:bg-deep-violet shadow-sm active:scale-95 transition-all flex items-center gap-2 tracking-wider"
           >
-            <span>Launch Studio</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-          <button
-            onClick={onNavigateToPricing}
-            className="h-11 px-6 rounded-full bg-[#dbdbd2] hover:bg-[#d0d0c8] text-[#292929] border border-[#00000014] text-xs font-medium transition-all"
-          >
-            View Pricing & Trust
+            <span>Open Studio</span>
+            <ArrowRight className="w-4 h-4" />
           </button>
         </div>
 
         {/* ─────────────────────────────────────────────────────────────
-            INTERACTIVE LIVE REDACTION DEMO SANDBOX
+            UNIFIED HERO WORKSPACE: INTEGRATED DROPZONE + LIVE SANDBOX
         ────────────────────────────────────────────────────────────── */}
-        <div className="w-full max-w-3xl bg-[#ffffff] rounded-[12px] p-6 sm:p-8 border border-[#00000014] shadow-[0_4px_24px_rgba(0,0,0,0.03)] text-left mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-5 border-b border-[#0000000f]">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#4cc02b]" />
-              <span className="text-xs font-semibold uppercase tracking-wider text-[#141414]">
-                Interactive Redaction Sandbox
-              </span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#edede8] text-[#6f6f6e]">
-                Live WASM Demo
-              </span>
+        <div 
+          onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+          onDragLeave={() => setIsDragging(false)}
+          onDrop={handleDrop}
+          className={`relative w-full max-w-4xl bg-paper-white rounded-card border transition-all duration-200 shadow-showcase mb-14 text-left overflow-hidden ${
+            isDragging
+              ? 'border-electric-indigo ring-4 ring-electric-indigo/20 bg-soft-cream'
+              : 'border-stone-mist'
+          }`}
+        >
+          {/* Active Drag-and-Drop High-Contrast Overlay */}
+          {isDragging && (
+            <div className="absolute inset-0 z-30 bg-paper-white/95 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-150">
+              <div className="w-16 h-16 rounded-2xl bg-electric-indigo text-white flex items-center justify-center mb-4 shadow-lg animate-bounce">
+                <UploadCloud className="w-8 h-8" />
+              </div>
+              <h3 className="text-xl font-serif text-charcoal">Release to redact immediately</h3>
+              <p className="text-xs font-mono text-bark-grey mt-1 max-w-sm">
+                Processed 100% in local browser volatile memory. Zero network uploads.
+              </p>
             </div>
+          )}
 
-            {/* Quick Filter Scrubber */}
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-[11px] text-[#6f6f6e] mr-1">Presets:</span>
-              <button
-                type="button"
-                onClick={() => setFilterMode('all')}
-                className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-[#141414] text-white hover:bg-[#292929] transition-colors"
-              >
-                Redact All
-              </button>
-              <button
-                type="button"
-                onClick={() => setFilterMode('ids')}
-                className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-[#edede8] text-[#292929] hover:bg-[#dbdbd2] border border-[#00000014] transition-colors"
-              >
-                SSN & IDs
-              </button>
-              <button
-                type="button"
-                onClick={() => setFilterMode('finance')}
-                className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-[#edede8] text-[#292929] hover:bg-[#dbdbd2] border border-[#00000014] transition-colors"
-              >
-                Salary & Banking
-              </button>
-              <button
-                type="button"
-                onClick={() => setFilterMode('contact')}
-                className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-[#edede8] text-[#292929] hover:bg-[#dbdbd2] border border-[#00000014] transition-colors"
-              >
-                Contacts
-              </button>
-              <button
-                type="button"
-                onClick={() => setFilterMode('none')}
-                className="p-1 rounded-full text-[11px] font-medium text-[#6f6f6e] hover:text-[#141414] transition-colors"
-                title="Reset redactions"
-              >
-                <RefreshCw className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
-
-          {/* Interactive Document Card */}
-          <div className="p-5 rounded-[8px] bg-[#fbfbfa] border border-[#00000014] font-mono text-xs leading-relaxed space-y-3 text-[#292929]">
-            <div className="text-[10px] uppercase font-semibold text-[#8f8f8e] border-b border-[#0000000a] pb-2 flex items-center justify-between">
-              <span>EXECUTIVE EMPLOYMENT AGREEMENT • STRICTLY CONFIDENTIAL</span>
-              <span className="text-[9px] text-[#6f6f6e]">Click any black box to toggle</span>
-            </div>
-
-            <div className="pt-1">
-              Candidate:{' '}
-              <button
-                type="button"
-                onClick={() => toggleEntity('name')}
-                className={`inline-flex items-center px-2 py-0.5 rounded transition-all font-mono font-medium ${
-                  activeToggles.name
-                    ? 'bg-[#141414] text-white shadow-sm hover:opacity-90'
-                    : 'bg-[#dbdbd2]/70 text-[#141414] hover:bg-[#dbdbd2]'
-                }`}
-              >
-                {activeToggles.name ? '[NAME REDACTED]' : 'David M. Sterling'}
-              </button>
-            </div>
-
-            <div>
-              Social Security Number:{' '}
-              <button
-                type="button"
-                onClick={() => toggleEntity('ssn')}
-                className={`inline-flex items-center px-2 py-0.5 rounded transition-all font-mono font-medium ${
-                  activeToggles.ssn
-                    ? 'bg-[#141414] text-white shadow-sm hover:opacity-90'
-                    : 'bg-[#dbdbd2]/70 text-[#141414] hover:bg-[#dbdbd2]'
-                }`}
-              >
-                {activeToggles.ssn ? 'XXX-XX-4320' : '987-65-4320'}
-              </button>
-              <span className="text-[10px] text-[#8f8f8e] ml-2 font-sans">(Validated via US SSA Algorithm)</span>
-            </div>
-
-            <div>
-              Direct Contact:{' '}
-              <button
-                type="button"
-                onClick={() => toggleEntity('phone')}
-                className={`inline-flex items-center px-2 py-0.5 rounded transition-all font-mono font-medium mr-1.5 ${
-                  activeToggles.phone
-                    ? 'bg-[#141414] text-white shadow-sm hover:opacity-90'
-                    : 'bg-[#dbdbd2]/70 text-[#141414] hover:bg-[#dbdbd2]'
-                }`}
-              >
-                {activeToggles.phone ? '[PHONE REDACTED]' : '+1 (206) 555-0194'}
-              </button>
-              •{' '}
-              <button
-                type="button"
-                onClick={() => toggleEntity('email')}
-                className={`inline-flex items-center px-2 py-0.5 rounded transition-all font-mono font-medium ml-1.5 ${
-                  activeToggles.email
-                    ? 'bg-[#141414] text-white shadow-sm hover:opacity-90'
-                    : 'bg-[#dbdbd2]/70 text-[#141414] hover:bg-[#dbdbd2]'
-                }`}
-              >
-                {activeToggles.email ? '[EMAIL REDACTED]' : 'd.sterling@apexglobal.io'}
-              </button>
-            </div>
-
-            <div>
-              Annual Compensation:{' '}
-              <button
-                type="button"
-                onClick={() => toggleEntity('salary')}
-                className={`inline-flex items-center px-2 py-0.5 rounded transition-all font-mono font-medium ${
-                  activeToggles.salary
-                    ? 'bg-[#141414] text-white shadow-sm hover:opacity-90'
-                    : 'bg-[#dbdbd2]/70 text-[#141414] hover:bg-[#dbdbd2]'
-                }`}
-              >
-                {activeToggles.salary ? '[SALARY CONFIDENTIAL]' : '$185,000 USD / year + $25,000 Bonus'}
-              </button>
-            </div>
-
-            <div>
-              Direct Deposit Payroll:{' '}
-              Routing:{' '}
-              <button
-                type="button"
-                onClick={() => toggleEntity('routing')}
-                className={`inline-flex items-center px-2 py-0.5 rounded transition-all font-mono font-medium mr-1.5 ${
-                  activeToggles.routing
-                    ? 'bg-[#141414] text-white shadow-sm hover:opacity-90'
-                    : 'bg-[#dbdbd2]/70 text-[#141414] hover:bg-[#dbdbd2]'
-                }`}
-              >
-                {activeToggles.routing ? '[ROUTING SCRUBBED]' : '021000021'}
-              </button>
-              Account:{' '}
-              <button
-                type="button"
-                onClick={() => toggleEntity('account')}
-                className={`inline-flex items-center px-2 py-0.5 rounded transition-all font-mono font-medium ml-1.5 ${
-                  activeToggles.account
-                    ? 'bg-[#141414] text-white shadow-sm hover:opacity-90'
-                    : 'bg-[#dbdbd2]/70 text-[#141414] hover:bg-[#dbdbd2]'
-                }`}
-              >
-                {activeToggles.account ? '••••••••9482' : '8492019482'}
-              </button>
-            </div>
-          </div>
-
-          {/* Sandbox Live Metrics Bar */}
-          <div className="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-[#6f6f6e] pt-3 border-t border-[#0000000a]">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#4cc02b]" />
-              <span className="font-mono text-[#141414] font-medium">
-                {activeCount} of 7 Entities Scrubbed
-              </span>
-              <span className="text-[#8f8f8e]">•</span>
-              <span>Vector stream glyphs destroyed</span>
-            </div>
-            <div className="text-[11px] font-mono text-[#141414] flex items-center gap-1">
-              <Check className="w-3.5 h-3.5 text-[#4cc02b]" />
-              <span>0 bytes sent to network</span>
-            </div>
-          </div>
-        </div>
-
-        {/* ─────────────────────────────────────────────────────────────
-            DROPZONE CARD (Clean, uncluttered, no 6-button preset grid)
-        ────────────────────────────────────────────────────────────── */}
-        <div className="w-full max-w-3xl bg-[#ffffff] rounded-[12px] p-6 sm:p-10 border border-[#00000014] shadow-[0_4px_24px_rgba(0,0,0,0.03)] text-left">
-          
-          {/* Main Drag-and-Drop Area */}
-          <div
-            onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-            onDragLeave={() => setIsDragging(false)}
-            onDrop={handleDrop}
-            className={`w-full rounded-[10px] border border-dashed p-8 sm:p-12 transition-all relative overflow-hidden flex flex-col items-center justify-center cursor-pointer text-center ${
-              isDragging
-                ? 'border-[#141414] bg-[#edede8]/70'
-                : 'border-[#dbdbd2] hover:border-[#141414] bg-[#edede8]/30 hover:bg-[#edede8]/50'
-            }`}
-          >
+          {/* Top Integrated Dropzone Area */}
+          <div className="p-6 sm:p-8 bg-warm-bone/40 border-b border-stone-mist relative">
             <input
               type="file"
               accept=".pdf,.docx,.txt,.csv,.log,.png,.jpg,.jpeg,.webp"
               onChange={handleFileInput}
               disabled={isProcessing}
               className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
+              title="Click or drop a document to redact"
             />
 
             {isProcessing ? (
-              <div className="flex flex-col items-center py-4">
-                <div className="w-8 h-8 rounded-full border-2 border-[#141414] border-t-transparent animate-spin mb-3" />
-                <div className="text-xs font-medium text-[#141414] mb-1">
-                  {progress.message || 'Processing in memory...'}
+              <div className="flex flex-col items-center justify-center py-6">
+                <div className="w-8 h-8 rounded-full border-2 border-charcoal border-t-transparent animate-spin mb-3" />
+                <div className="text-xs font-mono uppercase font-semibold text-charcoal mb-1">
+                  {progress.message || 'Processing document on your device...'}
                 </div>
-                <div className="text-[11px] text-[#6f6f6e] font-mono">
+                <div className="text-[11px] text-bark-grey font-mono">
                   {progress.total > 0 ? `${progress.current} / ${progress.total}` : 'Parsing client-side'}
                 </div>
               </div>
             ) : (
-              <>
-                <div className="w-11 h-11 rounded-full bg-[#ffffff] border border-[#00000014] flex items-center justify-center mb-3 text-[#141414] shadow-sm">
-                  <UploadCloud className="w-5 h-5" />
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-paper-white border border-stone-mist flex items-center justify-center text-charcoal shadow-sm shrink-0 mt-0.5">
+                    <UploadCloud className="w-6 h-6 text-charcoal" />
+                  </div>
+                  <div>
+                    <h3 className="text-base sm:text-lg font-semibold text-charcoal">
+                      Drop your PDF, Word, or image file here
+                    </h3>
+                    <p className="text-xs text-bark-grey mt-0.5 font-sans">
+                      Everything is processed directly inside your browser memory. <span className="text-electric-indigo font-semibold underline underline-offset-4">Browse files on device</span>
+                    </p>
+                    <div className="flex flex-wrap items-center gap-1.5 mt-2.5 text-[10px] text-bark-grey font-mono uppercase">
+                      <span className="px-2 py-0.5 rounded-tag bg-paper-white border border-stone-mist">PDF</span>
+                      <span className="px-2 py-0.5 rounded-tag bg-paper-white border border-stone-mist">DOCX</span>
+                      <span className="px-2 py-0.5 rounded-tag bg-paper-white border border-stone-mist">PNG / JPG</span>
+                      <span className="px-2 py-0.5 rounded-tag bg-paper-white border border-stone-mist">TXT</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="text-sm font-medium text-[#141414] mb-1">
-                  Drop your PDF, Word, or image file here
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={loadSampleOfferLetter}
+                    className="relative z-20 px-3.5 py-2 rounded-xl bg-paper-white hover:bg-stone-mist/50 text-charcoal border border-stone-mist text-xs font-mono font-medium shadow-sm transition-all flex items-center gap-1.5"
+                  >
+                    <FileCheck className="w-3.5 h-3.5 text-charcoal" />
+                    <span>Try Sample PDF</span>
+                  </button>
                 </div>
-                <p className="text-xs text-[#6f6f6e] mb-4">
-                  or <span className="text-[#141414] underline underline-offset-4">browse files</span>
-                </p>
-                <div className="flex flex-wrap items-center justify-center gap-2 text-[10px] text-[#6f6f6e] font-mono">
-                  <span className="px-2 py-0.5 rounded-full bg-[#ffffff] border border-[#00000014]">PDF</span>
-                  <span className="px-2 py-0.5 rounded-full bg-[#ffffff] border border-[#00000014]">DOCX</span>
-                  <span className="px-2 py-0.5 rounded-full bg-[#ffffff] border border-[#00000014]">PNG / JPG</span>
-                  <span className="px-2 py-0.5 rounded-full bg-[#ffffff] border border-[#00000014]">TXT</span>
-                </div>
-              </>
+              </div>
+            )}
+
+            {error && (
+              <div className="mt-4 p-3 rounded-tag bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2">
+                <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
+                <span>{error}</span>
+              </div>
             )}
           </div>
 
-          {error && (
-            <div className="mt-4 p-3 rounded-[8px] bg-[#f8d7da] border border-[#f5c6cb] text-[#721c24] text-xs flex items-start gap-2">
-              <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
-              <span>{error}</span>
-            </div>
-          )}
+          {/* Interactive Redaction Sandbox Header */}
+          <div className="p-6 sm:p-8 bg-paper-white">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-stone-mist">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-lichen-green animate-pulse" />
+                <span className="font-mono text-xs font-semibold uppercase tracking-wider text-charcoal">
+                  Interactive Redaction Preview
+                </span>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-tag bg-warm-bone text-bark-grey border border-stone-mist">
+                  Local RAM
+                </span>
+              </div>
 
-          {/* Quick Sample Testers */}
-          <div className="mt-5 pt-4 border-t border-[#0000000f] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-            <span className="text-[#6f6f6e]">Don't have a document handy? Test immediately:</span>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={loadSampleOfferLetter}
-                className="px-3 py-1.5 rounded-full bg-[#edede8] hover:bg-[#dbdbd2] text-[#292929] border border-[#00000014] text-xs font-medium transition-colors flex items-center gap-1.5"
-              >
-                <FileCheck className="w-3.5 h-3.5 text-[#141414]" />
-                <span>Sample Executive Offer</span>
-              </button>
-              <button
-                type="button"
-                onClick={loadSampleMedicalRecord}
-                className="px-3 py-1.5 rounded-full bg-[#edede8] hover:bg-[#dbdbd2] text-[#292929] border border-[#00000014] text-xs font-medium transition-colors flex items-center gap-1.5"
-              >
-                <FileText className="w-3.5 h-3.5 text-[#141414]" />
-                <span>Sample Medical Record</span>
-              </button>
+              {/* Scrubber pills */}
+              <div className="flex flex-wrap items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setFilterMode('all')}
+                  className="px-2.5 py-1 rounded-tag text-[11px] font-mono uppercase font-semibold bg-charcoal text-white hover:bg-obsidian transition-colors"
+                >
+                  All
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFilterMode('ids')}
+                  className="px-2.5 py-1 rounded-tag text-[11px] font-mono uppercase font-semibold bg-warm-bone text-charcoal hover:bg-stone-mist border border-stone-mist transition-colors"
+                >
+                  IDs
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFilterMode('finance')}
+                  className="px-2.5 py-1 rounded-tag text-[11px] font-mono uppercase font-semibold bg-warm-bone text-charcoal hover:bg-stone-mist border border-stone-mist transition-colors"
+                >
+                  Salary
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFilterMode('contact')}
+                  className="px-2.5 py-1 rounded-tag text-[11px] font-mono uppercase font-semibold bg-warm-bone text-charcoal hover:bg-stone-mist border border-stone-mist transition-colors"
+                >
+                  Contacts
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFilterMode('none')}
+                  className="p-1 rounded-tag text-[11px] text-bark-grey hover:text-charcoal transition-colors"
+                  title="Reset"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Document body with interactive toggle pills */}
+            <div className="p-4 sm:p-5 rounded-tag bg-warm-bone border border-stone-mist font-mono text-xs sm:text-sm leading-relaxed space-y-3 text-charcoal">
+              <div className="text-[10px] font-mono uppercase font-semibold text-bark-grey border-b border-stone-mist pb-2 flex items-center justify-between">
+                <span>EXECUTIVE EMPLOYMENT AGREEMENT • CONFIDENTIAL</span>
+                <span className="text-[9px] text-bark-grey font-sans">Click any black box to unmask</span>
+              </div>
+
+              <div className="pt-1">
+                Candidate:{' '}
+                <button
+                  type="button"
+                  onClick={() => toggleEntity('name')}
+                  className={`inline-flex items-center px-2 py-0.5 rounded transition-all font-mono font-medium ${
+                    activeToggles.name
+                      ? 'bg-charcoal text-white shadow-sm hover:opacity-90'
+                      : 'bg-stone-mist text-charcoal hover:bg-stone-mist/80'
+                  }`}
+                >
+                  {activeToggles.name ? '[NAME REDACTED]' : 'David M. Sterling'}
+                </button>
+              </div>
+
+              <div>
+                Social Security Number:{' '}
+                <button
+                  type="button"
+                  onClick={() => toggleEntity('ssn')}
+                  className={`inline-flex items-center px-2 py-0.5 rounded transition-all font-mono font-medium ${
+                    activeToggles.ssn
+                      ? 'bg-charcoal text-white shadow-sm hover:opacity-90'
+                      : 'bg-stone-mist text-charcoal hover:bg-stone-mist/80'
+                  }`}
+                >
+                  {activeToggles.ssn ? 'XXX-XX-4320' : '987-65-4320'}
+                </button>
+                <span className="text-[10px] text-bark-grey ml-2 font-sans">(Checksum Verified)</span>
+              </div>
+
+              <div>
+                Contact Info:{' '}
+                <button
+                  type="button"
+                  onClick={() => toggleEntity('phone')}
+                  className={`inline-flex items-center px-2 py-0.5 rounded transition-all font-mono font-medium mr-1.5 ${
+                    activeToggles.phone
+                      ? 'bg-charcoal text-white shadow-sm hover:opacity-90'
+                      : 'bg-stone-mist text-charcoal hover:bg-stone-mist/80'
+                  }`}
+                >
+                  {activeToggles.phone ? '[PHONE REDACTED]' : '+1 (206) 555-0194'}
+                </button>
+                •{' '}
+                <button
+                  type="button"
+                  onClick={() => toggleEntity('email')}
+                  className={`inline-flex items-center px-2 py-0.5 rounded transition-all font-mono font-medium ml-1.5 ${
+                    activeToggles.email
+                      ? 'bg-charcoal text-white shadow-sm hover:opacity-90'
+                      : 'bg-stone-mist text-charcoal hover:bg-stone-mist/80'
+                  }`}
+                >
+                  {activeToggles.email ? '[EMAIL REDACTED]' : 'd.sterling@apexglobal.io'}
+                </button>
+              </div>
+
+              <div>
+                Compensation:{' '}
+                <button
+                  type="button"
+                  onClick={() => toggleEntity('salary')}
+                  className={`inline-flex items-center px-2 py-0.5 rounded transition-all font-mono font-medium ${
+                    activeToggles.salary
+                      ? 'bg-charcoal text-white shadow-sm hover:opacity-90'
+                      : 'bg-stone-mist text-charcoal hover:bg-stone-mist/80'
+                  }`}
+                >
+                  {activeToggles.salary ? '[SALARY CONFIDENTIAL]' : '$185,000 USD / year'}
+                </button>
+              </div>
+
+              <div>
+                Payroll Details:{' '}
+                Routing:{' '}
+                <button
+                  type="button"
+                  onClick={() => toggleEntity('routing')}
+                  className={`inline-flex items-center px-2 py-0.5 rounded transition-all font-mono font-medium mr-1.5 ${
+                    activeToggles.routing
+                      ? 'bg-charcoal text-white shadow-sm hover:opacity-90'
+                      : 'bg-stone-mist text-charcoal hover:bg-stone-mist/80'
+                  }`}
+                >
+                  {activeToggles.routing ? '[ROUTING SCRUBBED]' : '021000021'}
+                </button>
+                Account:{' '}
+                <button
+                  type="button"
+                  onClick={() => toggleEntity('account')}
+                  className={`inline-flex items-center px-2 py-0.5 rounded transition-all font-mono font-medium ml-1.5 ${
+                    activeToggles.account
+                      ? 'bg-charcoal text-white shadow-sm hover:opacity-90'
+                      : 'bg-stone-mist text-charcoal hover:bg-stone-mist/80'
+                  }`}
+                >
+                  {activeToggles.account ? '••••••••9482' : '8492019482'}
+                </button>
+              </div>
+            </div>
+
+            {/* Bottom metrics & trigger row */}
+            <div className="mt-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t border-stone-mist">
+              <div className="flex items-center gap-2 text-xs text-bark-grey">
+                <span className="w-2 h-2 rounded-full bg-lichen-green" />
+                <span className="font-mono text-charcoal font-semibold">
+                  {activeCount} of 7 Entities Protected
+                </span>
+                <span className="text-pebble">•</span>
+                <span className="font-mono text-[11px] text-charcoal">0 bytes sent to servers</span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={loadSampleMedicalRecord}
+                  className="px-3 py-1.5 rounded-xl bg-warm-bone hover:bg-stone-mist text-charcoal border border-stone-mist text-xs font-mono font-medium transition-colors"
+                >
+                  Sample Medical Record (.txt)
+                </button>
+                <button
+                  onClick={onNavigateToStudio}
+                  className="inline-flex items-center justify-center font-mono font-semibold uppercase text-xs rounded-xl px-4 py-1.5 bg-electric-indigo hover:bg-deep-violet text-white shadow-sm transition-all gap-1.5"
+                >
+                  <span>Open Studio</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* ─────────────────────────────────────────────────────────────
-            THE 10-SECOND OFFLINE CHALLENGE (Level 2: Warm Stone)
-        ────────────────────────────────────────────────────────────── */}
-        <div className="w-full max-w-3xl mt-6 p-5 rounded-[12px] bg-[#dbdbd2] border border-[#00000014] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-left">
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full bg-[#ffffff] text-[#141414] flex items-center justify-center shrink-0 mt-0.5 border border-[#00000014]">
-              <WifiOff className="w-4 h-4" />
-            </div>
-            <div>
-              <div className="text-xs font-medium text-[#141414] flex items-center gap-2">
-                <span>The 10-Second Offline & DevTools Verification Challenge</span>
-                <span className="w-1.5 h-1.5 rounded-full bg-[#4cc02b]" />
+      </section>
+
+      {/* ─────────────────────────────────────────────────────────────
+          2. AUTOSEND 3-COLUMN FEATURE CARDS GRID
+      ────────────────────────────────────────────────────────────── */}
+      <section className="max-w-6xl mx-auto w-full px-4 md:px-6 mb-16">
+        <div className="border-x border-stone-mist">
+          <ul className="grid grid-cols-1 sm:grid-cols-3 sm:border-b border-t border-stone-mist">
+            {/* Card 1 */}
+            <li className="flex flex-col border-b border-stone-mist sm:border-b-0 sm:border-r border-stone-mist">
+              <div className="flex flex-col gap-2 p-6 flex-1 bg-paper-white">
+                <p className="text-charcoal font-medium text-base font-mono">PDF Vector Scrubbing</p>
+                <p className="text-bark-grey font-normal text-sm leading-relaxed">
+                  Permanently deletes underlying text glyphs and metadata streams. Black boxes cannot be copied, selected, or inspected.
+                </p>
               </div>
-              <p className="text-xs text-[#6f6f6e] mt-1 leading-relaxed">
-                Disconnect your Wi-Fi or open DevTools (<kbd className="font-mono bg-[#ffffff] px-1 rounded text-[#292929] border border-[#00000014]">F12</kbd> → Network). Drop any document: observe exactly <strong>0 requests sent</strong>. Processing is strictly contained within your browser process.
-              </p>
-            </div>
-          </div>
+              <div className="border-t border-stone-mist px-6 py-3 bg-warm-bone flex items-center justify-between">
+                <span className="text-charcoal font-medium text-xs font-mono uppercase">Zero Text Leaks</span>
+                <ArrowRight className="w-3.5 h-3.5 text-charcoal" />
+              </div>
+            </li>
+
+            {/* Card 2 */}
+            <li className="flex flex-col border-b border-stone-mist sm:border-b-0 sm:border-r border-stone-mist">
+              <div className="flex flex-col gap-2 p-6 flex-1 bg-paper-white">
+                <p className="text-charcoal font-medium text-base font-mono">Word Documents (.docx)</p>
+                <p className="text-bark-grey font-normal text-sm leading-relaxed">
+                  Cleans sensitive names and banking numbers across tables, paragraphs, and headers while keeping your exact layout intact.
+                </p>
+              </div>
+              <div className="border-t border-stone-mist px-6 py-3 bg-warm-bone flex items-center justify-between">
+                <span className="text-charcoal font-medium text-xs font-mono uppercase">Layout Preserved</span>
+                <ArrowRight className="w-3.5 h-3.5 text-charcoal" />
+              </div>
+            </li>
+
+            {/* Card 3 */}
+            <li className="flex flex-col border-stone-mist">
+              <div className="flex flex-col gap-2 p-6 flex-1 bg-paper-white">
+                <p className="text-charcoal font-medium text-base font-mono">ID Cards & Scans (OCR)</p>
+                <p className="text-bark-grey font-normal text-sm leading-relaxed">
+                  Built-in offline OCR detects text on photos. Easily rotate sideways phone photos 90° and draw manual blackout rectangles.
+                </p>
+              </div>
+              <div className="border-t border-stone-mist px-6 py-3 bg-warm-bone flex items-center justify-between">
+                <span className="text-charcoal font-medium text-xs font-mono uppercase">Rotate & Draw</span>
+                <ArrowRight className="w-3.5 h-3.5 text-charcoal" />
+              </div>
+            </li>
+          </ul>
         </div>
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          2. VECTOR SCRUBBING ARCHITECTURE COMPARISON
+          3. AUTOSEND METRICS BAR & LOGO STRIP
       ────────────────────────────────────────────────────────────── */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 border-t border-[#00000014] bg-[#ffffff]">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center max-w-2xl mx-auto mb-12">
-            <span className="text-xs font-medium uppercase tracking-wider text-[#6f6f6e] mb-2 block">
-              Forensic Privacy
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-normal text-[#141414] tracking-[-0.02em]">
-              Vector incineration vs. Naive black boxes
-            </h2>
-            <p className="mt-2 text-sm text-[#6f6f6e]">
-              Why amateur web tools leak confidential data and how Redactify solves it.
-            </p>
+      <section className="max-w-6xl mx-auto w-full px-4 md:px-6 mb-20">
+        <div className="border-x border-stone-mist">
+          <div className="border-t border-b border-stone-mist">
+            {/* 4 Metric Columns */}
+            <div className="grid grid-cols-2 md:grid-cols-4 border-b border-stone-mist">
+              <div className="flex flex-col justify-center gap-1.5 p-6 border-stone-mist odd:border-r md:odd:border-r-0 md:border-r">
+                <p className="text-charcoal font-normal text-3xl font-datatype text-center">0</p>
+                <p className="text-bark-grey font-normal text-xs text-center">Bytes uploaded to any server</p>
+              </div>
+              <div className="flex flex-col justify-center gap-1.5 p-6 border-stone-mist md:border-r">
+                <p className="text-charcoal font-normal text-3xl font-datatype text-center">&lt; 15ms</p>
+                <p className="text-bark-grey font-normal text-xs text-center">Instant detection speed</p>
+              </div>
+              <div className="flex flex-col justify-center gap-1.5 p-6 border-stone-mist odd:border-r md:odd:border-r-0 md:border-r">
+                <p className="text-charcoal font-normal text-3xl font-datatype text-center">100%</p>
+                <p className="text-bark-grey font-normal text-xs text-center">Client-side offline processing</p>
+              </div>
+              <div className="flex flex-col justify-center gap-1.5 p-6 border-stone-mist">
+                <p className="text-charcoal font-normal text-3xl font-datatype text-center">17+</p>
+                <p className="text-bark-grey font-normal text-xs text-center">Standard PII types recognized</p>
+              </div>
+            </div>
+
+            {/* Strip Eyebrow */}
+            <div className="flex justify-center items-center p-5 bg-paper-white border-b border-stone-mist">
+              <p className="text-charcoal font-medium text-xs font-mono uppercase tracking-[0.10em] text-center">
+                Trusted by privacy-minded teams and individuals worldwide
+              </p>
+            </div>
+
+            {/* Social Proof Logos */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 bg-paper-white">
+              <div className="flex items-center justify-center p-6 border-r border-b sm:border-b-0 border-stone-mist">
+                <img src="/images/peerlist.webp" alt="Peerlist" className="h-6 object-contain opacity-70 hover:opacity-100 transition-opacity" />
+              </div>
+              <div className="flex items-center justify-center p-6 sm:border-r border-b sm:border-b-0 border-stone-mist">
+                <img src="/images/supermemory.webp" alt="Supermemory" className="h-7 object-contain opacity-70 hover:opacity-100 transition-opacity" />
+              </div>
+              <div className="flex items-center justify-center p-6 border-r border-stone-mist">
+                <img src="/images/gistr.webp" alt="Gistr" className="h-7 object-contain opacity-70 hover:opacity-100 transition-opacity" />
+              </div>
+              <div className="flex items-center justify-center p-6 border-stone-mist">
+                <img src="/images/guidejar.webp" alt="Guidejar" className="h-7 object-contain opacity-70 hover:opacity-100 transition-opacity" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      {/* ─────────────────────────────────────────────────────────────
+          4. AUTOSEND NUMBERED DEEP-DIVE SECTIONS (#01, #02, #03)
+      ────────────────────────────────────────────────────────────── */}
+      <section className="max-w-6xl mx-auto w-full px-4 md:px-6 mb-20">
+        <div className="flex flex-col border-x border-t border-stone-mist">
+          
+          {/* #01 - Zero Cloud Exposure */}
+          <div className="border-b border-stone-mist">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 md:p-10 items-center">
+              <div className="flex flex-col gap-3">
+                <p className="text-rose-600 font-mono text-xs font-semibold uppercase tracking-wider">
+                  #01: Zero Cloud Exposure
+                </p>
+                <h2 className="font-serif text-3xl md:text-4xl text-charcoal font-normal leading-tight">
+                  Your private files never leave your computer.
+                </h2>
+                <p className="text-bark-grey text-sm md:text-base leading-relaxed font-sans">
+                  Most online redaction websites upload your contracts, tax returns, and client IDs to remote cloud servers. If their server is ever compromised, your sensitive files are exposed.
+                </p>
+                <p className="text-bark-grey text-sm md:text-base leading-relaxed font-sans">
+                  Redactify works completely inside your web browser using WebAssembly. Disconnect your internet connection, turn off Wi-Fi, and see for yourself: Redactify continues to work flawlessly.
+                </p>
+                <div className="pt-2">
+                  <span className="inline-flex items-center gap-2 px-3 py-1 rounded-tag bg-paper-white border border-stone-mist text-xs font-mono text-charcoal">
+                    <span className="w-2 h-2 rounded-full bg-lichen-green" />
+                    <span>0 HTTP Network Requests Sent</span>
+                  </span>
+                </div>
+              </div>
+
+              {/* Visual Showcase Card */}
+              <div className="relative rounded-card border border-stone-mist overflow-hidden bg-paper-white shadow-card p-6">
+                <div className="font-mono text-xs text-bark-grey uppercase pb-3 border-b border-stone-mist flex items-center justify-between">
+                  <span>Browser Network Inspector</span>
+                  <span className="text-lichen-green font-semibold">100% Offline Ready</span>
+                </div>
+                <div className="py-4 space-y-3 font-mono text-xs">
+                  <div className="p-3 rounded-tag bg-warm-bone border border-stone-mist flex items-center justify-between">
+                    <span className="text-charcoal font-medium">Document Upload Request</span>
+                    <span className="text-lichen-green font-semibold">BLOCKED (0 Bytes)</span>
+                  </div>
+                  <div className="p-3 rounded-tag bg-warm-bone border border-stone-mist flex items-center justify-between">
+                    <span className="text-charcoal font-medium">Telemetry & Analytics</span>
+                    <span className="text-lichen-green font-semibold">NONE (Zero Tracking)</span>
+                  </div>
+                  <div className="p-3 rounded-tag bg-warm-bone border border-stone-mist flex items-center justify-between">
+                    <span className="text-charcoal font-medium">Processing Engine</span>
+                    <span className="text-electric-indigo font-semibold">Local Browser RAM</span>
+                  </div>
+                </div>
+                <p className="text-[11px] text-bark-grey font-sans pt-2 border-t border-stone-mist">
+                  Safe for strictly confidential legal contracts, patient medical histories, and HR payroll filings.
+                </p>
+              </div>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
-            {/* The Danger: Naive Overlay */}
-            <div className="p-6 rounded-[12px] bg-[#edede8] border border-[#00000014] flex flex-col justify-between">
-              <div>
-                <div className="flex items-center gap-2 text-xs font-medium text-[#c92a2a] uppercase tracking-wider mb-2">
-                  <ShieldAlert className="w-4 h-4" />
-                  <span>Amateur Tools (High Leak Risk)</span>
+          {/* #02 - Smart Automatic Detection */}
+          <div className="border-b border-stone-mist">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 md:p-10 items-center">
+              {/* Visual Showcase Card */}
+              <div className="order-2 md:order-1 rounded-card border border-stone-mist overflow-hidden bg-paper-white shadow-card p-6">
+                <div className="font-mono text-xs text-bark-grey uppercase pb-3 border-b border-stone-mist flex items-center justify-between">
+                  <span>Smart Pattern Checksums</span>
+                  <span className="text-charcoal font-semibold">&lt; 15ms Speed</span>
                 </div>
-                <h3 className="text-lg font-normal text-[#141414] mb-3">
-                  Superficial Black Box Overlay
-                </h3>
-                <p className="text-xs text-[#6f6f6e] leading-relaxed mb-4">
-                  Standard PDF tools merely draw a black visual rectangle on top of existing text. The original character glyphs, bounding boxes, and metadata remain intact in the PDF stream.
+                <div className="py-4 space-y-2.5 font-mono text-xs">
+                  <div className="p-2.5 rounded-tag bg-warm-bone border border-stone-mist flex items-center justify-between">
+                    <span className="text-bark-grey">Social Security / Tax ID</span>
+                    <span className="font-semibold text-charcoal bg-stone-mist/60 px-2 py-0.5 rounded">XXX-XX-4320</span>
+                  </div>
+                  <div className="p-2.5 rounded-tag bg-warm-bone border border-stone-mist flex items-center justify-between">
+                    <span className="text-bark-grey">Credit Card & IBAN</span>
+                    <span className="font-semibold text-charcoal bg-stone-mist/60 px-2 py-0.5 rounded">•••• •••• •••• 1092</span>
+                  </div>
+                  <div className="p-2.5 rounded-tag bg-warm-bone border border-stone-mist flex items-center justify-between">
+                    <span className="text-bark-grey">Executive Compensation</span>
+                    <span className="font-semibold text-charcoal bg-stone-mist/60 px-2 py-0.5 rounded">[SALARY CONFIDENTIAL]</span>
+                  </div>
+                  <div className="p-2.5 rounded-tag bg-warm-bone border border-stone-mist flex items-center justify-between">
+                    <span className="text-bark-grey">Direct Contact Info</span>
+                    <span className="font-semibold text-charcoal bg-stone-mist/60 px-2 py-0.5 rounded">[CONTACT REDACTED]</span>
+                  </div>
+                </div>
+                <p className="text-[11px] text-bark-grey font-sans pt-2 border-t border-stone-mist">
+                  Mathematical validation algorithms eliminate false alarms and catch disguised numbers.
                 </p>
+              </div>
 
-                {/* Visual Representation */}
-                <div className="p-4 rounded-[8px] bg-[#ffffff] border border-[#00000014] font-mono text-xs space-y-2">
-                  <div className="text-[#8f8f8e] text-[10px] uppercase">// PDF Text Stream Inspector</div>
-                  <div className="relative p-2 bg-[#f8f9fa] rounded border border-[#e9ecef]">
-                    <span className="text-[#495057] select-all">SSN: 987-65-4320</span>
-                    <div className="absolute inset-0 bg-[#000000]/70 flex items-center justify-center text-[9px] text-white">
-                      [Visual Black Box - Text Still Selectable Underneath!]
+              <div className="order-1 md:order-2 flex flex-col gap-3">
+                <p className="text-amber-600 font-mono text-xs font-semibold uppercase tracking-wider">
+                  #02: Smart Pattern Detection
+                </p>
+                <h2 className="font-serif text-3xl md:text-4xl text-charcoal font-normal leading-tight">
+                  Automatically spots sensitive data before you hit send.
+                </h2>
+                <p className="text-bark-grey text-sm md:text-base leading-relaxed font-sans">
+                  Forget searching through dozens of pages by hand. Redactify automatically detects Social Security Numbers, Tax IDs, IBANs, bank accounts, emails, phone numbers, and compensation details.
+                </p>
+                <p className="text-bark-grey text-sm md:text-base leading-relaxed font-sans">
+                  Built-in mathematical checksums verify digits instantly, ensuring actual sensitive numbers are scrubbed without flagging harmless order IDs or dates.
+                </p>
+                <div className="pt-2 flex flex-wrap gap-2">
+                  <span className="px-2.5 py-1 rounded-tag bg-paper-white border border-stone-mist text-xs font-mono text-charcoal">
+                    US & Global IDs
+                  </span>
+                  <span className="px-2.5 py-1 rounded-tag bg-paper-white border border-stone-mist text-xs font-mono text-charcoal">
+                    Healthcare HIPAA
+                  </span>
+                  <span className="px-2.5 py-1 rounded-tag bg-paper-white border border-stone-mist text-xs font-mono text-charcoal">
+                    Banking & Payroll
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* #03 - Scanned Documents & Photos */}
+          <div className="border-b border-stone-mist">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 md:p-10 items-center">
+              <div className="flex flex-col gap-3">
+                <p className="text-electric-indigo font-mono text-xs font-semibold uppercase tracking-wider">
+                  #03: Scans & Phone Photos
+                </p>
+                <h2 className="font-serif text-3xl md:text-4xl text-charcoal font-normal leading-tight">
+                  Fix sideways phone photos and black out signatures.
+                </h2>
+                <p className="text-bark-grey text-sm md:text-base leading-relaxed font-sans">
+                  Took a photo of an ID card, contract, or receipt on your mobile phone that saved vertically instead of horizontally? Rotate it 90 degrees with one click.
+                </p>
+                <p className="text-bark-grey text-sm md:text-base leading-relaxed font-sans">
+                  Use the manual crosshair tool to draw custom blackout rectangles over handwritten signatures, official rubber stamps, or ID portrait photos. Everything burns directly into the image upon download.
+                </p>
+                <div className="pt-2 flex items-center gap-3">
+                  <button 
+                    onClick={onNavigateToStudio}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-paper-white border border-stone-mist text-xs font-mono uppercase font-semibold text-charcoal hover:bg-stone-mist/40 transition-colors"
+                  >
+                    <RotateCw className="w-3.5 h-3.5 text-charcoal" />
+                    <span>Rotate 90° Controls</span>
+                  </button>
+                  <button 
+                    onClick={onNavigateToStudio}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-paper-white border border-stone-mist text-xs font-mono uppercase font-semibold text-charcoal hover:bg-stone-mist/40 transition-colors"
+                  >
+                    <Crosshair className="w-3.5 h-3.5 text-charcoal" />
+                    <span>Manual Crosshair</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Visual Showcase Card */}
+              <div className="rounded-card border border-stone-mist overflow-hidden bg-paper-white shadow-card p-6">
+                <div className="font-mono text-xs text-bark-grey uppercase pb-3 border-b border-stone-mist flex items-center justify-between">
+                  <span>Scanned ID Orientation & Blackout</span>
+                  <span className="text-electric-indigo font-semibold">Tesseract WASM</span>
+                </div>
+                <div className="py-6 flex flex-col items-center justify-center gap-4 bg-warm-bone/60 rounded-tag border border-stone-mist my-4">
+                  <div className="flex items-center gap-3">
+                    <div className="px-3 py-1 rounded-tag bg-paper-white border border-stone-mist font-mono text-xs text-charcoal flex items-center gap-1.5 shadow-sm">
+                      <RotateCcw className="w-3 h-3" />
+                      <span>Rotate CCW</span>
+                    </div>
+                    <div className="px-3 py-1 rounded-tag bg-paper-white border border-stone-mist font-mono text-xs text-charcoal flex items-center gap-1.5 shadow-sm">
+                      <RotateCw className="w-3 h-3" />
+                      <span>Rotate CW</span>
                     </div>
                   </div>
-                  <div className="text-[11px] text-[#c92a2a] pt-1 flex items-center gap-1.5 font-medium">
-                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                    <span>Anyone can press Ctrl+A / Ctrl+C to extract the hidden text underneath.</span>
+                  <div className="w-48 h-28 bg-paper-white border border-stone-mist rounded-tag shadow-sm relative p-3 flex flex-col justify-between">
+                    <div className="flex items-center justify-between">
+                      <div className="w-12 h-2 bg-stone-mist rounded" />
+                      <div className="w-6 h-6 rounded-full bg-stone-mist" />
+                    </div>
+                    <div className="h-6 w-full bg-charcoal text-white rounded flex items-center justify-center font-mono text-[9px]">
+                      [SIGNATURE BLACKOUT]
+                    </div>
+                    <div className="flex gap-2">
+                      <div className="w-16 h-2 bg-stone-mist rounded" />
+                      <div className="w-8 h-2 bg-stone-mist rounded" />
+                    </div>
                   </div>
                 </div>
-              </div>
-
-              <div className="mt-6 pt-4 border-t border-[#0000000f] text-xs text-[#6f6f6e]">
-                Retains author, timestamp, printer profile, and revision trees.
-              </div>
-            </div>
-
-            {/* The Solution: Redactify Vector Scrubbing */}
-            <div className="p-6 rounded-[12px] bg-[#ffffff] border-2 border-[#141414] flex flex-col justify-between shadow-[0_4px_24px_rgba(0,0,0,0.04)]">
-              <div>
-                <div className="flex items-center gap-2 text-xs font-medium text-[#4cc02b] uppercase tracking-wider mb-2">
-                  <CheckCircle2 className="w-4 h-4 text-[#4cc02b]" />
-                  <span>Redactify V2 (Zero-Trust Standard)</span>
-                </div>
-                <h3 className="text-lg font-normal text-[#141414] mb-3">
-                  Permanent Vector Incineration
-                </h3>
-                <p className="text-xs text-[#6f6f6e] leading-relaxed mb-4">
-                  Redactify parses the underlying PDF vector graph in WebAssembly. The sensitive glyph stream is destroyed and replaced with neutral coordinates. Text extraction tools yield zero characters.
+                <p className="text-[11px] text-bark-grey font-sans pt-2 border-t border-stone-mist">
+                  Permanent image canvas flattening: text cannot be extracted or uncovered.
                 </p>
-
-                {/* Visual Representation */}
-                <div className="p-4 rounded-[8px] bg-[#edede8] border border-[#00000014] font-mono text-xs space-y-2">
-                  <div className="text-[#6f6f6e] text-[10px] uppercase">// Scrubbed Vector Stream</div>
-                  <div className="p-2 bg-[#141414] rounded text-[#ffffff] flex items-center justify-between text-[11px]">
-                    <span className="text-[#8f8f8e]">SSN:</span>
-                    <span className="text-[#ffffff] font-bold">XXX-XX-4320</span>
-                    <span className="w-2 h-2 rounded-full bg-[#4cc02b]" />
-                  </div>
-                  <div className="text-[11px] text-[#292929] pt-1 flex items-center gap-1.5">
-                    <Check className="w-3.5 h-3.5 text-[#4cc02b]" />
-                    <span>Raw text incinerated • Metadata wiped • Cryptographically verified</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-6 pt-4 border-t border-[#0000000f] text-xs text-[#292929] flex items-center justify-between">
-                <span>Certified Sovereign Export</span>
-                <span className="text-[11px] font-mono text-[#6f6f6e]">pdf-lib WASM engine</span>
               </div>
             </div>
           </div>
 
-          {/* Architectural Pipeline Diagram (Crisp non-AI vector diagram) */}
-          <div className="mt-12 p-6 sm:p-8 rounded-[12px] bg-[#fbfbfa] border border-[#00000014]">
-            <div className="text-center mb-6">
-              <span className="text-[10px] font-mono uppercase tracking-widest text-[#8f8f8e]">
-                System Architecture
-              </span>
-              <h3 className="text-base sm:text-lg font-normal text-[#141414] mt-1">
-                Zero-Egress Execution Sandbox
-              </h3>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-stretch">
-              {/* Step 1 */}
-              <div className="p-4 rounded-[8px] bg-white border border-[#00000014] text-center flex flex-col justify-between">
-                <div>
-                  <div className="w-8 h-8 rounded-full bg-[#edede8] text-[#141414] font-mono text-xs flex items-center justify-center mx-auto mb-2 font-medium">
-                    01
-                  </div>
-                  <div className="text-xs font-medium text-[#141414]">Local Buffer</div>
-                  <p className="text-[11px] text-[#6f6f6e] mt-1.5 leading-normal">
-                    File drops directly into browser Uint8Array buffer in volatile memory.
-                  </p>
-                </div>
-                <div className="mt-3 text-[10px] font-mono text-[#8f8f8e]">RAM Allocation</div>
-              </div>
-
-              {/* Step 2 */}
-              <div className="p-4 rounded-[8px] bg-white border border-[#00000014] text-center flex flex-col justify-between">
-                <div>
-                  <div className="w-8 h-8 rounded-full bg-[#edede8] text-[#141414] font-mono text-xs flex items-center justify-center mx-auto mb-2 font-medium">
-                    02
-                  </div>
-                  <div className="text-xs font-medium text-[#141414]">WASM Parser</div>
-                  <p className="text-[11px] text-[#6f6f6e] mt-1.5 leading-normal">
-                    Vector structures and OOXML trees decomposed directly in WebAssembly.
-                  </p>
-                </div>
-                <div className="mt-3 text-[10px] font-mono text-[#8f8f8e]">pdf-lib & jszip</div>
-              </div>
-
-              {/* Step 3 */}
-              <div className="p-4 rounded-[8px] bg-white border border-[#00000014] text-center flex flex-col justify-between">
-                <div>
-                  <div className="w-8 h-8 rounded-full bg-[#edede8] text-[#141414] font-mono text-xs flex items-center justify-center mx-auto mb-2 font-medium">
-                    03
-                  </div>
-                  <div className="text-xs font-medium text-[#141414]">PII Deduction</div>
-                  <p className="text-[11px] text-[#6f6f6e] mt-1.5 leading-normal">
-                    17 mathematical checksums executed across tokens in &lt;10ms.
-                  </p>
-                </div>
-                <div className="mt-3 text-[10px] font-mono text-[#8f8f8e]">Luhn / Verhoeff / Mod-97</div>
-              </div>
-
-              {/* Step 4 */}
-              <div className="p-4 rounded-[8px] bg-[#141414] text-white border border-[#141414] text-center flex flex-col justify-between">
-                <div>
-                  <div className="w-8 h-8 rounded-full bg-white/20 text-white font-mono text-xs flex items-center justify-center mx-auto mb-2 font-medium">
-                    04
-                  </div>
-                  <div className="text-xs font-medium text-white">Glyph Incineration</div>
-                  <p className="text-[11px] text-[#dbdbd2] mt-1.5 leading-normal">
-                    Raw stream destroyed; clean vector export generated with 0 egress.
-                  </p>
-                </div>
-                <div className="mt-3 text-[10px] font-mono text-[#4cc02b]">0 Network Requests</div>
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          3. REGULATORY COMPLIANCE TILES
+          5. AUTOSEND COMPARISON TABLE
       ────────────────────────────────────────────────────────────── */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 border-t border-[#00000014] bg-[#edede8]">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center max-w-2xl mx-auto mb-12">
-            <span className="text-xs font-medium uppercase tracking-wider text-[#6f6f6e] mb-2 block">
-              Sovereignty & Governance
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-normal text-[#141414] tracking-[-0.02em]">
-              Built for international legal, HR, and compliance mandates
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="p-5 rounded-[12px] bg-[#ffffff] border border-[#00000014]">
-              <div className="text-xs font-medium text-[#6f6f6e] uppercase tracking-wider mb-1">
-                EU & UK GDPR
-              </div>
-              <div className="text-sm font-normal text-[#141414] mb-2">Article 32 Security</div>
-              <p className="text-xs text-[#6f6f6e] leading-relaxed">
-                Eliminates cross-border data transfer liabilities because sensitive documents never leave client hardware.
-              </p>
-            </div>
-
-            <div className="p-5 rounded-[12px] bg-[#ffffff] border border-[#00000014]">
-              <div className="text-xs font-medium text-[#6f6f6e] uppercase tracking-wider mb-1">
-                US HIPAA
-              </div>
-              <div className="text-sm font-normal text-[#141414] mb-2">Safe Harbor Standard</div>
-              <p className="text-xs text-[#6f6f6e] leading-relaxed">
-                Removes all 18 PHI identifiers including Medical Record Numbers, dates of birth, names, and contact details.
-              </p>
-            </div>
-
-            <div className="p-5 rounded-[12px] bg-[#ffffff] border border-[#00000014]">
-              <div className="text-xs font-medium text-[#6f6f6e] uppercase tracking-wider mb-1">
-                Financial & GLBA
-              </div>
-              <div className="text-sm font-normal text-[#141414] mb-2">PCI-DSS Safe Masking</div>
-              <p className="text-xs text-[#6f6f6e] leading-relaxed">
-                Protects credit cards, ABA bank routing numbers, IBANs, and wire transfer coordinates via Luhn algorithms.
-              </p>
-            </div>
-
-            <div className="p-5 rounded-[12px] bg-[#ffffff] border border-[#00000014]">
-              <div className="text-xs font-medium text-[#6f6f6e] uppercase tracking-wider mb-1">
-                Global Privacy
-              </div>
-              <div className="text-sm font-normal text-[#141414] mb-2">Zero-Data Retention</div>
-              <p className="text-xs text-[#6f6f6e] leading-relaxed">
-                Meets strict data minimization guidelines across CCPA, CPRA, India DPDP Act 2023, and ISO 27001 standards.
-              </p>
-            </div>
-          </div>
+      <section className="max-w-6xl mx-auto w-full px-4 md:px-6 mb-20">
+        <div className="text-center max-w-2xl mx-auto mb-10">
+          <p className="text-xs font-mono uppercase tracking-[0.10em] text-bark-grey mb-2">
+            Comparison
+          </p>
+          <h2 className="font-serif text-3xl md:text-4xl text-charcoal font-normal">
+            Why teams choose Redactify
+          </h2>
+          <p className="mt-2 text-sm text-bark-grey font-sans">
+            How client-side redaction compares to Adobe Acrobat and typical web tools.
+          </p>
         </div>
-      </section>
 
-      {/* ─────────────────────────────────────────────────────────────
-          4. ENTERPRISE COMPARATIVE MATRIX
-      ────────────────────────────────────────────────────────────── */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 border-t border-[#00000014] bg-[#ffffff]">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center max-w-2xl mx-auto mb-12">
-            <span className="text-xs font-medium uppercase tracking-wider text-[#6f6f6e] mb-2 block">
-              Architectural Difference
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-normal text-[#141414] tracking-[-0.02em]">
-              How Redactify compares
-            </h2>
-          </div>
-
+        <div className="border border-stone-mist rounded-card overflow-hidden bg-paper-white shadow-card">
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse border border-[#00000014] rounded-[12px] overflow-hidden">
+            <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-[#00000014] bg-[#edede8] text-xs font-mono text-[#353535]">
-                  <th className="py-3 px-5">Metric / Feature</th>
-                  <th className="py-3 px-5 text-[#141414] font-semibold bg-[#ffffff] border-x border-[#00000014]">
+                <tr className="border-b border-stone-mist bg-warm-bone text-xs font-mono text-charcoal">
+                  <th className="py-3.5 px-6 font-semibold">Feature / Security Standard</th>
+                  <th className="py-3.5 px-6 font-semibold text-charcoal bg-paper-white border-x border-stone-mist">
                     Redactify V2
                   </th>
-                  <th className="py-3 px-5 text-[#6f6f6e]">Adobe Acrobat Pro</th>
-                  <th className="py-3 px-5 text-[#6f6f6e]">Cloud Web Redactors</th>
+                  <th className="py-3.5 px-6 text-bark-grey font-medium">Adobe Acrobat Pro</th>
+                  <th className="py-3.5 px-6 text-bark-grey font-medium">Common Web Editors</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#00000014] text-xs text-[#353535]">
+              <tbody className="divide-y divide-stone-mist text-xs sm:text-sm font-sans text-charcoal">
                 <tr>
-                  <td className="py-3.5 px-5 font-medium text-[#141414]">Processing Location</td>
-                  <td className="py-3.5 px-5 text-[#141414] font-semibold bg-[#ffffff] border-x border-[#00000014] flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-[#4cc02b]" /> 100% In-Memory RAM
+                  <td className="py-4 px-6 font-medium">Where files are processed</td>
+                  <td className="py-4 px-6 font-semibold bg-paper-white border-x border-stone-mist text-lichen-green flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-lichen-green" /> 100% On Your Device (RAM)
                   </td>
-                  <td className="py-3.5 px-5 text-[#6f6f6e]">Adobe Document Cloud</td>
-                  <td className="py-3.5 px-5 text-[#c92a2a]">AWS / GCP third-party servers</td>
+                  <td className="py-4 px-6 text-bark-grey">Adobe Document Cloud</td>
+                  <td className="py-4 px-6 text-rose-600">Third-Party Cloud Servers</td>
                 </tr>
                 <tr>
-                  <td className="py-3.5 px-5 font-medium text-[#141414]">Air-Gapped / Offline</td>
-                  <td className="py-3.5 px-5 text-[#141414] font-semibold bg-[#ffffff] border-x border-[#00000014]">
-                    Yes (Full offline capability)
+                  <td className="py-4 px-6 font-medium">Offline and air-gapped support</td>
+                  <td className="py-4 px-6 font-semibold bg-paper-white border-x border-stone-mist">
+                    Yes (Fully offline capable)
                   </td>
-                  <td className="py-3.5 px-5 text-[#6f6f6e]">Requires cloud license checks</td>
-                  <td className="py-3.5 px-5 text-[#c92a2a]">No (Fails immediately)</td>
+                  <td className="py-4 px-6 text-bark-grey">Requires cloud license checks</td>
+                  <td className="py-4 px-6 text-rose-600">No (Fails without internet)</td>
                 </tr>
                 <tr>
-                  <td className="py-3.5 px-5 font-medium text-[#141414]">Government ID Masking</td>
-                  <td className="py-3.5 px-5 text-[#141414] font-semibold bg-[#ffffff] border-x border-[#00000014]">
-                    Checksum validation (SSN, Tax IDs, Passports)
+                  <td className="py-4 px-6 font-medium">Permanent vector text deletion</td>
+                  <td className="py-4 px-6 font-semibold bg-paper-white border-x border-stone-mist">
+                    Yes (Glyphs fully destroyed)
                   </td>
-                  <td className="py-3.5 px-5 text-[#6f6f6e]">Manual regex setup</td>
-                  <td className="py-3.5 px-5 text-[#c92a2a]">None or basic strings</td>
+                  <td className="py-4 px-6 text-bark-grey">Yes (Sanitize document)</td>
+                  <td className="py-4 px-6 text-rose-600">Often superficial black boxes</td>
                 </tr>
                 <tr>
-                  <td className="py-3.5 px-5 font-medium text-[#141414]">Vector Text Scrubbing</td>
-                  <td className="py-3.5 px-5 text-[#141414] font-semibold bg-[#ffffff] border-x border-[#00000014]">
-                    Permanent glyph destruction
+                  <td className="py-4 px-6 font-medium">Sideways photo 90° rotation</td>
+                  <td className="py-4 px-6 font-semibold bg-paper-white border-x border-stone-mist">
+                    Yes (One-click CW & CCW)
                   </td>
-                  <td className="py-3.5 px-5 text-[#353535]">Yes</td>
-                  <td className="py-3.5 px-5 text-[#c92a2a]">Often superficial overlays</td>
+                  <td className="py-4 px-6 text-bark-grey">Requires page organize tool</td>
+                  <td className="py-4 px-6 text-rose-600">Not supported</td>
                 </tr>
                 <tr>
-                  <td className="py-3.5 px-5 font-medium text-[#141414]">Pricing Model</td>
-                  <td className="py-3.5 px-5 text-[#141414] font-semibold bg-[#ffffff] border-x border-[#00000014]">
-                    $9/mo or $29 Early-Bird Lifetime
+                  <td className="py-4 px-6 font-medium">Pricing model</td>
+                  <td className="py-4 px-6 font-semibold bg-paper-white border-x border-stone-mist text-charcoal">
+                    $9 / mo or $29 Early-Bird Lifetime
                   </td>
-                  <td className="py-3.5 px-5 text-[#6f6f6e]">$240+ / year recurring</td>
-                  <td className="py-3.5 px-5 text-[#6f6f6e]">$60 - $120 / year recurring</td>
+                  <td className="py-4 px-6 text-bark-grey">$240+ / year subscription</td>
+                  <td className="py-4 px-6 text-bark-grey">$60 - $120 / year subscription</td>
                 </tr>
               </tbody>
             </table>
@@ -881,91 +939,109 @@ NOTICE: Unauthorized disclosure of this document violates federal HIPAA regulati
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          5. FAQ ACCORDION (Gleap Clean Style)
+          6. AUTOSEND CLEAN FAQ ACCORDION
       ────────────────────────────────────────────────────────────── */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 border-t border-[#00000014] bg-[#edede8]">
-        <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-10">
-            <span className="text-xs font-medium uppercase tracking-wider text-[#6f6f6e] mb-2 block">
-              Clear Answers
-            </span>
-            <h2 className="text-3xl font-normal text-[#141414] tracking-[-0.02em]">
-              Frequently asked questions
-            </h2>
-          </div>
+      <section className="max-w-4xl mx-auto w-full px-4 md:px-6 mb-20">
+        <div className="text-center mb-10">
+          <p className="text-xs font-mono uppercase tracking-[0.10em] text-bark-grey mb-2">
+            Clear Answers
+          </p>
+          <h2 className="font-serif text-3xl md:text-4xl text-charcoal font-normal">
+            Frequently asked questions
+          </h2>
+        </div>
 
-          <div className="space-y-3">
-            {FAQS.map((faq, idx) => {
-              const isOpen = openFaqIndex === idx;
-              return (
-                <div
-                  key={idx}
-                  className="rounded-[12px] border border-[#00000014] bg-[#ffffff] overflow-hidden transition-colors"
+        <div className="space-y-3">
+          {FAQS.map((faq, idx) => {
+            const isOpen = openFaqIndex === idx;
+            return (
+              <div
+                key={idx}
+                className="rounded-xl border border-stone-mist bg-paper-white overflow-hidden transition-colors shadow-sm"
+              >
+                <button
+                  onClick={() => setOpenFaqIndex(isOpen ? -1 : idx)}
+                  className="w-full p-4 sm:p-5 text-left flex items-center justify-between gap-4 font-sans font-medium text-sm sm:text-base text-charcoal hover:text-black transition-colors"
                 >
-                  <button
-                    onClick={() => setOpenFaqIndex(isOpen ? -1 : idx)}
-                    className="w-full p-4 text-left flex items-center justify-between gap-4 font-normal text-sm text-[#141414] hover:text-[#000000] transition-colors"
-                  >
-                    <span>{faq.q}</span>
-                    {isOpen ? (
-                      <ChevronUp className="w-4 h-4 text-[#6f6f6e] shrink-0" />
-                    ) : (
-                      <ChevronDown className="w-4 h-4 text-[#6f6f6e] shrink-0" />
-                    )}
-                  </button>
-
-                  {isOpen && (
-                    <div className="px-4 pb-4 text-xs text-[#6f6f6e] leading-relaxed border-t border-[#0000000f] pt-3">
-                      {faq.a}
-                    </div>
+                  <span>{faq.q}</span>
+                  {isOpen ? (
+                    <ChevronUp className="w-4 h-4 text-bark-grey shrink-0" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-bark-grey shrink-0" />
                   )}
-                </div>
-              );
-            })}
-          </div>
+                </button>
+
+                {isOpen && (
+                  <div className="px-4 sm:px-5 pb-5 text-xs sm:text-sm text-bark-grey leading-relaxed border-t border-stone-mist pt-3 font-sans">
+                    {faq.a}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          6. ARCHITECTURAL FOOTER
+          7. AUTOSEND 4-COLUMN FOOTER
       ────────────────────────────────────────────────────────────── */}
-      <footer className="py-10 px-4 sm:px-6 lg:px-8 border-t border-[#00000014] bg-[#ffffff] text-xs text-[#6f6f6e]">
-        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-6 h-6 rounded-full bg-[#141414] text-white flex items-center justify-center font-mono text-xs">
-              R
+      <footer className="border-t border-stone-mist bg-paper-white py-12 px-4 md:px-6 text-xs text-bark-grey">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-start justify-between gap-8">
+          <div className="flex flex-col gap-2 max-w-sm">
+            <div className="flex items-center gap-2">
+              {/* Bespoke Document Redaction Glyph */}
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-charcoal">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <polyline points="14 2 14 8 20 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <rect x="7" y="12" width="10" height="2.5" rx="1" fill="currentColor" />
+                <rect x="7" y="16.5" width="6" height="2" rx="0.8" fill="currentColor" opacity="0.6" />
+              </svg>
+              <span className="font-mono text-sm font-semibold uppercase tracking-wider text-charcoal">Redactify</span>
             </div>
-            <span className="font-medium text-[#141414]">Redactify V2</span>
-            <span className="text-[#8f8f8e]">•</span>
-            <span>Zero-Trust Sovereign Redaction</span>
+            <p className="text-xs text-bark-grey leading-relaxed">
+              Zero-knowledge, client-side document redaction running 100% inside your browser. No files uploaded.
+            </p>
           </div>
 
-          <div className="flex items-center gap-6">
-            <button
-              onClick={onNavigateToStudio}
-              className="text-[#353535] hover:text-[#141414] transition-colors"
-            >
-              Studio
-            </button>
-            <button
-              onClick={onNavigateToPricing}
-              className="text-[#353535] hover:text-[#141414] transition-colors"
-            >
-              Pricing & Trust
-            </button>
-            <a 
-              href="https://github.com/SAKTHIVEL280/redactify-v2" 
-              target="_blank" 
-              rel="noreferrer"
-              className="text-[#353535] hover:text-[#141414] transition-colors"
-            >
-              GitHub
-            </a>
-          </div>
+          <div className="flex flex-wrap gap-10 sm:gap-16">
+            <div className="flex flex-col gap-2">
+              <span className="font-mono uppercase font-semibold text-charcoal text-xs">Product</span>
+              <button onClick={onNavigateToStudio} className="text-left text-bark-grey hover:text-charcoal transition-colors">
+                Studio
+              </button>
+              <button onClick={loadSampleOfferLetter} className="text-left text-bark-grey hover:text-charcoal transition-colors">
+                Sample Document
+              </button>
+              <button onClick={onNavigateToPricing} className="text-left text-bark-grey hover:text-charcoal transition-colors">
+                Pricing
+              </button>
+            </div>
 
-          <div className="text-[11px] text-[#8f8f8e]">
-            © {new Date().getFullYear()} Redactify. Documents never leave your browser.
+            <div className="flex flex-col gap-2">
+              <span className="font-mono uppercase font-semibold text-charcoal text-xs">Privacy</span>
+              <span className="text-bark-grey">GDPR Article 32</span>
+              <span className="text-bark-grey">HIPAA Safe Harbor</span>
+              <span className="text-bark-grey">Zero Server Logs</span>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <span className="font-mono uppercase font-semibold text-charcoal text-xs">Open Source</span>
+              <a 
+                href="https://github.com/SAKTHIVEL280/redactify-v2" 
+                target="_blank" 
+                rel="noreferrer"
+                className="text-bark-grey hover:text-charcoal transition-colors"
+              >
+                GitHub Repository ↗
+              </a>
+              <span className="text-bark-grey">WebAssembly WASM</span>
+            </div>
           </div>
+        </div>
+
+        <div className="max-w-6xl mx-auto mt-10 pt-6 border-t border-stone-mist flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-bark-grey">
+          <span>© {new Date().getFullYear()} Redactify. Documents are processed exclusively on your device.</span>
+          <span className="font-mono">v2.0 • 100% Client-Side Privacy</span>
         </div>
       </footer>
     </div>

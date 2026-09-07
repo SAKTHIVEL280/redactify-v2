@@ -5,7 +5,7 @@
  * are permanently scrubbed from content streams and redacted pages are cleanly sanitized.
  */
 
-import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import { PDFDocument, rgb, StandardFonts, degrees } from 'pdf-lib';
 
 // Helper to decompress stream using standard Web DecompressionStream
 async function decompressStream(uint8Array) {
@@ -102,36 +102,43 @@ async function scrubPageTextStreams(page, doc, boxes) {
 
       // 1. Literal text string replacement
       for (const target of targetStrings) {
-        if (streamStr.includes(target)) {
-          streamStr = streamStr.replaceAll(target, ' '.repeat(target.length));
+        if (!target) continue;
+        const cleanTarget = target.trim();
+        if (cleanTarget.length === 0) continue;
+
+        if (streamStr.includes(cleanTarget)) {
+          streamStr = streamStr.replaceAll(cleanTarget, ' '.repeat(cleanTarget.length));
         }
 
         // 2. Hexadecimal string representation in PDF streams (<48454C4C...>)
         let hexStr = '';
-        for (let c = 0; c < target.length; c++) {
-          hexStr += target.charCodeAt(c).toString(16).padStart(2, '0');
+        for (let c = 0; c < cleanTarget.length; c++) {
+          hexStr += cleanTarget.charCodeAt(c).toString(16).padStart(2, '0');
         }
         hexStr = hexStr.toUpperCase();
 
-        if (streamStr.toUpperCase().includes(hexStr)) {
-          const hexBlank = '20'.repeat(target.length);
+        if (hexStr.length >= 4 && streamStr.toUpperCase().includes(hexStr)) {
+          const hexBlank = '20'.repeat(cleanTarget.length);
           const re = new RegExp(hexStr, 'gi');
           streamStr = streamStr.replace(re, hexBlank);
         }
-      }
 
-      // 3. Scrub matching text blocks (BT ... ET) that contain any sensitive fragments
-      streamStr = streamStr.replace(/BT[\s\S]*?ET/g, (btBlock) => {
-        let blockModified = btBlock;
-        for (const target of targetStrings) {
-          if (blockModified.includes(target)) {
-            blockModified = blockModified
-              .replace(/\((?:[^\\)]|\\.)*\)/g, (m) => '(' + ' '.repeat(Math.max(0, m.length - 2)) + ')')
-              .replace(/<[0-9A-Fa-f\s]+>/g, (m) => '<' + '20'.repeat(Math.floor((m.length - 2) / 2)) + '>');
+        // 3. Scrub target occurrences within literal string operators: (target) Tj
+        streamStr = streamStr.replace(/\((?:[^\\)]|\\.)*\)/g, (strMatch) => {
+          if (strMatch.includes(cleanTarget)) {
+            return strMatch.replaceAll(cleanTarget, ' '.repeat(cleanTarget.length));
+          }
+          return strMatch;
+        });
+
+        // 4. Also check stripped variations of target (e.g. without spaces or hyphens)
+        const strippedTarget = cleanTarget.replace(/[\s-]/g, '');
+        if (strippedTarget.length >= 6 && strippedTarget !== cleanTarget) {
+          if (streamStr.includes(strippedTarget)) {
+            streamStr = streamStr.replaceAll(strippedTarget, ' '.repeat(strippedTarget.length));
           }
         }
-        return blockModified;
-      });
+      }
 
       const scrubbedBytes = new Uint8Array(streamStr.length);
       for (let k = 0; k < streamStr.length; k++) {
@@ -158,11 +165,14 @@ export async function exportRedactedPDF({
   redactions,
   style = { color: '#09090b', textColor: '#ffffff', label: '[REDACTED]', showLabel: false },
   isPro = false,
+  rotation = 0,
   onProgress = () => {}
 }) {
   const pdfDoc = await PDFDocument.load(fileArrayBuffer);
   const totalPages = pdfDoc.getPageCount();
   const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+  const rot = ((rotation % 360) + 360) % 360;
+  const isSideways = rot === 90 || rot === 270;
 
   // Group active redactions by page index
   const activeRedactions = redactions.filter(r => r.redact);
@@ -209,7 +219,8 @@ export async function exportRedactedPDF({
         try {
           const jsPage = await pdfJsDoc.getPage(i + 1);
           const scale = 2.5;
-          const viewport = jsPage.getViewport({ scale });
+          const effectiveRotation = (jsPage.rotate + rot) % 360;
+          const viewport = jsPage.getViewport({ scale, rotation: effectiveRotation });
           const canvas = document.createElement('canvas');
           canvas.width = Math.floor(viewport.width);
           canvas.height = Math.floor(viewport.height);
@@ -249,7 +260,7 @@ export async function exportRedactedPDF({
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(
-              'Trial Version — Redacted with Redactify (redactify.daeq.in) — Upgrade to Pro for Clean Commercial Exports',
+              'Trial Version: Redacted with Redactify (redactify.daeq.in). Upgrade to Pro for clean exports',
               canvas.width / 2,
               canvas.height - (wmHeight / 2)
             );
@@ -276,12 +287,14 @@ export async function exportRedactedPDF({
 
           // Embed image and replace old page containing the leaked text stream
           const embeddedImage = await pdfDoc.embedJpg(imgBytes);
-          const cleanPage = pdfDoc.insertPage(i, [width, height]);
+          const targetWidth = isSideways ? height : width;
+          const targetHeight = isSideways ? width : height;
+          const cleanPage = pdfDoc.insertPage(i, [targetWidth, targetHeight]);
           cleanPage.drawImage(embeddedImage, {
             x: 0,
             y: 0,
-            width,
-            height
+            width: targetWidth,
+            height: targetHeight
           });
           pdfDoc.removePage(i + 1); // Permanently delete original page & its text stream
           rasterizedSuccessfully = true;
@@ -330,12 +343,21 @@ export async function exportRedactedPDF({
             }
           }
         }
+
+        if (rot !== 0) {
+          const currentAngle = (typeof page.getRotation === 'function' ? page.getRotation().angle : 0) || 0;
+          page.setRotation(degrees((currentAngle + rot) % 360));
+        }
       }
+    } else if (rot !== 0) {
+      // Unredacted page rotation preservation
+      const currentAngle = (typeof page.getRotation === 'function' ? page.getRotation().angle : 0) || 0;
+      page.setRotation(degrees((currentAngle + rot) % 360));
     }
 
     // Trial watermark on unredacted vector pages if Free Tier
     if (!isPro && pageMap.get(i)?.length === 0) {
-      const watermarkText = 'Trial Version — Redacted with Redactify (redactify.daeq.in) — Upgrade to Pro for Clean Commercial Exports';
+      const watermarkText = 'Trial Version: Redacted with Redactify (redactify.daeq.in). Upgrade to Pro for clean exports';
       const wmFontSize = 7;
       const wmWidth = font.widthOfTextAtSize(watermarkText, wmFontSize);
 

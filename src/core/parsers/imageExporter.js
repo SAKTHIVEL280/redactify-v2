@@ -84,7 +84,7 @@ export async function exportRedactedImage({
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
           ctx.fillText(
-            'Trial Version — Redacted with Redactify (redactify.daeq.in) — Upgrade to Pro for Clean Commercial Exports',
+            'Trial Version: Redacted with Redactify (redactify.daeq.in). Upgrade to Pro for clean exports',
             canvas.width / 2,
             canvas.height - (wmHeight / 2)
           );

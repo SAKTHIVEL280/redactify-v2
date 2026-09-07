@@ -8,6 +8,7 @@ import { PRESETS } from '../core/engine/presets';
 import { parseAndScanPDF } from '../core/parsers/pdfParser';
 import { parseAndExtractDOCX } from '../core/parsers/docxParser';
 import { detectEntities } from '../core/engine/detector';
+import { createSampleOfferLetterPdf } from '../core/parsers/samplePdfGenerator';
 
 export function StudioDropzone() {
   const [isDragging, setIsDragging] = useState(false);
@@ -140,33 +141,13 @@ export function StudioDropzone() {
     if (file) processFile(file);
   }, [processFile]);
 
-  const loadSampleOfferLetter = () => {
-    const sampleOfferText = `STRICTLY CONFIDENTIAL - EMPLOYMENT AGREEMENT & OFFER
-Date: September 4, 2026
-
-Candidate: David M. Sterling
-Home Address: 742 Evergreen Terrace, Suite 400, Seattle, WA 98101
-Social Security Number: 987-65-4320
-Phone: +1 (206) 555-0194 | Email: d.sterling@apexglobal.io
-
-Dear David,
-We are thrilled to offer you the position of Principal Architect at Apex Global Technologies Inc.
-
-1. Compensation & Terms:
-- Fixed Annual Base Salary: $185,000 USD (paid semi-monthly).
-- One-time Signing Bonus: $25,000 USD.
-- Direct Deposit Payroll: Routing Number 021000021, Account Number 8492019482.
-
-2. Confidentiality:
-You agree that all proprietary algorithms, client lists, and confidential intellectual property remain the sole property of Apex Global Technologies Inc.
-
-Yours sincerely,
-Apex Global Technologies Inc.
-Katherine Vance
-Executive Vice President, Legal & HR Operations`;
-
-    const file = new File([sampleOfferText], 'Sample_Executive_Offer_Letter.txt', { type: 'text/plain' });
-    processFile(file);
+  const loadSampleOfferLetter = async () => {
+    try {
+      const file = await createSampleOfferLetterPdf();
+      processFile(file);
+    } catch (err) {
+      console.error('Failed to load sample PDF:', err);
+    }
   };
 
   const loadSampleMedicalRecord = () => {
@@ -195,29 +176,29 @@ NOTICE: Unauthorized disclosure of this document violates federal HIPAA regulati
   };
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center p-6 sm:p-12 overflow-y-auto bg-[#edede8]">
+    <div className="flex-1 flex flex-col items-center justify-center p-6 sm:p-12 overflow-y-auto bg-warm-bone">
       <div className="w-full max-w-2xl text-center mb-8">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#ffffff] border border-[#00000014] text-xs text-[#292929] mb-4 shadow-sm">
-          <span className="w-2 h-2 rounded-full bg-[#4cc02b]" />
-          <span>Studio Workbench • Local Client RAM</span>
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-soft-cream border border-stone-mist text-xs font-mono text-charcoal mb-4 shadow-sm">
+          <span className="w-2 h-2 rounded-full bg-emerald-500" />
+          <span>Local Browser RAM • Zero Remote Network Calls</span>
         </div>
-        <h1 className="text-3xl sm:text-4xl font-normal tracking-[-0.02em] text-[#141414] mb-2">
+        <h1 className="text-3xl sm:text-4xl font-serif font-normal tracking-tight text-charcoal mb-2">
           Open a document to redact
         </h1>
-        <p className="text-xs sm:text-sm text-[#6f6f6e] max-w-md mx-auto">
-          Files are parsed in volatile browser memory. Zero telemetry, zero uploads.
+        <p className="text-xs sm:text-sm text-bark-grey max-w-md mx-auto">
+          Files are parsed in local volatile memory. Zero telemetry, zero cloud uploads.
         </p>
       </div>
 
-      <div className="w-full max-w-2xl bg-[#ffffff] rounded-[12px] p-6 sm:p-10 border border-[#00000014] shadow-[0_4px_24px_rgba(0,0,0,0.03)] text-left">
+      <div className="w-full max-w-2xl bg-paper-white rounded-card p-6 sm:p-10 border border-stone-mist shadow-card text-left">
         {/* Clean Studio Preset Dropdown */}
-        <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-[10px] bg-[#fbfbfa] border border-[#00000014]">
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-card bg-soft-cream border border-stone-mist">
           <div>
-            <label htmlFor="studio-preset-select" className="text-xs font-semibold text-[#141414] block">
+            <label htmlFor="studio-preset-select" className="text-xs font-semibold text-charcoal block">
               Compliance Detection Preset
             </label>
-            <span className="text-[11px] text-[#6f6f6e]">
-              Preconfigures sovereign regex and algorithmic filters
+            <span className="text-[11px] text-bark-grey">
+              Preconfigures algorithmic pattern filters
             </span>
           </div>
           <div className="relative">
@@ -225,7 +206,7 @@ NOTICE: Unauthorized disclosure of this document violates federal HIPAA regulati
               id="studio-preset-select"
               value={activePreset}
               onChange={(e) => setActivePreset(e.target.value)}
-              className="appearance-none bg-[#ffffff] border border-[#00000014] rounded-full px-4 py-2 pr-8 text-xs font-medium text-[#141414] shadow-sm hover:border-[#141414] focus:outline-none cursor-pointer"
+              className="appearance-none bg-paper-white border border-stone-mist rounded-button px-4 py-2 pr-8 text-xs font-mono font-medium text-charcoal shadow-sm hover:border-charcoal focus:outline-none cursor-pointer"
             >
               {Object.values(PRESETS).map((p) => (
                 <option key={p.id} value={p.id}>
@@ -233,7 +214,7 @@ NOTICE: Unauthorized disclosure of this document violates federal HIPAA regulati
                 </option>
               ))}
             </select>
-            <ChevronDown className="w-3.5 h-3.5 text-[#6f6f6e] absolute right-3 top-3 pointer-events-none" />
+            <ChevronDown className="w-3.5 h-3.5 text-bark-grey absolute right-3 top-3 pointer-events-none" />
           </div>
         </div>
 
@@ -242,10 +223,10 @@ NOTICE: Unauthorized disclosure of this document violates federal HIPAA regulati
           onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
           onDragLeave={() => setIsDragging(false)}
           onDrop={handleDrop}
-          className={`w-full rounded-[10px] border border-dashed p-8 sm:p-12 transition-all relative overflow-hidden flex flex-col items-center justify-center cursor-pointer text-center ${
+          className={`w-full rounded-card border-2 border-dashed p-8 sm:p-12 transition-all relative overflow-hidden flex flex-col items-center justify-center cursor-pointer text-center ${
             isDragging
-              ? 'border-[#141414] bg-[#edede8]/70'
-              : 'border-[#dbdbd2] hover:border-[#141414] bg-[#edede8]/30 hover:bg-[#edede8]/50'
+              ? 'border-charcoal bg-soft-cream'
+              : 'border-stone-mist hover:border-charcoal bg-warm-bone/40 hover:bg-warm-bone/80'
           }`}
         >
           <input
@@ -258,60 +239,60 @@ NOTICE: Unauthorized disclosure of this document violates federal HIPAA regulati
 
           {isProcessing ? (
             <div className="flex flex-col items-center py-4">
-              <div className="w-8 h-8 rounded-full border-2 border-[#141414] border-t-transparent animate-spin mb-3" />
-              <div className="text-xs font-medium text-[#141414] mb-1">
+              <div className="w-8 h-8 rounded-full border-2 border-charcoal border-t-transparent animate-spin mb-3" />
+              <div className="text-xs font-medium text-charcoal mb-1">
                 {progress.message || 'Processing in browser memory...'}
               </div>
-              <div className="text-[11px] text-[#6f6f6e] font-mono">
+              <div className="text-[11px] text-bark-grey font-mono">
                 {progress.total > 0 ? `${progress.current} / ${progress.total}` : 'Parsing client-side'}
               </div>
             </div>
           ) : (
             <>
-              <div className="w-11 h-11 rounded-full bg-[#ffffff] border border-[#00000014] flex items-center justify-center mb-3 text-[#141414] shadow-sm">
+              <div className="w-11 h-11 rounded-full bg-paper-white border border-stone-mist flex items-center justify-center mb-3 text-charcoal shadow-sm">
                 <UploadCloud className="w-5 h-5" />
               </div>
-              <div className="text-sm font-medium text-[#141414] mb-1">
-                Drop your PDF, Word, or image file here
+              <div className="text-sm font-medium text-charcoal mb-1">
+                Drop your PDF, Word, or image scan here
               </div>
-              <p className="text-xs text-[#6f6f6e] mb-4">
-                or <span className="text-[#141414] underline underline-offset-4">browse files</span>
+              <p className="text-xs text-bark-grey mb-4">
+                or <span className="text-charcoal underline underline-offset-4 font-medium">browse files</span>
               </p>
-              <div className="flex flex-wrap items-center justify-center gap-2 text-[10px] text-[#6f6f6e] font-mono">
-                <span className="px-2 py-0.5 rounded-full bg-[#ffffff] border border-[#00000014]">PDF</span>
-                <span className="px-2 py-0.5 rounded-full bg-[#ffffff] border border-[#00000014]">DOCX</span>
-                <span className="px-2 py-0.5 rounded-full bg-[#ffffff] border border-[#00000014]">PNG / JPG</span>
-                <span className="px-2 py-0.5 rounded-full bg-[#ffffff] border border-[#00000014]">TXT</span>
+              <div className="flex flex-wrap items-center justify-center gap-2 text-[10px] text-bark-grey font-mono">
+                <span className="px-2 py-0.5 rounded-full bg-paper-white border border-stone-mist">PDF</span>
+                <span className="px-2 py-0.5 rounded-full bg-paper-white border border-stone-mist">DOCX</span>
+                <span className="px-2 py-0.5 rounded-full bg-paper-white border border-stone-mist">PNG / JPG</span>
+                <span className="px-2 py-0.5 rounded-full bg-paper-white border border-stone-mist">TXT</span>
               </div>
             </>
           )}
         </div>
 
         {error && (
-          <div className="mt-4 p-3 rounded-[8px] bg-[#f8d7da] border border-[#f5c6cb] text-[#721c24] text-xs flex items-start gap-2">
+          <div className="mt-4 p-3 rounded-button bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2 font-mono">
             <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
         )}
 
         {/* Quick Sample Testers */}
-        <div className="mt-5 pt-4 border-t border-[#0000000f] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-          <span className="text-[#6f6f6e]">Quick test with sample documents:</span>
+        <div className="mt-5 pt-4 border-t border-stone-mist/60 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+          <span className="text-bark-grey font-mono">Test with sample documents:</span>
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={loadSampleOfferLetter}
-              className="px-3 py-1.5 rounded-full bg-[#edede8] hover:bg-[#dbdbd2] text-[#292929] border border-[#00000014] text-xs font-medium transition-colors flex items-center gap-1.5"
+              className="px-3 py-1.5 rounded-button bg-soft-cream hover:bg-stone-mist/40 text-charcoal border border-stone-mist text-xs font-mono font-medium transition-colors flex items-center gap-1.5"
             >
-              <FileCheck className="w-3.5 h-3.5 text-[#141414]" />
-              <span>Sample Executive Offer</span>
+              <FileCheck className="w-3.5 h-3.5 text-charcoal" />
+              <span>Sample Offer Letter</span>
             </button>
             <button
               type="button"
               onClick={loadSampleMedicalRecord}
-              className="px-3 py-1.5 rounded-full bg-[#edede8] hover:bg-[#dbdbd2] text-[#292929] border border-[#00000014] text-xs font-medium transition-colors flex items-center gap-1.5"
+              className="px-3 py-1.5 rounded-button bg-soft-cream hover:bg-stone-mist/40 text-charcoal border border-stone-mist text-xs font-mono font-medium transition-colors flex items-center gap-1.5"
             >
-              <FileText className="w-3.5 h-3.5 text-[#141414]" />
+              <FileText className="w-3.5 h-3.5 text-charcoal" />
               <span>Sample Medical Record</span>
             </button>
           </div>

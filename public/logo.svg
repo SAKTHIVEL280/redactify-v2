@@ -1,9 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none">
-  <rect width="48" height="48" rx="12" fill="#09090b" />
-  <rect x="2" y="2" width="44" height="44" rx="10" stroke="#27272a" stroke-width="1.5" />
-  <path d="M14 16h20v4H14z" fill="#f43f5e" rx="2" />
-  <path d="M14 24h12v4H14z" fill="#f43f5e" rx="2" />
-  <path d="M14 32h16v4H14z" fill="#71717a" rx="2" />
-  <circle cx="34" cy="30" r="6" fill="#f43f5e" fill-opacity="0.2" stroke="#f43f5e" stroke-width="1.5" />
-  <path d="M32 30l1.5 1.5L36 29" stroke="#f43f5e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+  <rect width="48" height="48" rx="12" fill="#292524" />
+  <rect x="1.5" y="1.5" width="45" height="45" rx="10.5" stroke="#e7e5e4" stroke-opacity="0.3" stroke-width="1.5" />
+  <!-- Document Page with folded corner -->
+  <path d="M28 10H16a3 3 0 0 0-3 3v22a3 3 0 0 0 3 3h16a3 3 0 0 0 3-3V17l-7-7z" fill="#fafaf9" stroke="#e7e5e4" stroke-width="1.5" stroke-linejoin="round" />
+  <path d="M28 10v7h7" stroke="#79716b" stroke-width="1.5" stroke-linejoin="round" />
+  <!-- Solid Blackout Bars -->
+  <rect x="17" y="21" width="14" height="3" rx="1" fill="#292524" />
+  <rect x="17" y="26" width="9" height="2.5" rx="0.8" fill="#615fff" />
+  <rect x="17" y="30.5" width="12" height="2" rx="0.8" fill="#79716b" opacity="0.5" />
 </svg>

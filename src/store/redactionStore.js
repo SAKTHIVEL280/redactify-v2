@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { PRESETS } from '../core/engine/presets';
 
 export const REDACTION_COLORS = [
   { id: 'black', label: 'Solid Black', hex: '#09090b', textHex: '#ffffff' },
@@ -33,6 +34,8 @@ export const useRedactionStore = create((set, get) => ({
   // Manual box creation tool active
   isDrawingMode: false,
   selectedRedactionId: null,
+  isInspectorOpen: true,
+  toggleInspector: () => set((state) => ({ isInspectorOpen: !state.isInspectorOpen })),
 
   // Custom regex/keyword rules
   customRules: [],
@@ -86,7 +89,28 @@ export const useRedactionStore = create((set, get) => ({
     }));
   },
 
-  setActivePreset: (presetId) => set({ activePreset: presetId }),
+  setActivePreset: (presetId) => {
+    get().applyPreset(presetId);
+  },
+
+  applyPreset: (presetId) => {
+    const preset = Object.values(PRESETS).find(p => p.id === presetId) || PRESETS.ALL;
+    const allowedTypes = new Set(preset.types);
+
+    get()._recordHistory();
+    set((state) => ({
+      activePreset: presetId,
+      redactions: state.redactions.map((r) => {
+        if (r.type === 'manual') return r;
+        const entityKey = r.entityType || r.type;
+        const isAllowed = allowedTypes.has(entityKey) || allowedTypes.has(r.category);
+        return {
+          ...r,
+          redact: isAllowed
+        };
+      })
+    }));
+  },
 
   setStyle: (newStyle) => set((state) => ({
     style: { ...state.style, ...newStyle }
