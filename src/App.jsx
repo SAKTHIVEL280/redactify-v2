@@ -21,7 +21,7 @@ export function App() {
   const handleNavigateToPricing = () => setActivePage('pricing');
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden bg-warm-bone text-charcoal selection:bg-electric-indigo selection:text-white">
+    <div className="flex flex-col h-screen w-screen overflow-hidden bg-warm-bone text-charcoal selection:bg-charcoal selection:text-white">
       {/* Universal Top Header */}
       <Header activePage={activePage} setActivePage={setActivePage} />
 

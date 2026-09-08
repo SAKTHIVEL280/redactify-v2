@@ -94,7 +94,7 @@ export function ProModal({ onNavigateToPricing }) {
             onClick={() => setActiveTab('pricing')}
             className={`pb-2.5 px-3 text-xs font-mono font-medium transition-all border-b-2 ${
               activeTab === 'pricing'
-                ? 'border-electric-indigo text-charcoal'
+                ? 'border-charcoal text-charcoal'
                 : 'border-transparent text-bark-grey hover:text-charcoal'
             }`}
           >
@@ -104,7 +104,7 @@ export function ProModal({ onNavigateToPricing }) {
             onClick={() => setActiveTab('license')}
             className={`pb-2.5 px-3 text-xs font-mono font-medium transition-all border-b-2 ${
               activeTab === 'license'
-                ? 'border-electric-indigo text-charcoal'
+                ? 'border-charcoal text-charcoal'
                 : 'border-transparent text-bark-grey hover:text-charcoal'
             }`}
           >
@@ -133,27 +133,27 @@ export function ProModal({ onNavigateToPricing }) {
               {/* Feature Checklist */}
               <div className="grid grid-cols-2 gap-2 text-xs text-charcoal py-1">
                 <div className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-electric-indigo shrink-0" />
+                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                   <span>Unlimited Pages</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-electric-indigo shrink-0" />
+                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                   <span>Zero Watermarks</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-electric-indigo shrink-0" />
+                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                   <span>Passports, IDs, SSN</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-electric-indigo shrink-0" />
+                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                   <span>Word DOCX Redaction</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-electric-indigo shrink-0" />
+                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                   <span>Custom Color Labels</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-electric-indigo shrink-0" />
+                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                   <span>True Text Scrubbing</span>
                 </div>
               </div>
@@ -183,8 +183,8 @@ export function ProModal({ onNavigateToPricing }) {
                 </div>
 
                 {/* Lifetime Pass */}
-                <div className="p-4 rounded-card bg-paper-white border-2 border-electric-indigo relative overflow-hidden flex flex-col justify-between shadow-card-hover">
-                  <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-electric-indigo text-[9px] font-mono font-medium text-white uppercase tracking-wider shadow-sm">
+                <div className="p-4 rounded-card bg-paper-white border-2 border-charcoal relative overflow-hidden flex flex-col justify-between shadow-card-hover">
+                  <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-charcoal text-[9px] font-mono font-medium text-white uppercase tracking-wider shadow-sm">
                     Lifetime
                   </div>
 
@@ -202,7 +202,7 @@ export function ProModal({ onNavigateToPricing }) {
                       closeProModal();
                       if (onNavigateToPricing) onNavigateToPricing();
                     }}
-                    className="mt-4 w-full h-9 rounded-button bg-electric-indigo hover:bg-deep-violet text-white text-xs font-mono font-medium text-center transition-all shadow-sm"
+                    className="mt-4 w-full h-9 rounded-button bg-charcoal hover:bg-black text-white text-xs font-mono font-medium text-center transition-all shadow-sm"
                   >
                     View Lifetime Pass
                   </button>
@@ -237,7 +237,7 @@ export function ProModal({ onNavigateToPricing }) {
                     placeholder="RDCT-PRO-XXXX-XXXX"
                     value={licenseInput}
                     onChange={(e) => setLicenseInput(e.target.value)}
-                    className="w-full bg-soft-cream border border-stone-mist rounded-button pl-9 pr-3 py-2 text-xs font-mono text-charcoal placeholder-stone-400 focus:outline-none focus:border-electric-indigo focus:ring-1 focus:ring-electric-indigo uppercase"
+                    className="w-full bg-soft-cream border border-stone-mist rounded-button pl-9 pr-3 py-2 text-xs font-mono text-charcoal placeholder-stone-400 focus:outline-none focus:border-charcoal focus:ring-1 focus:ring-charcoal uppercase"
                   />
                 </div>
                 {licenseError && (
@@ -248,7 +248,7 @@ export function ProModal({ onNavigateToPricing }) {
                   <button
                     type="button"
                     onClick={() => setLicenseInput('RDCT-PRO-A1B2C3D4-6AB6')}
-                    className="text-electric-indigo hover:underline font-mono text-[10px]"
+                    className="text-charcoal font-semibold hover:underline font-mono text-[10px]"
                   >
                     Insert Demo Key
                   </button>
@@ -258,7 +258,7 @@ export function ProModal({ onNavigateToPricing }) {
               <button
                 type="submit"
                 disabled={isActivating}
-                className="w-full h-10 rounded-button bg-electric-indigo hover:bg-deep-violet text-white text-xs font-mono font-medium transition-all shadow-sm flex items-center justify-center gap-2"
+                className="w-full h-10 rounded-button bg-charcoal hover:bg-black text-white text-xs font-mono font-medium transition-all shadow-sm flex items-center justify-center gap-2"
               >
                 {isActivating ? (
                   <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />

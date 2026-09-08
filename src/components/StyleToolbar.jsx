@@ -150,7 +150,7 @@ export function StyleToolbar() {
                   setStyle({ label: e.target.value });
                 }
               }}
-              className="bg-soft-cream border border-stone-mist text-charcoal text-xs rounded-button px-2.5 py-1 focus:outline-none focus:border-electric-indigo font-mono cursor-pointer"
+              className="bg-soft-cream border border-stone-mist text-charcoal text-xs rounded-button px-2.5 py-1 focus:outline-none focus:border-charcoal font-mono cursor-pointer"
             >
               {REDACTION_LABELS.map((lbl) => (
                 <option key={lbl} value={lbl}>{lbl}</option>
@@ -165,7 +165,7 @@ export function StyleToolbar() {
               value={style.label}
               onChange={(e) => setStyle({ label: e.target.value })}
               placeholder="Custom label..."
-              className="bg-paper-white border border-stone-mist text-charcoal text-xs rounded-button px-2.5 py-1 w-32 focus:outline-none focus:border-electric-indigo font-mono shadow-sm"
+              className="bg-paper-white border border-stone-mist text-charcoal text-xs rounded-button px-2.5 py-1 w-32 focus:outline-none focus:border-charcoal font-mono shadow-sm"
               title="Type any custom blackout label"
             />
           </div>
@@ -186,7 +186,7 @@ export function StyleToolbar() {
         <button
           onClick={handleExport}
           disabled={isExporting}
-          className="h-10 px-6 rounded-button bg-electric-indigo hover:bg-deep-violet text-white font-mono font-medium text-xs tracking-wide shadow-sm transition-all flex items-center gap-2"
+          className="h-10 px-6 rounded-button bg-charcoal hover:bg-black text-white font-mono font-medium text-xs tracking-wide shadow-sm transition-all flex items-center gap-2"
         >
           {isExporting ? (
             <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />

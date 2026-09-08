@@ -15,16 +15,16 @@ export default {
         charcoal: '#292524',
         obsidian: '#0c0a09',
         pebble: '#a6a09b',
-        'electric-indigo': '#615fff',
-        'deep-violet': '#4f39f6',
+        'electric-indigo': '#18181b',
+        'deep-violet': '#09090b',
         terracotta: '#d97757',
-        'lichen-green': '#5ea500',
+        'lichen-green': '#10b981',
         'tide-teal': '#22b8cd',
-        'alarm-red': '#ff0000',
-        'sapphire-link': '#007ebb',
+        'alarm-red': '#ef4444',
+        'sapphire-link': '#2563eb',
         brand: {
-          500: '#615fff',
-          600: '#4f39f6',
+          500: '#18181b',
+          600: '#09090b',
         }
       },
       borderRadius: {

@@ -625,7 +625,7 @@ export function DocumentViewer() {
             <button
               onClick={handleRunOcr}
               disabled={isOcrScanning}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-button bg-electric-indigo hover:bg-deep-violet text-white text-xs font-mono font-medium transition-colors disabled:opacity-50 shadow-sm"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-button bg-charcoal hover:bg-black text-white text-xs font-mono font-medium transition-colors disabled:opacity-50 shadow-sm"
             >
               {isOcrScanning ? (
                 <>
@@ -668,7 +668,7 @@ export function DocumentViewer() {
             >
               <div className="mb-4 pb-3 border-b border-stone-mist/60 text-[11px] font-mono text-bark-grey flex items-center justify-between">
                 <span>Word / Text Document View</span>
-                <span className="text-electric-indigo font-medium">Click any tag to toggle • Select text to redact</span>
+                <span className="text-charcoal font-medium">Click any tag to toggle • Select text to redact</span>
               </div>
               <div className="leading-relaxed">{interactiveTextElements}</div>
             </div>
@@ -688,7 +688,7 @@ export function DocumentViewer() {
               </span>
               <button
                 onClick={handleAddTextRedaction}
-                className="px-2 py-0.5 rounded bg-electric-indigo hover:bg-deep-violet text-white text-[11px] font-semibold transition-colors flex items-center gap-1 shadow-sm"
+                className="px-2 py-0.5 rounded bg-white text-charcoal hover:bg-stone-200 text-[11px] font-semibold transition-colors flex items-center gap-1 shadow-sm"
               >
                 <span>+ Redact</span>
               </button>

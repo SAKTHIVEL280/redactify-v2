@@ -65,7 +65,7 @@ export function FeedbackModal({ isOpen, onClose }) {
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full bg-soft-cream border border-stone-mist rounded-button px-4 py-2 text-xs font-mono text-charcoal focus:outline-none focus:border-electric-indigo"
+                className="w-full bg-soft-cream border border-stone-mist rounded-button px-4 py-2 text-xs font-mono text-charcoal focus:outline-none focus:border-charcoal"
               >
                 <option value="missed_entity">Missed Name or Number</option>
                 <option value="false_positive">False Detection (Over-redacted)</option>
@@ -82,13 +82,13 @@ export function FeedbackModal({ isOpen, onClose }) {
                 value={feedbackText}
                 onChange={(e) => setFeedbackText(e.target.value)}
                 placeholder="Describe what was missed or your suggestion..."
-                className="w-full bg-soft-cream border border-stone-mist rounded-card p-3 text-xs text-charcoal placeholder-stone-400 focus:outline-none focus:border-electric-indigo"
+                className="w-full bg-soft-cream border border-stone-mist rounded-card p-3 text-xs text-charcoal placeholder-stone-400 focus:outline-none focus:border-charcoal"
               />
             </div>
 
             <button
               type="submit"
-              className="w-full h-10 rounded-button bg-electric-indigo hover:bg-deep-violet text-white text-xs font-mono font-medium transition-all shadow-sm flex items-center justify-center gap-2"
+              className="w-full h-10 rounded-button bg-charcoal hover:bg-black text-white text-xs font-mono font-medium transition-all shadow-sm flex items-center justify-center gap-2"
             >
               <Send className="w-3.5 h-3.5" />
               <span>Submit Feedback</span>

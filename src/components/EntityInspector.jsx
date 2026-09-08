@@ -100,7 +100,7 @@ export function EntityInspector({ onOpenFeedback }) {
             placeholder="Search detected text..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-soft-cream border border-stone-mist rounded-button pl-8 pr-3 py-1.5 text-xs text-charcoal placeholder-stone-400 focus:outline-none focus:border-electric-indigo font-mono transition-colors"
+            className="w-full bg-soft-cream border border-stone-mist rounded-button pl-8 pr-3 py-1.5 text-xs text-charcoal placeholder-stone-400 focus:outline-none focus:border-charcoal font-mono transition-colors"
           />
         </div>
 
@@ -142,7 +142,7 @@ export function EntityInspector({ onOpenFeedback }) {
               <div className="flex items-start gap-2 min-w-0">
                 <div className="mt-0.5 text-charcoal">
                   {r.redact ? (
-                    <CheckSquare className="w-3.5 h-3.5 text-electric-indigo" />
+                    <CheckSquare className="w-3.5 h-3.5 text-charcoal" />
                   ) : (
                     <Square className="w-3.5 h-3.5 text-bark-grey" />
                   )}

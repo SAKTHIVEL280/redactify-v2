@@ -280,7 +280,7 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
           </button>
           <button
             onClick={onNavigateToStudio}
-            className="cursor-pointer font-semibold font-mono uppercase border text-xs sm:text-sm rounded-xl px-6 py-2.5 text-white bg-electric-indigo border-deep-violet hover:bg-deep-violet shadow-sm active:scale-95 transition-all flex items-center gap-2 tracking-wider"
+            className="cursor-pointer font-semibold font-mono uppercase border text-xs sm:text-sm rounded-xl px-6 py-2.5 text-white bg-charcoal border-charcoal hover:bg-black shadow-sm active:scale-95 transition-all flex items-center gap-2 tracking-wider"
           >
             <span>Open Studio</span>
             <ArrowRight className="w-4 h-4" />
@@ -296,14 +296,14 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
           onDrop={handleDrop}
           className={`relative w-full max-w-4xl bg-paper-white rounded-card border transition-all duration-200 shadow-showcase mb-14 text-left overflow-hidden ${
             isDragging
-              ? 'border-electric-indigo ring-4 ring-electric-indigo/20 bg-soft-cream'
+              ? 'border-charcoal ring-4 ring-charcoal/10 bg-soft-cream'
               : 'border-stone-mist'
           }`}
         >
           {/* Active Drag-and-Drop High-Contrast Overlay */}
           {isDragging && (
             <div className="absolute inset-0 z-30 bg-paper-white/95 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-150">
-              <div className="w-16 h-16 rounded-2xl bg-electric-indigo text-white flex items-center justify-center mb-4 shadow-lg animate-bounce">
+              <div className="w-16 h-16 rounded-2xl bg-charcoal text-white flex items-center justify-center mb-4 shadow-lg animate-bounce">
                 <UploadCloud className="w-8 h-8" />
               </div>
               <h3 className="text-xl font-serif text-charcoal">Release to redact immediately</h3>
@@ -345,7 +345,7 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
                       Drop your PDF, Word, or image file here
                     </h3>
                     <p className="text-xs text-bark-grey mt-0.5 font-sans">
-                      Everything is processed directly inside your browser memory. <span className="text-electric-indigo font-semibold underline underline-offset-4">Browse files on device</span>
+                      Everything is processed directly inside your browser memory. <span className="text-charcoal font-semibold underline underline-offset-4">Browse files on device</span>
                     </p>
                     <div className="flex flex-wrap items-center gap-1.5 mt-2.5 text-[10px] text-bark-grey font-mono uppercase">
                       <span className="px-2 py-0.5 rounded-tag bg-paper-white border border-stone-mist">PDF</span>
@@ -561,7 +561,7 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
                 </button>
                 <button
                   onClick={onNavigateToStudio}
-                  className="inline-flex items-center justify-center font-mono font-semibold uppercase text-xs rounded-xl px-4 py-1.5 bg-electric-indigo hover:bg-deep-violet text-white shadow-sm transition-all gap-1.5"
+                  className="inline-flex items-center justify-center font-mono font-semibold uppercase text-xs rounded-xl px-4 py-1.5 bg-charcoal hover:bg-black text-white shadow-sm transition-all gap-1.5"
                 >
                   <span>Open Studio</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -701,7 +701,7 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
                   </div>
                   <div className="p-3 rounded-tag bg-warm-bone border border-stone-mist flex items-center justify-between">
                     <span className="text-charcoal font-medium">Processing Engine</span>
-                    <span className="text-electric-indigo font-semibold">Local Browser RAM</span>
+                    <span className="text-charcoal font-semibold">Local Browser RAM</span>
                   </div>
                 </div>
                 <p className="text-[11px] text-bark-grey font-sans pt-2 border-t border-stone-mist">
@@ -775,7 +775,7 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
           <div className="border-b border-stone-mist">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 md:p-10 items-center">
               <div className="flex flex-col gap-3">
-                <p className="text-electric-indigo font-mono text-xs font-semibold uppercase tracking-wider">
+                <p className="text-charcoal font-mono text-xs font-semibold uppercase tracking-wider">
                   #03: Scans & Phone Photos
                 </p>
                 <h2 className="font-serif text-3xl md:text-4xl text-charcoal font-normal leading-tight">
@@ -809,7 +809,7 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
               <div className="rounded-card border border-stone-mist overflow-hidden bg-paper-white shadow-card p-6">
                 <div className="font-mono text-xs text-bark-grey uppercase pb-3 border-b border-stone-mist flex items-center justify-between">
                   <span>Scanned ID Orientation & Blackout</span>
-                  <span className="text-electric-indigo font-semibold">Tesseract WASM</span>
+                  <span className="text-charcoal font-semibold">Tesseract WASM</span>
                 </div>
                 <div className="py-6 flex flex-col items-center justify-center gap-4 bg-warm-bone/60 rounded-tag border border-stone-mist my-4">
                   <div className="flex items-center gap-3">

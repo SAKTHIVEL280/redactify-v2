@@ -576,7 +576,7 @@ const srcFiles = globFiles('src');
 let emDashCount = 0;
 for (const file of srcFiles) {
   const content = fs.readFileSync(file, 'utf8');
-  if (content.includes('—')) {
+  if (content.includes('\u2014')) {
     emDashCount++;
     console.error(`Em dash found in ${file}`);
   }
