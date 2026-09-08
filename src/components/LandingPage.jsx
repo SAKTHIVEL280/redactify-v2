@@ -95,22 +95,6 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
 
   const activeCount = Object.values(activeToggles).filter(Boolean).length;
 
-  // Interactive Pattern Toggles (Deep Dive #02)
-  const [activePatternToggles, setActivePatternToggles] = useState({
-    ssn: true,
-    card: true,
-    salary: true,
-    contact: true
-  });
-
-  const togglePatternEntity = (key) => {
-    setActivePatternToggles(prev => ({ ...prev, [key]: !prev[key] }));
-  };
-
-  // Interactive Live Rotation Sandbox State (Deep Dive #03)
-  const [demoRotation, setDemoRotation] = useState(0);
-  const [demoRedacted, setDemoRedacted] = useState(true);
-
   const setFile = useDocumentStore((s) => s.setFile);
   const setDocumentData = useDocumentStore((s) => s.setDocumentData);
   const setProgress = useDocumentStore((s) => s.setProgress);
@@ -827,7 +811,7 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
       <section className="max-w-6xl mx-auto w-full px-4 md:px-6 mb-20">
         <div className="flex flex-col border-x border-t border-stone-mist">
           
-          {/* #01 - Zero Cloud Exposure with Animated Vector Air-Gap Vault */}
+          {/* #01 - Zero Cloud Exposure with Vector Illustration */}
           <motion.div 
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -850,112 +834,51 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
                   Redactify works completely inside your web browser using WebAssembly. Disconnect your internet connection, turn off Wi-Fi, and see for yourself: Redactify continues to work flawlessly.
                 </p>
                 <div className="pt-2">
-                  <span className="inline-flex items-center gap-2 px-3 py-1 rounded-tag bg-paper-white border border-stone-mist text-xs font-mono text-charcoal">
+                  <span className="inline-flex items-center gap-2 px-3 py-1 rounded-tag bg-paper-white border border-stone-mist text-xs font-mono text-charcoal shadow-xs">
                     <span className="w-2 h-2 rounded-full bg-amber-600" />
                     <span className="font-semibold">0 HTTP Network Requests Sent</span>
                   </span>
                 </div>
               </div>
 
-              {/* Animated Vector Air-Gap Vault Showcase */}
-              <div className="relative rounded-card border border-stone-mist overflow-hidden bg-paper-white shadow-card p-6">
+              {/* Vector Illustration Showcase Card: Air-Gap Vault */}
+              <div className="relative rounded-card border border-stone-mist overflow-hidden bg-paper-white shadow-card p-5 sm:p-6 flex flex-col justify-between">
                 <div className="font-mono text-xs text-bark-grey uppercase pb-3 border-b border-stone-mist flex items-center justify-between">
                   <span>Air-Gap Vault Architecture</span>
                   <span className="text-amber-800 font-bold flex items-center gap-1.5">
-                    <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-600"></span>
-                    </span>
-                    100% Air-Gapped RAM
+                    <span className="w-2 h-2 rounded-full bg-amber-600" />
+                    100% In-Memory Isolation
                   </span>
                 </div>
 
-                {/* Animated Vector Diagram */}
-                <div className="py-4 my-3 relative bg-warm-bone/70 rounded-xl border border-stone-mist/80 overflow-hidden flex flex-col items-center">
-                  <div className="w-full h-36 relative flex items-center justify-between px-3 sm:px-6">
-                    
-                    {/* Left Node: Local Browser Memory */}
-                    <motion.div 
-                      className="w-24 sm:w-28 bg-paper-white border border-stone-mist rounded-xl p-2.5 shadow-xs flex flex-col items-center text-center z-10"
-                      whileHover={{ y: -2 }}
-                    >
-                      <div className="w-7 h-7 rounded-lg bg-charcoal text-white flex items-center justify-center mb-1.5 shadow-xs">
-                        <FileText className="w-4 h-4" />
-                      </div>
-                      <span className="font-mono text-[10px] sm:text-[11px] font-bold text-charcoal leading-tight">Local RAM</span>
-                      <span className="font-mono text-[8px] sm:text-[9px] text-amber-800 mt-0.5 font-semibold">Volatile Memory</span>
-                    </motion.div>
-
-                    {/* Center Barrier: Air Gap Wall with Pulsing Laser */}
-                    <div className="relative flex flex-col items-center justify-center z-10">
-                      <div className="h-28 w-[2px] bg-gradient-to-b from-transparent via-amber-600 to-transparent relative">
-                        <motion.div 
-                          className="absolute -left-1 w-2.5 h-6 bg-amber-600 rounded-full blur-[1px]"
-                          animate={{ top: ['0%', '75%', '0%'] }}
-                          transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
-                        />
-                      </div>
-                      <div className="absolute top-1/2 -translate-y-1/2 px-2 py-0.5 rounded-full bg-paper-white border border-amber-500 shadow-xs flex items-center gap-1 font-mono text-[8px] sm:text-[9px] font-bold text-amber-900 tracking-wider">
-                        <ShieldAlert className="w-3 h-3 text-amber-700" />
-                        <span>AIR GAP</span>
-                      </div>
-                    </div>
-
-                    {/* Right Node: Cloud Servers (Blocked) */}
-                    <div className="w-24 sm:w-28 bg-paper-white/70 border border-stone-mist/60 rounded-xl p-2.5 flex flex-col items-center text-center opacity-60 z-10">
-                      <div className="w-7 h-7 rounded-lg bg-stone-mist text-bark-grey flex items-center justify-center mb-1.5">
-                        <ServerOff className="w-4 h-4" />
-                      </div>
-                      <span className="font-mono text-[10px] sm:text-[11px] font-semibold text-bark-grey leading-tight">Cloud Web</span>
-                      <span className="font-mono text-[8px] sm:text-[9px] text-rose-700 mt-0.5 font-semibold">Zero Egress</span>
-                    </div>
-
-                    {/* Animated Traveling Packet Blocked at Wall */}
-                    <motion.div
-                      className="absolute top-1/2 -translate-y-1/2 left-[28%] w-3 h-3 rounded-full bg-amber-600 flex items-center justify-center text-white shadow-xs z-0"
-                      animate={{
-                        x: [0, 42, 0],
-                        opacity: [0, 1, 0],
-                        scale: [0.7, 1, 0.4]
-                      }}
-                      transition={{
-                        duration: 2.2,
-                        repeat: Infinity,
-                        ease: "easeInOut"
-                      }}
-                    >
-                      <span className="w-1 h-1 bg-white rounded-full" />
-                    </motion.div>
-                  </div>
-
-                  {/* Real-time Status Micro-bar */}
-                  <div className="w-full px-4 py-1.5 border-t border-stone-mist/80 bg-paper-white flex items-center justify-between text-[10px] font-mono">
-                    <span className="text-bark-grey flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-600" />
-                      External HTTP Egress
-                    </span>
-                    <span className="font-semibold text-amber-800">BLOCKED (0 KB / s)</span>
+                <div className="my-4 relative overflow-hidden rounded-xl border border-stone-mist bg-warm-bone/40 group">
+                  <img
+                    src="/images/airgap-vault-vector.jpg"
+                    alt="Vector illustration of secure client-side air-gap vault architecture"
+                    className="w-full h-56 sm:h-64 object-cover object-center transition-transform duration-500 ease-out group-hover:scale-[1.02]"
+                    loading="lazy"
+                  />
+                  <div className="absolute bottom-2.5 left-2.5 right-2.5 px-3 py-1.5 rounded-lg bg-paper-white/95 backdrop-blur-xs border border-stone-mist/80 flex items-center justify-between text-[11px] font-mono shadow-xs">
+                    <span className="text-charcoal font-medium">Local Browser Volatile RAM</span>
+                    <span className="text-amber-800 font-bold">0 HTTP Egress</span>
                   </div>
                 </div>
 
-                <div className="py-2 space-y-2 font-mono text-xs">
-                  <div className="p-2.5 rounded-tag bg-warm-bone border border-stone-mist flex items-center justify-between">
-                    <span className="text-charcoal font-medium">Document Upload Request</span>
-                    <span className="text-amber-800 font-bold bg-amber-50 px-2 py-0.5 rounded border border-amber-200">BLOCKED (0 Bytes)</span>
+                <div className="pt-2 border-t border-stone-mist flex flex-col gap-1.5 font-mono text-xs">
+                  <div className="flex items-center justify-between text-bark-grey">
+                    <span>Upload Egress to Cloud</span>
+                    <span className="text-amber-800 font-bold">BLOCKED (0 Bytes)</span>
                   </div>
-                  <div className="p-2.5 rounded-tag bg-warm-bone border border-stone-mist flex items-center justify-between">
-                    <span className="text-charcoal font-medium">Telemetry & Analytics</span>
-                    <span className="text-amber-800 font-bold bg-amber-50 px-2 py-0.5 rounded border border-amber-200">NONE (Zero Tracking)</span>
+                  <div className="flex items-center justify-between text-bark-grey">
+                    <span>Analytics & Telemetry</span>
+                    <span className="text-amber-800 font-bold">NONE (Zero Tracking)</span>
                   </div>
                 </div>
-                <p className="text-[11px] text-bark-grey font-sans pt-2 border-t border-stone-mist">
-                  Safe for strictly confidential legal contracts, patient medical histories, and HR payroll filings.
-                </p>
               </div>
             </div>
           </motion.div>
 
-          {/* #02 - Smart Automatic Detection with Interactive Pattern Inspection */}
+          {/* #02 - Smart Automatic Detection with Vector Illustration */}
           <motion.div 
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -964,98 +887,37 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
             className="border-b border-stone-mist"
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 md:p-10 items-center">
-              {/* Visual Showcase Card with Interactive Toggle Pills */}
-              <div className="order-2 md:order-1 rounded-card border border-stone-mist overflow-hidden bg-paper-white shadow-card p-6">
+              {/* Vector Illustration Showcase Card: Smart Pattern Detection */}
+              <div className="order-2 md:order-1 relative rounded-card border border-stone-mist overflow-hidden bg-paper-white shadow-card p-5 sm:p-6 flex flex-col justify-between">
                 <div className="font-mono text-xs text-bark-grey uppercase pb-3 border-b border-stone-mist flex items-center justify-between">
-                  <span>Smart Pattern Checksums</span>
-                  <span className="text-charcoal font-bold">&lt; 15ms Speed</span>
+                  <span>Smart Pattern Detection</span>
+                  <span className="text-charcoal font-bold font-mono text-[11px] bg-warm-bone px-2 py-0.5 rounded border border-stone-mist">
+                    &lt; 15ms Scanning Engine
+                  </span>
                 </div>
-                <div className="py-4 space-y-2.5 font-mono text-xs">
-                  
-                  {/* SSN Pattern Row */}
-                  <motion.div 
-                    onClick={() => togglePatternEntity('ssn')}
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="p-2.5 rounded-tag bg-warm-bone border border-stone-mist flex items-center justify-between cursor-pointer select-none transition-colors hover:bg-stone-mist/40"
-                  >
-                    <span className="text-bark-grey">Social Security / Tax ID</span>
-                    <motion.span 
-                      layout
-                      className={`font-bold px-2 py-0.5 rounded transition-colors ${
-                        activePatternToggles.ssn
-                          ? 'text-white bg-charcoal'
-                          : 'text-amber-950 bg-amber-200 border border-amber-300 font-normal'
-                      }`}
-                    >
-                      {activePatternToggles.ssn ? 'XXX-XX-4320' : '987-65-4320'}
-                    </motion.span>
-                  </motion.div>
 
-                  {/* Card Pattern Row */}
-                  <motion.div 
-                    onClick={() => togglePatternEntity('card')}
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="p-2.5 rounded-tag bg-warm-bone border border-stone-mist flex items-center justify-between cursor-pointer select-none transition-colors hover:bg-stone-mist/40"
-                  >
-                    <span className="text-bark-grey">Credit Card & IBAN</span>
-                    <motion.span 
-                      layout
-                      className={`font-bold px-2 py-0.5 rounded transition-colors ${
-                        activePatternToggles.card
-                          ? 'text-white bg-charcoal'
-                          : 'text-amber-950 bg-amber-200 border border-amber-300 font-normal'
-                      }`}
-                    >
-                      {activePatternToggles.card ? '•••• •••• •••• 1092' : '4532 8901 2341 1092'}
-                    </motion.span>
-                  </motion.div>
-
-                  {/* Salary Pattern Row */}
-                  <motion.div 
-                    onClick={() => togglePatternEntity('salary')}
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="p-2.5 rounded-tag bg-warm-bone border border-stone-mist flex items-center justify-between cursor-pointer select-none transition-colors hover:bg-stone-mist/40"
-                  >
-                    <span className="text-bark-grey">Executive Compensation</span>
-                    <motion.span 
-                      layout
-                      className={`font-bold px-2 py-0.5 rounded transition-colors ${
-                        activePatternToggles.salary
-                          ? 'text-white bg-charcoal'
-                          : 'text-amber-950 bg-amber-200 border border-amber-300 font-normal'
-                      }`}
-                    >
-                      {activePatternToggles.salary ? '[SALARY CONFIDENTIAL]' : '$185,000 USD / yr'}
-                    </motion.span>
-                  </motion.div>
-
-                  {/* Contact Pattern Row */}
-                  <motion.div 
-                    onClick={() => togglePatternEntity('contact')}
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="p-2.5 rounded-tag bg-warm-bone border border-stone-mist flex items-center justify-between cursor-pointer select-none transition-colors hover:bg-stone-mist/40"
-                  >
-                    <span className="text-bark-grey">Direct Contact Info</span>
-                    <motion.span 
-                      layout
-                      className={`font-bold px-2 py-0.5 rounded transition-colors ${
-                        activePatternToggles.contact
-                          ? 'text-white bg-charcoal'
-                          : 'text-amber-950 bg-amber-200 border border-amber-300 font-normal'
-                      }`}
-                    >
-                      {activePatternToggles.contact ? '[CONTACT REDACTED]' : 'john@company.com'}
-                    </motion.span>
-                  </motion.div>
-
+                <div className="my-4 relative overflow-hidden rounded-xl border border-stone-mist bg-warm-bone/40 group">
+                  <img
+                    src="/images/pattern-detection-vector.jpg"
+                    alt="Vector illustration of precision document scanning and pattern detection"
+                    className="w-full h-56 sm:h-64 object-cover object-center transition-transform duration-500 ease-out group-hover:scale-[1.02]"
+                    loading="lazy"
+                  />
+                  <div className="absolute bottom-2.5 left-2.5 right-2.5 px-3 py-1.5 rounded-lg bg-paper-white/95 backdrop-blur-xs border border-stone-mist/80 flex items-center justify-between text-[11px] font-mono shadow-xs">
+                    <span className="text-charcoal font-medium">PII & Financial Recognition</span>
+                    <span className="text-amber-800 font-bold">Luhn Validated</span>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between text-[11px] text-bark-grey font-sans pt-2 border-t border-stone-mist">
-                  <span>Click any row to test live redaction toggle</span>
-                  <span className="font-mono text-amber-800 font-semibold text-[10px]">Luhn & Regex Validated</span>
+
+                <div className="pt-2 border-t border-stone-mist flex flex-col gap-1.5 font-mono text-xs">
+                  <div className="flex items-center justify-between text-bark-grey">
+                    <span>Verified PII Types</span>
+                    <span className="text-charcoal font-bold">SSN, IBAN, Tax IDs, NPI</span>
+                  </div>
+                  <div className="flex items-center justify-between text-bark-grey">
+                    <span>False Positive Rejection</span>
+                    <span className="text-amber-800 font-bold">Mathematical Checksums</span>
+                  </div>
                 </div>
               </div>
 
@@ -1073,13 +935,13 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
                   Built-in mathematical checksums verify digits instantly, ensuring actual sensitive numbers are scrubbed without flagging harmless order IDs or dates.
                 </p>
                 <div className="pt-2 flex flex-wrap gap-2">
-                  <span className="px-2.5 py-1 rounded-tag bg-paper-white border border-stone-mist text-xs font-mono text-charcoal">
+                  <span className="px-2.5 py-1 rounded-tag bg-paper-white border border-stone-mist text-xs font-mono text-charcoal shadow-xs">
                     US & Global IDs
                   </span>
-                  <span className="px-2.5 py-1 rounded-tag bg-paper-white border border-stone-mist text-xs font-mono text-charcoal">
+                  <span className="px-2.5 py-1 rounded-tag bg-paper-white border border-stone-mist text-xs font-mono text-charcoal shadow-xs">
                     Healthcare HIPAA
                   </span>
-                  <span className="px-2.5 py-1 rounded-tag bg-paper-white border border-stone-mist text-xs font-mono text-charcoal">
+                  <span className="px-2.5 py-1 rounded-tag bg-paper-white border border-stone-mist text-xs font-mono text-charcoal shadow-xs">
                     Banking & Payroll
                   </span>
                 </div>
@@ -1087,7 +949,7 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
             </div>
           </motion.div>
 
-          {/* #03 - Scanned Documents & Photos with Interactive Spring Rotation Sandbox */}
+          {/* #03 - Scanned Documents & Photos with Vector Illustration */}
           <motion.div 
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -1110,120 +972,55 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
                   Use the manual crosshair tool to draw custom blackout rectangles over handwritten signatures, official rubber stamps, or ID portrait photos. Everything burns directly into the image upon download.
                 </p>
                 <div className="pt-2 flex items-center gap-3">
-                  <motion.button 
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={() => setDemoRotation(r => r + 90)}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-paper-white border border-stone-mist text-xs font-mono uppercase font-semibold text-charcoal hover:bg-stone-mist/40 transition-colors"
+                  <button 
+                    onClick={onNavigateToStudio}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-paper-white border border-stone-mist text-xs font-mono uppercase font-semibold text-charcoal hover:bg-stone-mist/40 transition-colors shadow-xs"
                   >
                     <RotateCw className="w-3.5 h-3.5 text-charcoal" />
-                    <span>Rotate 90° Demo</span>
-                  </motion.button>
-                  <motion.button 
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.97 }}
+                    <span>Rotate 90° Controls</span>
+                  </button>
+                  <button 
                     onClick={onNavigateToStudio}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-paper-white border border-stone-mist text-xs font-mono uppercase font-semibold text-charcoal hover:bg-stone-mist/40 transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-paper-white border border-stone-mist text-xs font-mono uppercase font-semibold text-charcoal hover:bg-stone-mist/40 transition-colors shadow-xs"
                   >
                     <Crosshair className="w-3.5 h-3.5 text-charcoal" />
                     <span>Manual Crosshair</span>
-                  </motion.button>
+                  </button>
                 </div>
               </div>
 
-              {/* Visual Showcase Card with Interactive Spring Rotation Playground */}
-              <div className="rounded-card border border-stone-mist overflow-hidden bg-paper-white shadow-card p-6">
+              {/* Vector Illustration Showcase Card: Document Rotation & Blackout */}
+              <div className="relative rounded-card border border-stone-mist overflow-hidden bg-paper-white shadow-card p-5 sm:p-6 flex flex-col justify-between">
                 <div className="font-mono text-xs text-bark-grey uppercase pb-3 border-b border-stone-mist flex items-center justify-between">
-                  <span>Interactive ID Orientation Sandbox</span>
-                  <span className="text-charcoal font-semibold font-mono text-[11px] bg-warm-bone px-2 py-0.5 rounded border border-stone-mist">
-                    {demoRotation % 360}° Angle
+                  <span>Document Rotation & Blackout</span>
+                  <span className="text-charcoal font-bold font-mono text-[11px] bg-warm-bone px-2 py-0.5 rounded border border-stone-mist">
+                    90° Lossless Rotation
                   </span>
                 </div>
-                
-                {/* Interactive Controls & Spring-Rotated Mock Document */}
-                <div className="py-6 flex flex-col items-center justify-center gap-4 bg-warm-bone/60 rounded-tag border border-stone-mist my-4 overflow-hidden min-h-[220px]">
-                  <div className="flex items-center gap-2">
-                    <motion.button 
-                      type="button"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => setDemoRotation(r => r - 90)}
-                      className="px-3 py-1 rounded-tag bg-paper-white hover:bg-stone-mist/50 border border-stone-mist font-mono text-xs text-charcoal flex items-center gap-1.5 shadow-xs transition-colors"
-                    >
-                      <RotateCcw className="w-3 h-3" />
-                      <span>Rotate CCW</span>
-                    </motion.button>
-                    <motion.button 
-                      type="button"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => setDemoRotation(r => r + 90)}
-                      className="px-3 py-1 rounded-tag bg-paper-white hover:bg-stone-mist/50 border border-stone-mist font-mono text-xs text-charcoal flex items-center gap-1.5 shadow-xs transition-colors"
-                    >
-                      <RotateCw className="w-3 h-3" />
-                      <span>Rotate CW</span>
-                    </motion.button>
-                    {demoRotation !== 0 && (
-                      <motion.button 
-                        type="button"
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.8 }}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => setDemoRotation(0)}
-                        className="px-2 py-1 rounded-tag bg-warm-bone hover:bg-stone-mist border border-stone-mist font-mono text-xs text-bark-grey"
-                        title="Reset angle"
-                      >
-                        Reset
-                      </motion.button>
-                    )}
+
+                <div className="my-4 relative overflow-hidden rounded-xl border border-stone-mist bg-warm-bone/40 group">
+                  <img
+                    src="/images/rotation-blackout-vector.jpg"
+                    alt="Vector illustration of ID card rotation and signature blackout redaction"
+                    className="w-full h-56 sm:h-64 object-cover object-center transition-transform duration-500 ease-out group-hover:scale-[1.02]"
+                    loading="lazy"
+                  />
+                  <div className="absolute bottom-2.5 left-2.5 right-2.5 px-3 py-1.5 rounded-lg bg-paper-white/95 backdrop-blur-xs border border-stone-mist/80 flex items-center justify-between text-[11px] font-mono shadow-xs">
+                    <span className="text-charcoal font-medium">Scanned IDs & Signatures</span>
+                    <span className="text-amber-800 font-bold">Permanent Flattening</span>
                   </div>
-
-                  {/* Tactile Rotatable Document Card */}
-                  <motion.div 
-                    animate={{ rotate: demoRotation }}
-                    transition={{ type: "spring", stiffness: 200, damping: 22 }}
-                    className="w-52 h-32 bg-paper-white border border-stone-mist rounded-xl shadow-sm relative p-3.5 flex flex-col justify-between select-none cursor-pointer"
-                    onClick={() => setDemoRedacted(r => !r)}
-                    title="Click to toggle signature blackout"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-md bg-stone-mist/80 border border-stone-mist flex items-center justify-center font-mono text-[9px] text-bark-grey font-bold">
-                          ID
-                        </div>
-                        <div>
-                          <div className="w-14 h-2 bg-stone-mist rounded mb-1" />
-                          <div className="w-9 h-1.5 bg-stone-mist/60 rounded" />
-                        </div>
-                      </div>
-                      <span className="font-mono text-[8px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300 font-semibold">
-                        PASSPORT
-                      </span>
-                    </div>
-
-                    <motion.div 
-                      layout
-                      className={`h-6 w-full rounded flex items-center justify-center font-mono text-[9px] transition-colors ${
-                        demoRedacted
-                          ? 'bg-charcoal text-white font-bold'
-                          : 'bg-amber-100 text-amber-900 border border-amber-300'
-                      }`}
-                    >
-                      {demoRedacted ? '[SIGNATURE BLACKOUT]' : 'Signed: Sarah Jenkins'}
-                    </motion.div>
-
-                    <div className="flex items-center justify-between text-[8px] font-mono text-bark-grey">
-                      <span>DOC: 8942-019</span>
-                      <span className="text-amber-800 font-semibold">TAP TO TOGGLE</span>
-                    </div>
-                  </motion.div>
                 </div>
 
-                <p className="text-[11px] text-bark-grey font-sans pt-2 border-t border-stone-mist">
-                  Permanent image canvas flattening: rotated pixels and blackout overlays cannot be recovered.
-                </p>
+                <div className="pt-2 border-t border-stone-mist flex flex-col gap-1.5 font-mono text-xs">
+                  <div className="flex items-center justify-between text-bark-grey">
+                    <span>Phone Photo Orientation</span>
+                    <span className="text-charcoal font-bold">90° CW & CCW One-Click</span>
+                  </div>
+                  <div className="flex items-center justify-between text-bark-grey">
+                    <span>Image Canvas Security</span>
+                    <span className="text-amber-800 font-bold">Burned Pixel Overlays</span>
+                  </div>
+                </div>
               </div>
             </div>
           </motion.div>
