@@ -94,37 +94,37 @@ export function StyleToolbar() {
   };
 
   return (
-    <div className="h-16 border-t border-stone-mist bg-paper-white/95 backdrop-blur-md px-4 sm:px-8 flex items-center justify-between gap-4 z-20">
+    <div className="min-h-[52px] sm:h-16 border-t border-stone-mist bg-paper-white/95 backdrop-blur-md px-2.5 sm:px-6 md:px-8 flex items-center justify-between gap-2 sm:gap-4 z-20">
       {/* Left: Style & Color Controls */}
-      <div className="flex items-center gap-3 overflow-x-auto py-1">
-        <span className="text-xs font-mono font-medium text-bark-grey hidden md:block uppercase tracking-wider">
+      <div className="flex items-center gap-1.5 sm:gap-3 overflow-x-auto py-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden min-w-0">
+        <span className="text-xs font-mono font-medium text-bark-grey hidden md:block uppercase tracking-wider shrink-0">
           Style:
         </span>
 
         {/* Color Palette */}
-        <div className="flex items-center gap-1.5 bg-soft-cream border border-stone-mist rounded-full p-1">
+        <div className="flex items-center gap-1 sm:gap-1.5 bg-soft-cream border border-stone-mist rounded-full p-0.5 sm:p-1 shrink-0">
           {REDACTION_COLORS.map((c) => (
             <button
               key={c.id}
               onClick={() => setStyle({ color: c.hex, textColor: c.textHex })}
-              className={`w-6 h-6 rounded-full border transition-transform flex items-center justify-center ${
+              className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full border transition-transform flex items-center justify-center ${
                 style.color === c.hex ? 'scale-110 border-charcoal shadow-sm' : 'border-transparent hover:scale-105'
               }`}
               style={{ backgroundColor: c.hex }}
               title={c.label}
             >
               {style.color === c.hex && (
-                <Check className="w-3.5 h-3.5" style={{ color: c.textHex }} />
+                <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5" style={{ color: c.textHex }} />
               )}
             </button>
           ))}
         </div>
 
         {/* Label Mode Switcher */}
-        <div className="flex items-center gap-1 bg-soft-cream border border-stone-mist rounded-full p-1 font-mono">
+        <div className="flex items-center gap-0.5 sm:gap-1 bg-soft-cream border border-stone-mist rounded-full p-0.5 sm:p-1 font-mono shrink-0">
           <button
             onClick={() => setStyle({ showLabel: false, mode: 'blackout' })}
-            className={`px-3 py-1 text-xs font-medium rounded-full transition-all ${
+            className={`px-2 sm:px-3 py-0.5 sm:py-1 text-[11px] sm:text-xs font-medium rounded-full transition-all ${
               !style.showLabel ? 'bg-paper-white text-charcoal shadow-sm' : 'text-bark-grey hover:text-charcoal'
             }`}
           >
@@ -132,7 +132,7 @@ export function StyleToolbar() {
           </button>
           <button
             onClick={() => setStyle({ showLabel: true, mode: 'label' })}
-            className={`px-3 py-1 text-xs font-medium rounded-full transition-all ${
+            className={`px-2 sm:px-3 py-0.5 sm:py-1 text-[11px] sm:text-xs font-medium rounded-full transition-all ${
               style.showLabel ? 'bg-paper-white text-charcoal shadow-sm' : 'text-bark-grey hover:text-charcoal'
             }`}
           >
@@ -142,7 +142,7 @@ export function StyleToolbar() {
 
         {/* Label Dropdown & Custom Input (if Text Label enabled) */}
         {style.showLabel && (
-          <div className="flex items-center gap-1.5 animate-in fade-in duration-150">
+          <div className="flex items-center gap-1 sm:gap-1.5 animate-in fade-in duration-150 shrink-0">
             <select
               value={REDACTION_LABELS.includes(style.label) ? style.label : 'custom'}
               onChange={(e) => {
@@ -150,7 +150,7 @@ export function StyleToolbar() {
                   setStyle({ label: e.target.value });
                 }
               }}
-              className="bg-soft-cream border border-stone-mist text-charcoal text-xs rounded-button px-2.5 py-1 focus:outline-none focus:border-charcoal font-mono cursor-pointer"
+              className="bg-soft-cream border border-stone-mist text-charcoal text-[11px] sm:text-xs rounded-button px-2 py-0.5 sm:px-2.5 sm:py-1 focus:outline-none focus:border-charcoal font-mono cursor-pointer"
             >
               {REDACTION_LABELS.map((lbl) => (
                 <option key={lbl} value={lbl}>{lbl}</option>
@@ -165,7 +165,7 @@ export function StyleToolbar() {
               value={style.label}
               onChange={(e) => setStyle({ label: e.target.value })}
               placeholder="Custom label..."
-              className="bg-paper-white border border-stone-mist text-charcoal text-xs rounded-button px-2.5 py-1 w-32 focus:outline-none focus:border-charcoal font-mono shadow-sm"
+              className="bg-paper-white border border-stone-mist text-charcoal text-[11px] sm:text-xs rounded-button px-2 py-0.5 sm:px-2.5 sm:py-1 w-20 sm:w-32 focus:outline-none focus:border-charcoal font-mono shadow-sm"
               title="Type any custom blackout label"
             />
           </div>
@@ -173,7 +173,7 @@ export function StyleToolbar() {
       </div>
 
       {/* Right: Counters & Export Trigger */}
-      <div className="flex items-center gap-4 shrink-0">
+      <div className="flex items-center gap-2 sm:gap-4 shrink-0">
         <div className="text-right hidden sm:block font-mono">
           <div className="text-xs font-medium text-charcoal">
             {activeCount} of {redactions.length} masked
@@ -186,14 +186,14 @@ export function StyleToolbar() {
         <button
           onClick={handleExport}
           disabled={isExporting}
-          className="h-10 px-6 rounded-button bg-charcoal hover:bg-black text-white font-mono font-medium text-xs tracking-wide shadow-sm transition-all flex items-center gap-2"
+          className="h-8 sm:h-10 px-3 sm:px-6 rounded-button bg-charcoal hover:bg-black text-white font-mono font-medium text-[11px] sm:text-xs tracking-wide shadow-sm transition-all flex items-center gap-1.5 sm:gap-2 shrink-0"
         >
           {isExporting ? (
             <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
           ) : (
             <Download className="w-3.5 h-3.5" />
           )}
-          <span>{isExporting ? 'Exporting...' : 'Export Redacted Document'}</span>
+          <span>{isExporting ? 'Exporting...' : <><span className="hidden sm:inline">Export Redacted Document</span><span className="sm:hidden">Export</span></>}</span>
         </button>
       </div>
     </div>

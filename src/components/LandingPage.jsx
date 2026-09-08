@@ -860,24 +860,24 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
           <div className="border-t border-b border-stone-mist">
             {/* 4 Metric Columns */}
             <div className="grid grid-cols-2 md:grid-cols-4">
-              <div className="gsap-metric-box flex flex-col justify-center gap-1.5 p-6 border-stone-mist odd:border-r md:odd:border-r-0 md:border-r bg-paper-white">
-                <p className="text-amber-800 font-bold text-3xl sm:text-4xl font-datatype text-center flex items-center justify-center gap-2">
+              <div className="gsap-metric-box flex flex-col justify-center gap-1.5 p-3.5 sm:p-6 border-stone-mist odd:border-r md:odd:border-r-0 md:border-r bg-paper-white">
+                <p className="text-amber-800 font-bold text-2xl sm:text-4xl font-datatype text-center flex items-center justify-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-amber-600 animate-ping inline-block" />
                   <span>0</span>
                 </p>
-                <p className="text-charcoal font-semibold text-xs text-center">Bytes uploaded to any server</p>
+                <p className="text-charcoal font-semibold text-[11px] sm:text-xs text-center">Bytes uploaded to any server</p>
               </div>
-              <div className="gsap-metric-box flex flex-col justify-center gap-1.5 p-6 border-stone-mist md:border-r bg-paper-white">
-                <p id="gsap-metric-15ms" className="text-charcoal font-bold text-3xl sm:text-4xl font-datatype text-center">&lt; 15ms</p>
-                <p className="text-bark-grey font-medium text-xs text-center">Instant detection speed</p>
+              <div className="gsap-metric-box flex flex-col justify-center gap-1.5 p-3.5 sm:p-6 border-stone-mist md:border-r bg-paper-white">
+                <p id="gsap-metric-15ms" className="text-charcoal font-bold text-2xl sm:text-4xl font-datatype text-center">&lt; 15ms</p>
+                <p className="text-bark-grey font-medium text-[11px] sm:text-xs text-center">Instant detection speed</p>
               </div>
-              <div className="gsap-metric-box flex flex-col justify-center gap-1.5 p-6 border-stone-mist odd:border-r md:odd:border-r-0 md:border-r bg-paper-white">
-                <p id="gsap-metric-100pct" className="text-amber-800 font-bold text-3xl sm:text-4xl font-datatype text-center">100%</p>
-                <p className="text-charcoal font-semibold text-xs text-center">Client-side offline processing</p>
+              <div className="gsap-metric-box flex flex-col justify-center gap-1.5 p-3.5 sm:p-6 border-stone-mist odd:border-r md:odd:border-r-0 md:border-r bg-paper-white">
+                <p id="gsap-metric-100pct" className="text-amber-800 font-bold text-2xl sm:text-4xl font-datatype text-center">100%</p>
+                <p className="text-charcoal font-semibold text-[11px] sm:text-xs text-center">Client-side offline processing</p>
               </div>
-              <div className="gsap-metric-box flex flex-col justify-center gap-1.5 p-6 border-stone-mist bg-paper-white">
-                <p id="gsap-metric-17plus" className="text-charcoal font-bold text-3xl sm:text-4xl font-datatype text-center">17+</p>
-                <p className="text-bark-grey font-medium text-xs text-center">Standard PII types recognized</p>
+              <div className="gsap-metric-box flex flex-col justify-center gap-1.5 p-3.5 sm:p-6 border-stone-mist bg-paper-white">
+                <p id="gsap-metric-17plus" className="text-charcoal font-bold text-2xl sm:text-4xl font-datatype text-center">17+</p>
+                <p className="text-bark-grey font-medium text-[11px] sm:text-xs text-center">Standard PII types recognized</p>
               </div>
             </div>
           </div>
@@ -991,17 +991,17 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
                 <p className="text-bark-grey text-sm md:text-base leading-relaxed font-sans">
                   Use the manual crosshair tool to draw custom blackout rectangles over handwritten signatures, official rubber stamps, or ID portrait photos. Everything burns directly into the image upon download.
                 </p>
-                <div className="pt-2 flex items-center gap-3">
+                <div className="pt-2 flex flex-wrap items-center gap-2 sm:gap-3">
                   <button 
                     onClick={onNavigateToStudio}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-paper-white border border-stone-mist text-xs font-mono uppercase font-semibold text-charcoal hover:bg-stone-mist/40 transition-colors shadow-xs"
+                    className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-xl bg-paper-white border border-stone-mist text-xs font-mono uppercase font-semibold text-charcoal hover:bg-stone-mist/40 transition-colors shadow-xs"
                   >
                     <RotateCw className="w-3.5 h-3.5 text-charcoal" />
                     <span>Rotate 90° Controls</span>
                   </button>
                   <button 
                     onClick={onNavigateToStudio}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-paper-white border border-stone-mist text-xs font-mono uppercase font-semibold text-charcoal hover:bg-stone-mist/40 transition-colors shadow-xs"
+                    className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-xl bg-paper-white border border-stone-mist text-xs font-mono uppercase font-semibold text-charcoal hover:bg-stone-mist/40 transition-colors shadow-xs"
                   >
                     <Crosshair className="w-3.5 h-3.5 text-charcoal" />
                     <span>Manual Crosshair</span>
@@ -1050,8 +1050,12 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
         </div>
 
         <div id="comparison-table-card" className="border border-stone-mist rounded-card overflow-hidden bg-paper-white shadow-card">
+          <div className="sm:hidden px-4 py-2 bg-warm-bone/60 border-b border-stone-mist text-[11px] font-mono text-bark-grey flex items-center justify-between">
+            <span>Swipe horizontally to compare</span>
+            <span>→</span>
+          </div>
           <div className="overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left border-collapse min-w-[580px]">
               <thead>
                 <tr className="border-b border-stone-mist bg-warm-bone text-xs font-mono text-charcoal">
                   <th className="py-4 px-6 font-semibold w-1/3">Feature / Security Invariant</th>

@@ -456,21 +456,21 @@ export function DocumentViewer() {
   return (
     <div className="flex-1 flex flex-col h-full bg-warm-bone overflow-hidden select-none">
       {/* Viewer Top Toolbar (Pagination, Editing, Rotation & Zoom) */}
-      <div className="h-12 border-b border-stone-mist bg-paper-white px-4 flex items-center justify-between text-xs text-charcoal shrink-0">
+      <div className="h-11 sm:h-12 border-b border-stone-mist bg-paper-white px-2 sm:px-4 flex items-center justify-between text-xs text-charcoal shrink-0 gap-2 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         {/* Left: Pagination & Edit Controls */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
           {pageCount > 1 ? (
-            <div className="flex items-center gap-1.5 bg-soft-cream border border-stone-mist rounded-lg px-2 py-1">
+            <div className="flex items-center gap-1 bg-soft-cream border border-stone-mist rounded-lg px-1.5 py-0.5 sm:px-2 sm:py-1">
               <button
                 onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                 disabled={currentPage <= 1}
                 className="p-1 rounded hover:bg-stone-mist/30 disabled:opacity-25 text-charcoal transition-colors"
                 title="Previous Page"
               >
-                <ChevronLeft className="w-4 h-4" />
+                <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </button>
-              <span className="text-xs font-mono text-bark-grey">
-                Page <strong className="text-charcoal font-semibold">{currentPage}</strong> of {pageCount}
+              <span className="text-[11px] sm:text-xs font-mono text-bark-grey whitespace-nowrap">
+                <span className="hidden sm:inline">Page </span><strong className="text-charcoal font-semibold">{currentPage}</strong><span className="hidden sm:inline"> of</span><span className="sm:hidden">/</span>{pageCount}
               </span>
               <button
                 onClick={() => setCurrentPage(Math.min(pageCount, currentPage + 1))}
@@ -478,17 +478,17 @@ export function DocumentViewer() {
                 className="p-1 rounded hover:bg-stone-mist/30 disabled:opacity-25 text-charcoal transition-colors"
                 title="Next Page"
               >
-                <ChevronRight className="w-4 h-4" />
+                <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </button>
             </div>
           ) : (
-            <div className="text-xs font-mono text-bark-grey hidden sm:block">
+            <div className="text-[11px] sm:text-xs font-mono text-bark-grey hidden sm:block">
               {fileType === 'image' ? 'Image Mode: Drag to redact' : 'Single Page'}
             </div>
           )}
 
           {/* Undo, Redo & Manual Box */}
-          <div className="flex items-center gap-1 bg-soft-cream border border-stone-mist rounded-lg p-1">
+          <div className="flex items-center gap-0.5 sm:gap-1 bg-soft-cream border border-stone-mist rounded-lg p-0.5 sm:p-1">
             <button
               onClick={undo}
               disabled={history.length === 0}
@@ -510,7 +510,7 @@ export function DocumentViewer() {
 
             <button
               onClick={() => setDrawingMode(!isDrawingMode)}
-              className={`px-2 py-0.5 text-xs font-mono rounded transition-all flex items-center gap-1 ${
+              className={`px-1.5 sm:px-2 py-0.5 text-[11px] sm:text-xs font-mono rounded transition-all flex items-center gap-1 ${
                 isDrawingMode
                   ? 'bg-charcoal text-white shadow-xs font-semibold'
                   : 'text-charcoal hover:bg-stone-mist/40'
@@ -518,63 +518,67 @@ export function DocumentViewer() {
               title="Draw manual redaction box over scans, signatures, or stamps"
             >
               <span className="text-xs leading-none">+</span>
-              <span>Manual Box</span>
+              <span className="hidden sm:inline">Manual Box</span>
+              <span className="sm:hidden">Box</span>
             </button>
           </div>
         </div>
 
-        {/* Toolbar Controls: Rotation & Zoom */}
-        <div className="flex items-center gap-3">
+        {/* Toolbar Controls: Rotation, Zoom & Mobile Drawer */}
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
           {/* Rotation Controls */}
-          <div className="flex items-center gap-1 border-r border-stone-mist pr-2.5">
+          <div className="flex items-center gap-0.5 sm:gap-1 border-r border-stone-mist pr-1.5 sm:pr-2.5">
             <button
               onClick={handleRotateCcw}
-              className="p-1.5 rounded-button hover:bg-stone-mist/30 text-bark-grey hover:text-charcoal transition-colors"
+              className="p-1 sm:p-1.5 rounded-button hover:bg-stone-mist/30 text-bark-grey hover:text-charcoal transition-colors"
               title="Rotate 90° Counter-Clockwise"
             >
               <RotateCcw className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={handleRotateCw}
-              className="p-1.5 rounded-button hover:bg-stone-mist/30 text-bark-grey hover:text-charcoal transition-colors"
+              className="p-1 sm:p-1.5 rounded-button hover:bg-stone-mist/30 text-bark-grey hover:text-charcoal transition-colors"
               title="Rotate 90° Clockwise"
             >
               <RotateCw className="w-3.5 h-3.5" />
             </button>
             {rotation !== 0 && (
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-soft-cream border border-stone-mist text-charcoal font-medium">
+              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-soft-cream border border-stone-mist text-charcoal font-medium hidden xs:inline">
                 {rotation}°
               </span>
             )}
           </div>
 
           {/* Zoom Controls */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <button
               onClick={() => setZoom(Math.max(0.7, zoom - 0.1))}
-              className="p-1.5 rounded-button hover:bg-stone-mist/30 text-bark-grey hover:text-charcoal transition-colors"
+              className="p-1 sm:p-1.5 rounded-button hover:bg-stone-mist/30 text-bark-grey hover:text-charcoal transition-colors"
               title="Zoom Out"
             >
-              <ZoomOut className="w-4 h-4" />
+              <ZoomOut className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
-            <span className="text-xs font-mono text-bark-grey w-12 text-center">
+            <span className="text-[11px] sm:text-xs font-mono text-bark-grey w-9 sm:w-12 text-center">
               {Math.round(zoom * 100)}%
             </span>
             <button
               onClick={() => setZoom(Math.min(2.0, zoom + 0.1))}
-              className="p-1.5 rounded-button hover:bg-stone-mist/30 text-bark-grey hover:text-charcoal transition-colors"
+              className="p-1 sm:p-1.5 rounded-button hover:bg-stone-mist/30 text-bark-grey hover:text-charcoal transition-colors"
               title="Zoom In"
             >
-              <ZoomIn className="w-4 h-4" />
+              <ZoomIn className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
 
-            {/* Mobile Entities Drawer Toggle */}
+            {/* Mobile Entities Drawer Toggle - High Contrast & Always Reachable */}
             <button
               onClick={toggleInspector}
-              className="md:hidden ml-1 flex items-center gap-1.5 px-2.5 py-1 rounded-button bg-soft-cream border border-stone-mist text-xs font-mono font-medium text-charcoal hover:bg-stone-mist/40 transition-colors"
+              className="md:hidden ml-1 flex items-center gap-1.5 px-2.5 py-1 rounded-button bg-charcoal text-white text-[11px] font-mono font-medium hover:bg-black shadow-xs transition-colors shrink-0"
               title="Toggle Entity Inspector"
             >
-              <span>Entities ({redactions.length})</span>
+              <span>Entities</span>
+              <span className="px-1.5 py-0.2 rounded-full bg-amber-600 text-white text-[10px] font-bold">
+                {redactions.length}
+              </span>
             </button>
           </div>
         </div>

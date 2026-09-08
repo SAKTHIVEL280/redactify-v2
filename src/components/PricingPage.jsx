@@ -51,8 +51,8 @@ export function PricingPage({ onNavigateToStudio }) {
   ];
 
   return (
-    <div className="w-full bg-warm-bone text-charcoal py-16 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-5xl mx-auto space-y-16">
+    <div className="w-full bg-warm-bone text-charcoal py-8 sm:py-16 px-3 sm:px-6 lg:px-8">
+      <div className="max-w-5xl mx-auto space-y-12 sm:space-y-16">
         
         {/* Active Document Return Banner */}
         {file && (
@@ -74,11 +74,11 @@ export function PricingPage({ onNavigateToStudio }) {
         )}
 
         {/* Header */}
-        <div className="text-center space-y-4 max-w-2xl mx-auto">
-          <div className="font-mono text-xs uppercase tracking-widest text-bark-grey font-semibold">
+        <div className="text-center space-y-3 sm:space-y-4 max-w-2xl mx-auto">
+          <div className="font-mono text-[11px] sm:text-xs uppercase tracking-widest text-bark-grey font-semibold">
             100% Client-Side • Zero Cloud Servers
           </div>
-          <h1 className="text-4xl sm:text-5xl font-serif font-normal tracking-tight text-charcoal">
+          <h1 className="text-3xl sm:text-5xl font-serif font-normal tracking-tight text-charcoal">
             Simple pricing for <span className="italic text-amber-800">serious privacy</span>.
           </h1>
           <p className="text-base text-bark-grey leading-relaxed">
@@ -339,17 +339,20 @@ export function PricingPage({ onNavigateToStudio }) {
         </div>
 
         {/* Enterprise Security Comparison Table */}
-        <div className="bg-paper-white rounded-card p-6 sm:p-8 border border-stone-mist shadow-card space-y-6">
+        <div className="bg-paper-white rounded-card p-4 sm:p-8 border border-stone-mist shadow-card space-y-6">
           <div>
             <span className="text-[11px] font-mono font-medium text-bark-grey uppercase tracking-wider">Zero-Trust Architecture</span>
-            <h3 className="text-2xl font-serif font-normal text-charcoal mt-1">Enterprise Security & Privacy Guarantee</h3>
+            <h3 className="text-xl sm:text-2xl font-serif font-normal text-charcoal mt-1">Enterprise Security & Privacy Guarantee</h3>
             <p className="text-xs text-bark-grey mt-1">
               Built to meet strict standards under global privacy laws including EU GDPR, US HIPAA, and international data residency rules.
             </p>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
+          <div className="sm:hidden text-[10px] font-mono text-bark-grey text-right pb-1">
+            Swipe horizontally →
+          </div>
+          <div className="overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+            <table className="w-full text-left text-xs border-collapse min-w-[540px]">
               <thead>
                 <tr className="border-b border-stone-mist text-bark-grey font-mono uppercase">
                   <th className="py-3 px-4 font-medium">Security Dimension</th>

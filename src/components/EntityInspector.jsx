@@ -38,9 +38,19 @@ export function EntityInspector({ onOpenFeedback }) {
   const allSelected = redactions.length > 0 && redactions.every((r) => r.redact);
 
   return (
-    <aside className={`w-80 border-l border-stone-mist bg-paper-white flex flex-col h-full shrink-0 select-none transition-all duration-200 ${
-      !isInspectorOpen ? 'hidden' : 'flex'
-    } fixed inset-y-14 right-0 z-40 md:relative md:inset-y-0 shadow-2xl md:shadow-none`}>
+    <>
+      {/* Mobile Backdrop Overlay */}
+      {isInspectorOpen && (
+        <div 
+          onClick={toggleInspector}
+          className="fixed inset-0 bg-charcoal/30 backdrop-blur-xs z-30 md:hidden animate-in fade-in duration-150"
+          aria-hidden="true"
+        />
+      )}
+
+      <aside className={`w-full max-w-[320px] sm:max-w-xs md:w-80 border-l border-stone-mist bg-paper-white flex flex-col h-full shrink-0 select-none transition-all duration-200 ${
+        !isInspectorOpen ? 'hidden' : 'flex'
+      } fixed inset-y-14 right-0 z-40 md:relative md:inset-y-0 shadow-2xl md:shadow-none`}>
       {/* Header */}
       <div className="p-4 border-b border-stone-mist flex items-center justify-between">
         <div>
@@ -200,5 +210,6 @@ export function EntityInspector({ onOpenFeedback }) {
         </button>
       </div>
     </aside>
+    </>
   );
 }

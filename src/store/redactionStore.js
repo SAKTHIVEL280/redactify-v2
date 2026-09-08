@@ -34,7 +34,7 @@ export const useRedactionStore = create((set, get) => ({
   // Manual box creation tool active
   isDrawingMode: false,
   selectedRedactionId: null,
-  isInspectorOpen: true,
+  isInspectorOpen: typeof window !== 'undefined' ? window.innerWidth >= 768 : true,
   toggleInspector: () => set((state) => ({ isInspectorOpen: !state.isInspectorOpen })),
 
   // Custom regex/keyword rules

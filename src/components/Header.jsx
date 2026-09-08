@@ -45,19 +45,19 @@ export function Header({ activePage, setActivePage }) {
 
   return (
     <header className="sticky top-0 z-50 w-full backdrop-blur-md bg-warm-bone/90 border-b border-stone-mist/80 transition-colors">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
+      <div className="max-w-6xl mx-auto px-2.5 sm:px-6 h-14 flex items-center justify-between gap-2 sm:gap-4">
         {/* Left: Brand Identity */}
-        <div className="flex items-center gap-6 sm:gap-8">
+        <div className="flex items-center gap-2 xs:gap-3.5 sm:gap-6 md:gap-8 min-w-0">
           <button 
             onClick={() => setActivePage('overview')}
-            className="flex items-center gap-2 text-left group"
+            className="flex items-center gap-1.5 sm:gap-2 text-left group shrink-0"
             title="Return to Home"
           >
             {/* Minimalist Document Redaction Emblem in Black */}
             <svg 
               xmlns="http://www.w3.org/2000/svg" 
-              width="20" 
-              height="20" 
+              width="18" 
+              height="18" 
               viewBox="0 0 24 24" 
               fill="none" 
               className="text-black group-hover:opacity-75 transition-opacity shrink-0"
@@ -67,16 +67,16 @@ export function Header({ activePage, setActivePage }) {
               <line x1="8" y1="13" x2="16" y2="13" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
               <line x1="8" y1="17" x2="13" y2="17" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
             </svg>
-            <span className="font-mono text-sm font-bold tracking-tight text-black uppercase">
+            <span className="font-mono text-xs sm:text-sm font-bold tracking-tight text-black uppercase">
               Redactify
             </span>
           </button>
 
           {/* Navigation Items */}
-          <nav className="flex items-center gap-1">
+          <nav className="flex items-center gap-0.5 sm:gap-1">
             <button
               onClick={() => setActivePage('overview')}
-              className={`font-mono uppercase text-xs font-semibold px-3 py-1.5 rounded-button transition-all ${
+              className={`font-mono uppercase text-[11px] sm:text-xs font-semibold px-2 py-1 sm:px-3 sm:py-1.5 rounded-button transition-all ${
                 activePage === 'overview'
                   ? 'bg-charcoal text-white shadow-xs'
                   : 'text-bark-grey hover:text-charcoal hover:bg-stone-mist/40'
@@ -86,7 +86,7 @@ export function Header({ activePage, setActivePage }) {
             </button>
             <button
               onClick={() => setActivePage('studio')}
-              className={`font-mono uppercase text-xs font-semibold px-3 py-1.5 rounded-button transition-all flex items-center gap-1.5 ${
+              className={`font-mono uppercase text-[11px] sm:text-xs font-semibold px-2 py-1 sm:px-3 sm:py-1.5 rounded-button transition-all flex items-center gap-1 sm:gap-1.5 ${
                 activePage === 'studio'
                   ? 'bg-charcoal text-white shadow-xs'
                   : 'text-bark-grey hover:text-charcoal hover:bg-stone-mist/40'
@@ -99,7 +99,7 @@ export function Header({ activePage, setActivePage }) {
             </button>
             <button
               onClick={() => setActivePage('pricing')}
-              className={`font-mono uppercase text-xs font-semibold px-3 py-1.5 rounded-button transition-all ${
+              className={`font-mono uppercase text-[11px] sm:text-xs font-semibold px-2 py-1 sm:px-3 sm:py-1.5 rounded-button transition-all ${
                 activePage === 'pricing'
                   ? 'bg-charcoal text-white shadow-xs'
                   : 'text-bark-grey hover:text-charcoal hover:bg-stone-mist/40'
@@ -111,7 +111,7 @@ export function Header({ activePage, setActivePage }) {
         </div>
 
         {/* Right: Status & Actions */}
-        <div className="flex items-center gap-2.5 sm:gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
           {/* Subtle Privacy Status */}
           <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-paper-white border border-stone-mist text-[11px] font-mono text-charcoal font-medium shadow-xs">
             <ShieldCheck className="w-3.5 h-3.5 text-amber-800" />
@@ -120,7 +120,7 @@ export function Header({ activePage, setActivePage }) {
 
           {/* Pro Status or License Trigger */}
           {isPro ? (
-            <span className="px-2.5 py-1 rounded-md bg-amber-50 border border-amber-200 text-amber-900 text-[11px] font-mono font-semibold">
+            <span className="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md bg-amber-50 border border-amber-200 text-amber-900 text-[10px] sm:text-[11px] font-mono font-semibold">
               PRO ACTIVE
             </span>
           ) : (
@@ -138,7 +138,7 @@ export function Header({ activePage, setActivePage }) {
           {activePage === 'studio' && file ? (
             <button
               onClick={clearDocument}
-              className="font-mono uppercase text-xs font-semibold px-3.5 py-1.5 rounded-button bg-paper-white border border-stone-mist hover:bg-warm-bone text-charcoal transition-all shadow-xs"
+              className="font-mono uppercase text-[11px] sm:text-xs font-semibold px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-button bg-paper-white border border-stone-mist hover:bg-warm-bone text-charcoal transition-all shadow-xs"
               title="Close current document and start new"
             >
               New File
@@ -146,7 +146,7 @@ export function Header({ activePage, setActivePage }) {
           ) : activePage !== 'studio' ? (
             <button
               onClick={() => setActivePage('studio')}
-              className="font-mono uppercase text-xs font-semibold px-3.5 py-1.5 rounded-button bg-charcoal hover:bg-black text-white transition-all shadow-xs flex items-center gap-1.5"
+              className="hidden md:flex font-mono uppercase text-xs font-semibold px-3.5 py-1.5 rounded-button bg-charcoal hover:bg-black text-white transition-all shadow-xs items-center gap-1.5"
             >
               <span>Launch Studio</span>
               <ArrowRight className="w-3.5 h-3.5" />
