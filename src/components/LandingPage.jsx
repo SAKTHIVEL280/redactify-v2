@@ -242,14 +242,21 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
       ────────────────────────────────────────────────────────────── */}
       <section className="pt-16 pb-12 px-4 md:px-6 max-w-6xl mx-auto w-full flex flex-col items-center text-center">
         
-        {/* Announcement Tag */}
-        <div className="inline-flex items-center rounded-lg border border-charcoal bg-paper-white mb-8 overflow-hidden shadow-sm hover:bg-stone-mist/30 transition-all cursor-pointer" onClick={onNavigateToStudio}>
-          <span className="bg-charcoal text-white font-mono font-medium text-xs px-3.5 py-1.5 uppercase tracking-wider">
-            New
+        {/* Privacy Highlight Pill */}
+        <div 
+          onClick={onNavigateToStudio}
+          className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-soft-cream border border-stone-mist hover:border-pebble transition-all cursor-pointer mb-8 group shadow-xs"
+          title="Launch Redactify Studio"
+        >
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+          <span className="text-xs font-mono font-semibold text-charcoal">
+            Client-Side Redaction
           </span>
-          <span className="text-charcoal font-sans font-medium text-xs sm:text-sm px-4 py-1.5">
-            Client-Side Redaction: Zero files ever leave your device.
+          <span className="text-stone-mist text-xs">•</span>
+          <span className="text-xs font-sans text-bark-grey group-hover:text-charcoal transition-colors">
+            Zero files ever leave your device
           </span>
+          <span className="text-bark-grey group-hover:translate-x-0.5 transition-transform text-xs font-mono">→</span>
         </div>
 
         {/* Display Headline in Cooper LtBT serif */}
