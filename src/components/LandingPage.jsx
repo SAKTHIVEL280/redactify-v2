@@ -151,14 +151,14 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
         .from('.gsap-hero-cta', { scale: 0.94, y: 15, opacity: 0, duration: 0.7, ease: 'back.out(1.6)' }, '-=0.6')
         .from('.gsap-hero-card', { y: 55, scale: 0.97, opacity: 0, duration: 1.1, ease: 'power3.out' }, '-=0.6');
 
-      // 4. Parallax effect on all vector images inside cards
+      // 4. Parallax effect on vector images inside deep dive cards
       const parallaxImages = gsap.utils.toArray('.gsap-parallax-img');
       parallaxImages.forEach((img) => {
         gsap.fromTo(
           img,
-          { yPercent: -5 },
+          { yPercent: -4 },
           {
-            yPercent: 5,
+            yPercent: 4,
             ease: 'none',
             scrollTrigger: {
               scroller,
@@ -171,7 +171,7 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
         );
       });
 
-      // 5. Section Divider Hairlines Drawing
+      // 5. Section Divider Hairlines Drawing (Bidirectional)
       const dividers = gsap.utils.toArray('.gsap-draw-line');
       dividers.forEach((line) => {
         gsap.fromTo(
@@ -181,87 +181,114 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
             scaleX: 1,
             opacity: 1,
             transformOrigin: 'center center',
-            duration: 1.1,
+            duration: 0.9,
             ease: 'power3.inOut',
             scrollTrigger: {
               scroller,
               trigger: line,
-              start: 'top 88%',
-              toggleActions: 'play none none none',
+              start: 'top 92%',
+              toggleActions: 'play reverse play reverse',
             },
           }
         );
       });
 
-      // 6. Feature Cards Stagger & Depth Reveal
+      // 6. Feature Cards Stagger & Depth Reveal (Bidirectional)
       const featureCards = gsap.utils.toArray('.gsap-feature-card');
       if (featureCards.length > 0) {
-        gsap.from(featureCards, {
-          y: 45,
-          opacity: 0,
-          stagger: 0.12,
-          duration: 0.85,
-          ease: 'power3.out',
-          scrollTrigger: {
-            scroller,
-            trigger: '#features-section',
-            start: 'top 80%',
-            toggleActions: 'play none none none',
-          },
-        });
+        gsap.fromTo(
+          featureCards,
+          { y: 40, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            stagger: 0.1,
+            duration: 0.75,
+            ease: 'power3.out',
+            scrollTrigger: {
+              scroller,
+              trigger: '#features-section',
+              start: 'top 85%',
+              toggleActions: 'play reverse play reverse',
+            },
+          }
+        );
       }
 
-      // 7. Live Scrubbed / Scroll-Triggered Metric Counters
+      // 7. Live Scrubbed / Bidirectional Metric Counters
       const metricsContainer = document.getElementById('metrics-section');
       if (metricsContainer) {
+        const metricBoxes = gsap.utils.toArray('.gsap-metric-box');
+        if (metricBoxes.length > 0) {
+          gsap.fromTo(
+            metricBoxes,
+            { y: 30, opacity: 0 },
+            {
+              y: 0,
+              opacity: 1,
+              stagger: 0.08,
+              duration: 0.7,
+              ease: 'power3.out',
+              scrollTrigger: {
+                scroller,
+                trigger: metricsContainer,
+                start: 'top 85%',
+                toggleActions: 'play reverse play reverse',
+              },
+            }
+          );
+        }
+
         const metricEl15 = document.getElementById('gsap-metric-15ms');
         const metricEl100 = document.getElementById('gsap-metric-100pct');
         const metricEl17 = document.getElementById('gsap-metric-17plus');
 
+        const animateMetrics = () => {
+          if (metricEl15) {
+            const count15 = { val: 0 };
+            gsap.to(count15, {
+              val: 15,
+              duration: 1.3,
+              ease: 'power2.out',
+              onUpdate: () => {
+                metricEl15.innerText = `< ${Math.round(count15.val)}ms`;
+              },
+            });
+          }
+          if (metricEl100) {
+            const count100 = { val: 0 };
+            gsap.to(count100, {
+              val: 100,
+              duration: 1.5,
+              ease: 'power2.out',
+              onUpdate: () => {
+                metricEl100.innerText = `${Math.round(count100.val)}%`;
+              },
+            });
+          }
+          if (metricEl17) {
+            const count17 = { val: 0 };
+            gsap.to(count17, {
+              val: 17,
+              duration: 1.3,
+              ease: 'power2.out',
+              onUpdate: () => {
+                metricEl17.innerText = `${Math.round(count17.val)}+`;
+              },
+            });
+          }
+        };
+
         ScrollTrigger.create({
           scroller,
           trigger: metricsContainer,
-          start: 'top 80%',
-          once: true,
-          onEnter: () => {
-            if (metricEl15) {
-              const count15 = { val: 0 };
-              gsap.to(count15, {
-                val: 15,
-                duration: 1.4,
-                ease: 'power2.out',
-                onUpdate: () => {
-                  metricEl15.innerText = `< ${Math.round(count15.val)}ms`;
-                },
-              });
-            }
-            if (metricEl100) {
-              const count100 = { val: 0 };
-              gsap.to(count100, {
-                val: 100,
-                duration: 1.6,
-                ease: 'power2.out',
-                onUpdate: () => {
-                  metricEl100.innerText = `${Math.round(count100.val)}%`;
-                },
-              });
-            }
-            if (metricEl17) {
-              const count17 = { val: 0 };
-              gsap.to(count17, {
-                val: 17,
-                duration: 1.3,
-                ease: 'power2.out',
-                onUpdate: () => {
-                  metricEl17.innerText = `${Math.round(count17.val)}+`;
-                },
-              });
-            }
-          },
+          start: 'top 85%',
+          onEnter: animateMetrics,
+          onEnterBack: animateMetrics,
         });
       }
 
-      // 8. Deep Dive Sections Text & Card Entrances
+      // 8. Deep Dive Sections Text & Card Entrances (Bidirectional)
       ['#deep-dive-01', '#deep-dive-02', '#deep-dive-03'].forEach((id, idx) => {
         const section = document.querySelector(id);
         if (section) {
@@ -269,72 +296,152 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
           const cardCol = section.querySelector('.gsap-deep-card');
 
           if (textCol) {
-            gsap.from(textCol, {
-              x: idx % 2 === 0 ? -35 : 35,
-              opacity: 0,
-              duration: 0.9,
-              ease: 'power3.out',
-              scrollTrigger: {
-                scroller,
-                trigger: section,
-                start: 'top 75%',
-                toggleActions: 'play none none none',
-              },
-            });
+            gsap.fromTo(
+              textCol,
+              { x: idx % 2 === 0 ? -40 : 40, opacity: 0 },
+              {
+                x: 0,
+                opacity: 1,
+                duration: 0.85,
+                ease: 'power3.out',
+                scrollTrigger: {
+                  scroller,
+                  trigger: section,
+                  start: 'top 82%',
+                  toggleActions: 'play reverse play reverse',
+                },
+              }
+            );
           }
           if (cardCol) {
-            gsap.from(cardCol, {
-              x: idx % 2 === 0 ? 35 : -35,
-              opacity: 0,
-              scale: 0.97,
-              duration: 0.9,
-              ease: 'power3.out',
-              scrollTrigger: {
-                scroller,
-                trigger: section,
-                start: 'top 75%',
-                toggleActions: 'play none none none',
-              },
-            });
+            gsap.fromTo(
+              cardCol,
+              { x: idx % 2 === 0 ? 40 : -40, opacity: 0, scale: 0.96 },
+              {
+                x: 0,
+                opacity: 1,
+                scale: 1,
+                duration: 0.85,
+                ease: 'power3.out',
+                scrollTrigger: {
+                  scroller,
+                  trigger: section,
+                  start: 'top 82%',
+                  toggleActions: 'play reverse play reverse',
+                },
+              }
+            );
           }
         }
       });
 
-      // 9. Comparison Table Cascade
-      const compRows = gsap.utils.toArray('.gsap-comp-row');
-      if (compRows.length > 0) {
-        gsap.from(compRows, {
-          y: 20,
-          opacity: 0,
-          stagger: 0.06,
-          duration: 0.65,
-          ease: 'power2.out',
-          scrollTrigger: {
-            scroller,
-            trigger: '#comparison-section',
-            start: 'top 75%',
-            toggleActions: 'play none none none',
-          },
-        });
+      // 9. Comparison Section Orchestration (Keynote-grade Bidirectional)
+      const compSection = document.getElementById('comparison-section');
+      if (compSection) {
+        gsap.fromTo(
+          '.gsap-comp-header',
+          { y: 35, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.75,
+            ease: 'power3.out',
+            scrollTrigger: {
+              scroller,
+              trigger: compSection,
+              start: 'top 85%',
+              toggleActions: 'play reverse play reverse',
+            },
+          }
+        );
+
+        gsap.fromTo(
+          '#comparison-table-card',
+          { y: 40, opacity: 0, scale: 0.98 },
+          {
+            y: 0,
+            opacity: 1,
+            scale: 1,
+            duration: 0.8,
+            ease: 'power3.out',
+            scrollTrigger: {
+              scroller,
+              trigger: compSection,
+              start: 'top 82%',
+              toggleActions: 'play reverse play reverse',
+            },
+          }
+        );
+
+        const compRows = gsap.utils.toArray('.gsap-comp-row');
+        if (compRows.length > 0) {
+          gsap.fromTo(
+            compRows,
+            { y: 22, opacity: 0, x: -8 },
+            {
+              y: 0,
+              opacity: 1,
+              x: 0,
+              stagger: 0.08,
+              duration: 0.65,
+              ease: 'power2.out',
+              scrollTrigger: {
+                scroller,
+                trigger: '#comparison-table-card',
+                start: 'top 85%',
+                toggleActions: 'play reverse play reverse',
+              },
+            }
+          );
+        }
       }
 
-      // 10. FAQ Stagger Reveal
-      const faqItems = gsap.utils.toArray('.gsap-faq-item');
-      if (faqItems.length > 0) {
-        gsap.from(faqItems, {
-          y: 25,
-          opacity: 0,
-          stagger: 0.08,
-          duration: 0.7,
-          ease: 'power3.out',
-          scrollTrigger: {
-            scroller,
-            trigger: '#faq-section',
-            start: 'top 78%',
-            toggleActions: 'play none none none',
-          },
-        });
+      // 10. FAQ Section Orchestration (Reliable Immediate Trigger & Bidirectional)
+      const faqSection = document.getElementById('faq-section');
+      if (faqSection) {
+        gsap.fromTo(
+          '.gsap-faq-header',
+          { y: 30, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.7,
+            ease: 'power3.out',
+            scrollTrigger: {
+              scroller,
+              trigger: faqSection,
+              start: 'top 95%',
+              toggleActions: 'play reverse play reverse',
+            },
+          }
+        );
+
+        const faqItems = gsap.utils.toArray('.gsap-faq-item');
+        if (faqItems.length > 0) {
+          gsap.fromTo(
+            faqItems,
+            { y: 25, opacity: 0 },
+            {
+              y: 0,
+              opacity: 1,
+              stagger: 0.07,
+              duration: 0.65,
+              ease: 'power3.out',
+              scrollTrigger: {
+                scroller,
+                trigger: faqSection,
+                start: 'top 95%',
+                toggleActions: 'play reverse play reverse',
+              },
+            }
+          );
+        }
       }
+
+      // Recalculate triggers after microtasks settle
+      requestAnimationFrame(() => {
+        ScrollTrigger.refresh();
+      });
     }, pageRef);
 
     return () => ctx.revert();
@@ -649,13 +756,33 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
           </div>
 
           {/* Studio Document Redaction Preview Showcase */}
-          <div className="gsap-parallax-container relative overflow-hidden bg-paper-white group">
-            <img
-              src="/images/studio-preview-vector.jpg"
-              alt="Redactify document redaction studio preview"
-              className="gsap-parallax-img w-full h-auto object-cover scale-[1.06] transition-transform duration-500 ease-out group-hover:scale-[1.09]"
-              loading="lazy"
-            />
+          <div className="relative border-t border-stone-mist bg-paper-white group">
+            {/* Editorial Studio Canvas Header Bar */}
+            <div className="px-4 sm:px-6 py-2.5 bg-warm-bone/60 border-b border-stone-mist flex items-center justify-between text-xs font-mono">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
+                <span className="font-semibold text-charcoal tracking-wide">REDACTION STUDIO PREVIEW</span>
+              </div>
+              <div className="hidden sm:flex items-center gap-3 text-bark-grey text-[11px]">
+                <span>VOLATILE RAM BUFFER</span>
+                <span className="text-stone-mist">•</span>
+                <span className="text-charcoal font-semibold">0 BYTES TRANSMITTED</span>
+              </div>
+            </div>
+
+            {/* Vector Illustration Container with explicit dimensions and instant eager loading */}
+            <div className="relative w-full aspect-[16/10] sm:aspect-[16/9] min-h-[320px] sm:min-h-[460px] overflow-hidden bg-warm-bone/20">
+              <img
+                src="/images/studio-preview-vector.jpg"
+                alt="Redactify document redaction studio preview"
+                className="w-full h-full object-cover object-top transition-transform duration-700 ease-out group-hover:scale-[1.02]"
+                loading="eager"
+                fetchPriority="high"
+                decoding="async"
+                onLoad={() => ScrollTrigger.refresh()}
+              />
+              <div className="absolute inset-0 pointer-events-none border-t border-black/5" />
+            </div>
           </div>
         </div>
 
@@ -726,22 +853,22 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
           <div className="border-t border-b border-stone-mist">
             {/* 4 Metric Columns */}
             <div className="grid grid-cols-2 md:grid-cols-4">
-              <div className="flex flex-col justify-center gap-1.5 p-6 border-stone-mist odd:border-r md:odd:border-r-0 md:border-r bg-paper-white">
+              <div className="gsap-metric-box flex flex-col justify-center gap-1.5 p-6 border-stone-mist odd:border-r md:odd:border-r-0 md:border-r bg-paper-white">
                 <p className="text-amber-800 font-bold text-3xl sm:text-4xl font-datatype text-center flex items-center justify-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-amber-600 animate-ping inline-block" />
                   <span>0</span>
                 </p>
                 <p className="text-charcoal font-semibold text-xs text-center">Bytes uploaded to any server</p>
               </div>
-              <div className="flex flex-col justify-center gap-1.5 p-6 border-stone-mist md:border-r bg-paper-white">
+              <div className="gsap-metric-box flex flex-col justify-center gap-1.5 p-6 border-stone-mist md:border-r bg-paper-white">
                 <p id="gsap-metric-15ms" className="text-charcoal font-bold text-3xl sm:text-4xl font-datatype text-center">&lt; 15ms</p>
                 <p className="text-bark-grey font-medium text-xs text-center">Instant detection speed</p>
               </div>
-              <div className="flex flex-col justify-center gap-1.5 p-6 border-stone-mist odd:border-r md:odd:border-r-0 md:border-r bg-paper-white">
+              <div className="gsap-metric-box flex flex-col justify-center gap-1.5 p-6 border-stone-mist odd:border-r md:odd:border-r-0 md:border-r bg-paper-white">
                 <p id="gsap-metric-100pct" className="text-amber-800 font-bold text-3xl sm:text-4xl font-datatype text-center">100%</p>
                 <p className="text-charcoal font-semibold text-xs text-center">Client-side offline processing</p>
               </div>
-              <div className="flex flex-col justify-center gap-1.5 p-6 border-stone-mist bg-paper-white">
+              <div className="gsap-metric-box flex flex-col justify-center gap-1.5 p-6 border-stone-mist bg-paper-white">
                 <p id="gsap-metric-17plus" className="text-charcoal font-bold text-3xl sm:text-4xl font-datatype text-center">17+</p>
                 <p className="text-bark-grey font-medium text-xs text-center">Standard PII types recognized</p>
               </div>
@@ -783,12 +910,15 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
               </div>
 
               {/* Pure Vector Illustration Showcase with GSAP Parallax */}
-              <div className="gsap-deep-card gsap-parallax-container relative rounded-card border border-stone-mist overflow-hidden bg-paper-white shadow-showcase group">
+              <div className="gsap-deep-card gsap-parallax-container relative rounded-card border border-stone-mist overflow-hidden bg-warm-bone/20 shadow-showcase group w-full aspect-[4/3] sm:aspect-[16/10] min-h-[260px] sm:min-h-[340px]">
                 <img
                   src="/images/airgap-vault-vector.jpg"
                   alt="Air-gap vault security and client-side isolation"
-                  className="gsap-parallax-img w-full h-auto object-cover scale-[1.06] transition-transform duration-500 ease-out group-hover:scale-[1.09]"
-                  loading="lazy"
+                  className="gsap-parallax-img w-full h-full object-cover scale-[1.06] transition-transform duration-500 ease-out group-hover:scale-[1.09]"
+                  loading="eager"
+                  fetchPriority="high"
+                  decoding="async"
+                  onLoad={() => ScrollTrigger.refresh()}
                 />
               </div>
             </div>
@@ -798,12 +928,15 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
           <div id="deep-dive-02" className="border-b border-stone-mist">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 md:p-10 items-center">
               {/* Pure Vector Illustration Showcase with GSAP Parallax */}
-              <div className="order-2 md:order-1 gsap-deep-card gsap-parallax-container relative rounded-card border border-stone-mist overflow-hidden bg-paper-white shadow-showcase group">
+              <div className="order-2 md:order-1 gsap-deep-card gsap-parallax-container relative rounded-card border border-stone-mist overflow-hidden bg-warm-bone/20 shadow-showcase group w-full aspect-[4/3] sm:aspect-[16/10] min-h-[260px] sm:min-h-[340px]">
                 <img
                   src="/images/pattern-detection-vector.jpg"
                   alt="Automated pattern detection and document sanitization"
-                  className="gsap-parallax-img w-full h-auto object-cover scale-[1.06] transition-transform duration-500 ease-out group-hover:scale-[1.09]"
-                  loading="lazy"
+                  className="gsap-parallax-img w-full h-full object-cover scale-[1.06] transition-transform duration-500 ease-out group-hover:scale-[1.09]"
+                  loading="eager"
+                  fetchPriority="high"
+                  decoding="async"
+                  onLoad={() => ScrollTrigger.refresh()}
                 />
               </div>
 
@@ -870,12 +1003,15 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
               </div>
 
               {/* Pure Vector Illustration Showcase with GSAP Parallax */}
-              <div className="gsap-deep-card gsap-parallax-container relative rounded-card border border-stone-mist overflow-hidden bg-paper-white shadow-showcase group">
+              <div className="gsap-deep-card gsap-parallax-container relative rounded-card border border-stone-mist overflow-hidden bg-warm-bone/20 shadow-showcase group w-full aspect-[4/3] sm:aspect-[16/10] min-h-[260px] sm:min-h-[340px]">
                 <img
                   src="/images/rotation-blackout-vector.jpg"
                   alt="Document orientation rotation and signature blackout"
-                  className="gsap-parallax-img w-full h-auto object-cover scale-[1.06] transition-transform duration-500 ease-out group-hover:scale-[1.09]"
-                  loading="lazy"
+                  className="gsap-parallax-img w-full h-full object-cover scale-[1.06] transition-transform duration-500 ease-out group-hover:scale-[1.09]"
+                  loading="eager"
+                  fetchPriority="high"
+                  decoding="async"
+                  onLoad={() => ScrollTrigger.refresh()}
                 />
               </div>
             </div>
@@ -894,7 +1030,7 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
         id="comparison-section"
         className="max-w-6xl mx-auto w-full px-4 md:px-6 mb-20"
       >
-        <div className="text-center max-w-2xl mx-auto mb-10">
+        <div className="gsap-comp-header text-center max-w-2xl mx-auto mb-10">
           <p className="text-xs font-mono uppercase tracking-[0.10em] text-bark-grey mb-2">
             Comparison
           </p>
@@ -906,56 +1042,96 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
           </p>
         </div>
 
-        <div className="border border-stone-mist rounded-card overflow-hidden bg-paper-white shadow-card">
+        <div id="comparison-table-card" className="border border-stone-mist rounded-card overflow-hidden bg-paper-white shadow-card">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-stone-mist bg-warm-bone text-xs font-mono text-charcoal">
-                  <th className="py-3.5 px-6 font-semibold">Feature / Security Standard</th>
-                  <th className="py-3.5 px-6 font-semibold text-charcoal bg-paper-white border-x border-stone-mist">
-                    Redactify V2
+                  <th className="py-4 px-6 font-semibold w-1/3">Feature / Security Invariant</th>
+                  <th className="py-4 px-6 font-bold text-charcoal bg-amber-500/10 border-x border-stone-mist w-1/3">
+                    <div className="flex items-center justify-between">
+                      <span>Redactify V2</span>
+                      <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-amber-700 text-white font-semibold tracking-wider">
+                        Client-Side
+                      </span>
+                    </div>
                   </th>
-                  <th className="py-3.5 px-6 text-bark-grey font-medium">Adobe Acrobat Pro</th>
-                  <th className="py-3.5 px-6 text-bark-grey font-medium">Common Web Editors</th>
+                  <th className="py-4 px-6 text-bark-grey font-medium w-1/6">Adobe Acrobat Pro</th>
+                  <th className="py-4 px-6 text-bark-grey font-medium w-1/6">Typical Web Tools</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-stone-mist text-xs sm:text-sm font-sans text-charcoal">
-                <tr className="gsap-comp-row transition-colors hover:bg-warm-bone/50">
+                <tr className="gsap-comp-row transition-colors hover:bg-warm-bone/40">
                   <td className="py-4 px-6 font-medium">Where files are processed</td>
-                  <td className="py-4 px-6 font-semibold bg-paper-white border-x border-stone-mist text-amber-800 flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-amber-600" /> 100% On Your Device (RAM)
+                  <td className="py-4 px-6 font-semibold bg-amber-50/40 border-x border-stone-mist text-amber-900">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span>100% On Device (RAM)</span>
+                    </div>
                   </td>
                   <td className="py-4 px-6 text-bark-grey">Adobe Document Cloud</td>
-                  <td className="py-4 px-6 text-rose-600">Third-Party Cloud Servers</td>
+                  <td className="py-4 px-6 text-rose-600">
+                    <div className="flex items-center gap-1.5">
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                      <span>Remote Cloud Servers</span>
+                    </div>
+                  </td>
                 </tr>
-                <tr className="gsap-comp-row transition-colors hover:bg-warm-bone/50">
+                <tr className="gsap-comp-row transition-colors hover:bg-warm-bone/40">
                   <td className="py-4 px-6 font-medium">Offline and air-gapped support</td>
-                  <td className="py-4 px-6 font-semibold bg-paper-white border-x border-stone-mist">
-                    Yes (Fully offline capable)
+                  <td className="py-4 px-6 font-semibold bg-amber-50/40 border-x border-stone-mist text-charcoal">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span>Yes (Fully offline capable)</span>
+                    </div>
                   </td>
                   <td className="py-4 px-6 text-bark-grey">Requires cloud license checks</td>
-                  <td className="py-4 px-6 text-rose-600">No (Fails without internet)</td>
+                  <td className="py-4 px-6 text-rose-600">
+                    <div className="flex items-center gap-1.5">
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                      <span>Fails without internet</span>
+                    </div>
+                  </td>
                 </tr>
-                <tr className="gsap-comp-row transition-colors hover:bg-warm-bone/50">
+                <tr className="gsap-comp-row transition-colors hover:bg-warm-bone/40">
                   <td className="py-4 px-6 font-medium">Permanent vector text deletion</td>
-                  <td className="py-4 px-6 font-semibold bg-paper-white border-x border-stone-mist">
-                    Yes (Glyphs fully destroyed)
+                  <td className="py-4 px-6 font-semibold bg-amber-50/40 border-x border-stone-mist text-charcoal">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span>Yes (Glyphs fully destroyed)</span>
+                    </div>
                   </td>
                   <td className="py-4 px-6 text-bark-grey">Yes (Sanitize document)</td>
-                  <td className="py-4 px-6 text-rose-600">Often superficial black boxes</td>
+                  <td className="py-4 px-6 text-rose-600">
+                    <div className="flex items-center gap-1.5">
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                      <span>Superficial black boxes</span>
+                    </div>
+                  </td>
                 </tr>
-                <tr className="gsap-comp-row transition-colors hover:bg-warm-bone/50">
+                <tr className="gsap-comp-row transition-colors hover:bg-warm-bone/40">
                   <td className="py-4 px-6 font-medium">Sideways photo 90° rotation</td>
-                  <td className="py-4 px-6 font-semibold bg-paper-white border-x border-stone-mist">
-                    Yes (One-click CW & CCW)
+                  <td className="py-4 px-6 font-semibold bg-amber-50/40 border-x border-stone-mist text-charcoal">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span>Yes (One-click CW & CCW)</span>
+                    </div>
                   </td>
                   <td className="py-4 px-6 text-bark-grey">Requires page organize tool</td>
-                  <td className="py-4 px-6 text-rose-600">Not supported</td>
+                  <td className="py-4 px-6 text-rose-600">
+                    <div className="flex items-center gap-1.5">
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                      <span>Not supported</span>
+                    </div>
+                  </td>
                 </tr>
-                <tr className="gsap-comp-row transition-colors hover:bg-warm-bone/50">
+                <tr className="gsap-comp-row transition-colors hover:bg-warm-bone/40">
                   <td className="py-4 px-6 font-medium">Pricing model</td>
-                  <td className="py-4 px-6 font-semibold bg-paper-white border-x border-stone-mist text-charcoal">
-                    $9 / mo or $29 Early-Bird Lifetime
+                  <td className="py-4 px-6 font-semibold bg-amber-50/40 border-x border-stone-mist text-charcoal">
+                    <div className="flex items-center gap-2">
+                      <Zap className="w-4 h-4 text-amber-700 shrink-0" />
+                      <span>$9 / mo or $29 Early-Bird Lifetime</span>
+                    </div>
                   </td>
                   <td className="py-4 px-6 text-bark-grey">$240+ / year subscription</td>
                   <td className="py-4 px-6 text-bark-grey">$60 - $120 / year subscription</td>
@@ -974,9 +1150,9 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
       ────────────────────────────────────────────────────────────── */}
       <section 
         id="faq-section"
-        className="max-w-4xl mx-auto w-full px-4 md:px-6 mb-20"
+        className="max-w-4xl mx-auto w-full px-4 md:px-6 mb-28"
       >
-        <div className="text-center mb-10">
+        <div className="gsap-faq-header text-center mb-10">
           <p className="text-xs font-mono uppercase tracking-[0.10em] text-bark-grey mb-2">
             Clear Answers
           </p>
