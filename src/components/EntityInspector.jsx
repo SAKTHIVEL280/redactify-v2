@@ -45,7 +45,7 @@ export function EntityInspector({ onOpenFeedback }) {
       <div className="p-4 border-b border-stone-mist flex items-center justify-between">
         <div>
           <div className="text-xs font-mono font-semibold text-charcoal uppercase tracking-wider flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-600" />
             <span>Entity Inspector</span>
           </div>
           <p className="text-[11px] text-bark-grey mt-0.5 font-mono">

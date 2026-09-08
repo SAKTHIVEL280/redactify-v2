@@ -617,7 +617,7 @@ export function DocumentViewer() {
 
             {ocrStatusMessage && (
               <span className="text-[11px] font-mono text-charcoal flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-600" />
                 {ocrStatusMessage}
               </span>
             )}

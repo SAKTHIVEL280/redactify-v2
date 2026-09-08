@@ -58,7 +58,7 @@ export function PricingPage({ onNavigateToStudio }) {
         {file && (
           <div className="p-3.5 sm:p-4 rounded-xl bg-soft-cream border border-stone-mist flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-sm">
             <div className="flex items-center gap-2.5 text-charcoal">
-              <span className="w-2 h-2 rounded-full bg-emerald-600 shrink-0" />
+              <span className="w-2 h-2 rounded-full bg-amber-600 shrink-0" />
               <span>
                 You have an active document in Studio (<strong>{file.name}</strong>). Your redactions and zoom are safe in browser memory.
               </span>
@@ -79,7 +79,7 @@ export function PricingPage({ onNavigateToStudio }) {
             100% Client-Side • Zero Cloud Servers
           </div>
           <h1 className="text-4xl sm:text-5xl font-serif font-normal tracking-tight text-charcoal">
-            Simple pricing for <span className="italic text-emerald-700">serious privacy</span>.
+            Simple pricing for <span className="italic text-amber-800">serious privacy</span>.
           </h1>
           <p className="text-base text-bark-grey leading-relaxed">
             Your files never leave your computer. Choose a flexible monthly plan or lock in permanent lifetime access with zero recurrent fees.
@@ -134,15 +134,15 @@ export function PricingPage({ onNavigateToStudio }) {
 
               <ul className="space-y-3 text-xs text-charcoal">
                 <li className="flex items-start gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <Check className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
                   <span>Unlimited in-browser entity scans</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <Check className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
                   <span>PDF, Word (.docx), and scan files</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <Check className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
                   <span>Crosshair manual blackout tool</span>
                 </li>
                 <li className="flex items-start gap-2.5 text-bark-grey">
@@ -180,7 +180,7 @@ export function PricingPage({ onNavigateToStudio }) {
                   </span>
                   <span className="text-xs text-bark-grey font-mono">/ month</span>
                 </div>
-                <div className="mt-2 inline-block text-[11px] font-mono font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-md">
+                <div className="mt-2 inline-block text-[11px] font-mono font-bold text-amber-900 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-md">
                   Or {currency === 'INR' ? '₹999 Lifetime Pass' : '$29 Lifetime Pass'}
                 </div>
                 <p className="text-xs text-bark-grey mt-2 leading-relaxed">
@@ -192,27 +192,27 @@ export function PricingPage({ onNavigateToStudio }) {
 
               <ul className="space-y-3 text-xs text-charcoal">
                 <li className="flex items-start gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <Check className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
                   <span className="font-medium">Unlimited Pages & Batch Multi-Page Exports</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <Check className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
                   <span>100% Clean Vector Exports (Zero Watermarks)</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <Check className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
                   <span>True PDF Text Scrubbing (Zero Ghost Text)</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <Check className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
                   <span>Offline OCR Engine (Runs 100% in Browser)</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <Check className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
                   <span>Custom Redaction Styles & Blackout Labels</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <Check className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
                   <span>Offline Cryptographic Key Verification</span>
                 </li>
               </ul>
@@ -248,23 +248,23 @@ export function PricingPage({ onNavigateToStudio }) {
 
               <ul className="space-y-3 text-xs text-charcoal">
                 <li className="flex items-start gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <Check className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
                   <span>Everything in Pro for unlimited seats</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <Check className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
                   <span>Custom regex and company pattern rules</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <Check className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
                   <span>Air-gapped on-premise static deployment</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <Check className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
                   <span>GDPR, HIPAA, and ISO 27001 audit report</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <Check className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
                   <span>Dedicated engineering support & SLA</span>
                 </li>
               </ul>
@@ -294,8 +294,8 @@ export function PricingPage({ onNavigateToStudio }) {
               </p>
             </div>
             {isPro && (
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-emerald-50 text-emerald-800 text-xs font-mono font-medium border border-emerald-200">
-                <Check className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-amber-50 text-amber-900 text-xs font-mono font-medium border border-amber-200">
+                <Check className="w-3.5 h-3.5 text-amber-800 shrink-0" />
                 <span>Active Key: {typeof licenseKey === 'string' ? licenseKey.slice(0, 12) : licenseKey?.key?.slice(0, 12)}...</span>
               </div>
             )}
@@ -320,12 +320,12 @@ export function PricingPage({ onNavigateToStudio }) {
           {validationResult && (
             <div className={`p-3 rounded-button text-xs flex items-center gap-2 ${
               validationResult.valid 
-                ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' 
+                ? 'bg-amber-50 text-amber-900 border border-amber-200' 
                 : 'bg-rose-50 text-rose-800 border border-rose-200'
             }`}>
               {validationResult.valid ? (
                 <>
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-amber-700 shrink-0" />
                   <span>Success! Offline signature verified. Tier: <strong>{validationResult.tier}</strong>. Pro features unlocked.</span>
                 </>
               ) : (
@@ -361,7 +361,7 @@ export function PricingPage({ onNavigateToStudio }) {
                 <tr>
                   <td className="py-3.5 px-4 font-medium">File Processing</td>
                   <td className="py-3.5 px-4 text-charcoal font-medium flex items-center gap-1.5">
-                    <Check className="w-3.5 h-3.5 text-emerald-600" />
+                    <Check className="w-3.5 h-3.5 text-amber-700" />
                     <span>0 Bytes Uploaded (100% In Browser Memory)</span>
                   </td>
                   <td className="py-3.5 px-4 text-bark-grey">Uploaded to remote cloud servers</td>
@@ -369,7 +369,7 @@ export function PricingPage({ onNavigateToStudio }) {
                 <tr>
                   <td className="py-3.5 px-4 font-medium">PDF Ghost Text Removal</td>
                   <td className="py-3.5 px-4 text-charcoal font-medium flex items-center gap-1.5">
-                    <Check className="w-3.5 h-3.5 text-emerald-600" />
+                    <Check className="w-3.5 h-3.5 text-amber-700" />
                     <span>True Text Stream Scrubbing + Flattening</span>
                   </td>
                   <td className="py-3.5 px-4 text-bark-grey">Simple black rectangles (text remains copy-pasteable)</td>
@@ -377,7 +377,7 @@ export function PricingPage({ onNavigateToStudio }) {
                 <tr>
                   <td className="py-3.5 px-4 font-medium">Word DOCX Auxiliary Streams</td>
                   <td className="py-3.5 px-4 text-charcoal font-medium flex items-center gap-1.5">
-                    <Check className="w-3.5 h-3.5 text-emerald-600" />
+                    <Check className="w-3.5 h-3.5 text-amber-700" />
                     <span>Cleans headers, footers & strips document author metadata</span>
                   </td>
                   <td className="py-3.5 px-4 text-bark-grey">Only scans body text; leaks author & headers</td>
@@ -385,7 +385,7 @@ export function PricingPage({ onNavigateToStudio }) {
                 <tr>
                   <td className="py-3.5 px-4 font-medium">OCR Image Processing</td>
                   <td className="py-3.5 px-4 text-charcoal font-medium flex items-center gap-1.5">
-                    <Check className="w-3.5 h-3.5 text-emerald-600" />
+                    <Check className="w-3.5 h-3.5 text-amber-700" />
                     <span>100% Self-Hosted Local WebAssembly Engine</span>
                   </td>
                   <td className="py-3.5 px-4 text-bark-grey">Loads unverified third-party CDN scripts</td>
@@ -393,7 +393,7 @@ export function PricingPage({ onNavigateToStudio }) {
                 <tr>
                   <td className="py-3.5 px-4 font-medium">Domain & CORS Boundary</td>
                   <td className="py-3.5 px-4 text-charcoal font-medium flex items-center gap-1.5">
-                    <Check className="w-3.5 h-3.5 text-emerald-600" />
+                    <Check className="w-3.5 h-3.5 text-amber-700" />
                     <span>Locked strictly to https://redactify.daeq.in</span>
                   </td>
                   <td className="py-3.5 px-4 text-bark-grey">Wildcard cross-origin headers</td>

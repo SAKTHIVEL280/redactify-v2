@@ -82,7 +82,7 @@ export function ProModal({ onNavigateToPricing }) {
           </p>
 
           <div className="mt-2.5 flex items-center gap-1.5 text-[11px] font-mono text-bark-grey">
-            <Check className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+            <Check className="w-3.5 h-3.5 text-amber-800 shrink-0" />
             <span>Your active document and edits remain 100% preserved in memory.</span>
           </div>
         </div>
@@ -116,14 +116,14 @@ export function ProModal({ onNavigateToPricing }) {
           {activeTab === 'pricing' ? (
             <div className="space-y-4">
               {/* Evaluator 1-Click Test Pass Banner */}
-              <div className="p-3.5 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-between gap-3">
+              <div className="p-3.5 rounded-lg bg-amber-50 border border-amber-200 flex items-center justify-between gap-3">
                 <div>
-                  <div className="text-xs font-semibold text-emerald-900">Testing or Evaluating?</div>
-                  <div className="text-[11px] text-emerald-700">Unlock full Pro features instantly for testing.</div>
+                  <div className="text-xs font-semibold text-amber-950">Testing or Evaluating?</div>
+                  <div className="text-[11px] text-amber-800">Unlock full Pro features instantly for testing.</div>
                 </div>
                 <button
                   onClick={handleQuickTestActivation}
-                  className="px-3 py-1.5 rounded-button bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-mono font-medium shadow-sm transition-all shrink-0"
+                  className="px-3 py-1.5 rounded-button bg-amber-800 hover:bg-amber-900 text-white text-xs font-mono font-medium shadow-sm transition-all shrink-0"
                 >
                   1-Click Test Pass
                 </button>
@@ -132,27 +132,27 @@ export function ProModal({ onNavigateToPricing }) {
               {/* Feature Checklist */}
               <div className="grid grid-cols-2 gap-2 text-xs text-charcoal py-1">
                 <div className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <Check className="w-3.5 h-3.5 text-amber-700 shrink-0" />
                   <span>Unlimited Pages</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <Check className="w-3.5 h-3.5 text-amber-700 shrink-0" />
                   <span>Zero Watermarks</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <Check className="w-3.5 h-3.5 text-amber-700 shrink-0" />
                   <span>Passports, IDs, SSN</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <Check className="w-3.5 h-3.5 text-amber-700 shrink-0" />
                   <span>Word DOCX Redaction</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <Check className="w-3.5 h-3.5 text-amber-700 shrink-0" />
                   <span>Custom Color Labels</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <Check className="w-3.5 h-3.5 text-amber-700 shrink-0" />
                   <span>True Text Scrubbing</span>
                 </div>
               </div>

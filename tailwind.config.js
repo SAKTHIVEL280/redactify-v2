@@ -18,7 +18,7 @@ export default {
         'electric-indigo': '#18181b',
         'deep-violet': '#09090b',
         terracotta: '#d97757',
-        'lichen-green': '#10b981',
+        'lichen-green': '#92400e',
         'tide-teal': '#22b8cd',
         'alarm-red': '#ef4444',
         'sapphire-link': '#2563eb',

@@ -38,7 +38,7 @@
     --color-electric-indigo: #18181b;
     --color-deep-violet: #09090b;
     --color-terracotta: #d97757;
-    --color-lichen-green: #10b981;
+    --color-lichen-green: #92400e;
     --color-tide-teal: #22b8cd;
     --color-alarm-red: #ef4444;
     --color-sapphire-link: #2563eb;
@@ -61,7 +61,7 @@
   .bg-deep-violet { background-color: #09090b !important; color: #ffffff !important; }
   .hover\:bg-deep-violet:hover { background-color: #09090b !important; }
   .bg-terracotta { background-color: #d97757 !important; }
-  .bg-lichen-green { background-color: #10b981 !important; }
+  .bg-lichen-green { background-color: #92400e !important; }
   .bg-stone-mist { background-color: #e7e5e4 !important; }
   .bg-charcoal { background-color: #18181b !important; }
 
@@ -70,13 +70,13 @@
   .border-electric-indigo { border-color: #18181b !important; }
   .border-deep-violet { border-color: #09090b !important; }
   .border-terracotta { border-color: #d97757 !important; }
-  .border-lichen-green { border-color: #10b981 !important; }
+  .border-lichen-green { border-color: #92400e !important; }
 
   .text-charcoal { color: #18181b !important; }
   .text-bark-grey { color: #71717a !important; }
   .text-electric-indigo { color: #18181b !important; }
   .text-terracotta { color: #d97757 !important; }
-  .text-lichen-green { color: #10b981 !important; }
+  .text-lichen-green { color: #92400e !important; }
 
   .font-serif { font-family: 'Cooper LtBT', Georgia, serif !important; }
   .font-mono { font-family: 'Geist Mono', ui-monospace, SFMono-Regular, monospace !important; }

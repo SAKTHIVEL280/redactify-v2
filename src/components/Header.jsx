@@ -89,7 +89,7 @@ export function Header({ activePage, setActivePage }) {
             >
               <span>Studio</span>
               {file && (
-                <span className={`w-1.5 h-1.5 rounded-full ${activePage === 'studio' ? 'bg-emerald-400' : 'bg-emerald-500'}`} />
+                <span className={`w-1.5 h-1.5 rounded-full ${activePage === 'studio' ? 'bg-amber-400' : 'bg-amber-600'}`} />
               )}
             </button>
             <button
@@ -109,13 +109,13 @@ export function Header({ activePage, setActivePage }) {
         <div className="flex items-center gap-2.5 sm:gap-3">
           {/* Subtle Privacy Status */}
           <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-paper-white border border-stone-mist text-[11px] font-mono text-charcoal font-medium shadow-xs">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
+            <ShieldCheck className="w-3.5 h-3.5 text-amber-800" />
             <span>{isOffline ? 'Air-Gapped' : '100% In-Memory'}</span>
           </div>
 
           {/* Pro Status or License Trigger */}
           {isPro ? (
-            <span className="px-2.5 py-1 rounded-md bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-mono font-semibold">
+            <span className="px-2.5 py-1 rounded-md bg-amber-50 border border-amber-200 text-amber-900 text-[11px] font-mono font-semibold">
               PRO ACTIVE
             </span>
           ) : (

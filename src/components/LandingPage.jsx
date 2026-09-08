@@ -250,7 +250,7 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
         {/* Display Headline in Cooper LtBT serif */}
         <h1 className="font-serif text-[42px] sm:text-[68px] lg:text-[76px] leading-[1.08] text-charcoal font-normal max-w-4xl tracking-normal mb-6">
           Document redaction for <em>teams</em> who <br className="hidden md:inline" />
-          care about <span className="text-emerald-700 italic">privacy</span>
+          care about <span className="text-amber-800 italic">privacy</span>
         </h1>
 
         {/* Human, approachable subtext */}
@@ -369,7 +369,7 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
           <div className="p-6 sm:p-8 bg-paper-white">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-stone-mist">
               <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-emerald-600" />
+                <span className="w-2 h-2 rounded-full bg-amber-600" />
                 <span className="font-mono text-xs font-semibold uppercase tracking-wider text-charcoal">
                   Interactive Redaction Preview
                 </span>
@@ -531,12 +531,12 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
             {/* Bottom metrics & trigger row */}
             <div className="mt-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t border-stone-mist">
               <div className="flex items-center gap-2 text-xs text-bark-grey">
-                <span className="w-2 h-2 rounded-full bg-emerald-600" />
+                <span className="w-2 h-2 rounded-full bg-amber-600" />
                 <span className="font-mono text-charcoal font-semibold">
                   {activeCount} of 7 Entities Protected
                 </span>
                 <span className="text-pebble">•</span>
-                <span className="font-mono text-[11px] text-emerald-700 font-semibold">0 bytes sent to servers</span>
+                <span className="font-mono text-[11px] text-amber-800 font-semibold">0 bytes sent to servers</span>
               </div>
 
               <div className="flex items-center gap-2">
@@ -621,7 +621,7 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
             {/* 4 Metric Columns */}
             <div className="grid grid-cols-2 md:grid-cols-4">
               <div className="flex flex-col justify-center gap-1.5 p-6 border-stone-mist odd:border-r md:odd:border-r-0 md:border-r bg-paper-white">
-                <p className="text-emerald-700 font-bold text-3xl sm:text-4xl font-datatype text-center">0</p>
+                <p className="text-amber-800 font-bold text-3xl sm:text-4xl font-datatype text-center">0</p>
                 <p className="text-charcoal font-semibold text-xs text-center">Bytes uploaded to any server</p>
               </div>
               <div className="flex flex-col justify-center gap-1.5 p-6 border-stone-mist md:border-r bg-paper-white">
@@ -629,7 +629,7 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
                 <p className="text-bark-grey font-medium text-xs text-center">Instant detection speed</p>
               </div>
               <div className="flex flex-col justify-center gap-1.5 p-6 border-stone-mist odd:border-r md:odd:border-r-0 md:border-r bg-paper-white">
-                <p className="text-emerald-700 font-bold text-3xl sm:text-4xl font-datatype text-center">100%</p>
+                <p className="text-amber-800 font-bold text-3xl sm:text-4xl font-datatype text-center">100%</p>
                 <p className="text-charcoal font-semibold text-xs text-center">Client-side offline processing</p>
               </div>
               <div className="flex flex-col justify-center gap-1.5 p-6 border-stone-mist bg-paper-white">
@@ -652,11 +652,11 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
           <div className="border-b border-stone-mist">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 md:p-10 items-center">
               <div className="flex flex-col gap-3">
-                <p className="text-emerald-700 font-mono text-xs font-bold uppercase tracking-wider">
+                <p className="text-amber-800 font-mono text-xs font-bold uppercase tracking-wider">
                   #01: Zero Cloud Exposure
                 </p>
                 <h2 className="font-serif text-3xl md:text-4xl text-charcoal font-normal leading-tight">
-                  Your private files <span className="text-emerald-700">never leave your computer</span>.
+                  Your private files <span className="text-amber-800">never leave your computer</span>.
                 </h2>
                 <p className="text-bark-grey text-sm md:text-base leading-relaxed font-sans">
                   Most online redaction websites upload your contracts, tax returns, and client IDs to remote cloud servers. If their server is ever compromised, your sensitive files are exposed.
@@ -666,7 +666,7 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
                 </p>
                 <div className="pt-2">
                   <span className="inline-flex items-center gap-2 px-3 py-1 rounded-tag bg-paper-white border border-stone-mist text-xs font-mono text-charcoal">
-                    <span className="w-2 h-2 rounded-full bg-emerald-600" />
+                    <span className="w-2 h-2 rounded-full bg-amber-600" />
                     <span className="font-semibold">0 HTTP Network Requests Sent</span>
                   </span>
                 </div>
@@ -676,16 +676,16 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
               <div className="relative rounded-card border border-stone-mist overflow-hidden bg-paper-white shadow-card p-6">
                 <div className="font-mono text-xs text-bark-grey uppercase pb-3 border-b border-stone-mist flex items-center justify-between">
                   <span>Browser Network Inspector</span>
-                  <span className="text-emerald-700 font-bold">100% Offline Ready</span>
+                  <span className="text-amber-800 font-bold">100% Offline Ready</span>
                 </div>
                 <div className="py-4 space-y-3 font-mono text-xs">
                   <div className="p-3 rounded-tag bg-warm-bone border border-stone-mist flex items-center justify-between">
                     <span className="text-charcoal font-medium">Document Upload Request</span>
-                    <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">BLOCKED (0 Bytes)</span>
+                    <span className="text-amber-800 font-bold bg-amber-50 px-2 py-0.5 rounded border border-amber-200">BLOCKED (0 Bytes)</span>
                   </div>
                   <div className="p-3 rounded-tag bg-warm-bone border border-stone-mist flex items-center justify-between">
                     <span className="text-charcoal font-medium">Telemetry & Analytics</span>
-                    <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">NONE (Zero Tracking)</span>
+                    <span className="text-amber-800 font-bold bg-amber-50 px-2 py-0.5 rounded border border-amber-200">NONE (Zero Tracking)</span>
                   </div>
                   <div className="p-3 rounded-tag bg-warm-bone border border-stone-mist flex items-center justify-between">
                     <span className="text-charcoal font-medium">Processing Engine</span>
@@ -866,8 +866,8 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
               <tbody className="divide-y divide-stone-mist text-xs sm:text-sm font-sans text-charcoal">
                 <tr>
                   <td className="py-4 px-6 font-medium">Where files are processed</td>
-                  <td className="py-4 px-6 font-semibold bg-paper-white border-x border-stone-mist text-lichen-green flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-lichen-green" /> 100% On Your Device (RAM)
+                  <td className="py-4 px-6 font-semibold bg-paper-white border-x border-stone-mist text-amber-800 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-amber-600" /> 100% On Your Device (RAM)
                   </td>
                   <td className="py-4 px-6 text-bark-grey">Adobe Document Cloud</td>
                   <td className="py-4 px-6 text-rose-600">Third-Party Cloud Servers</td>

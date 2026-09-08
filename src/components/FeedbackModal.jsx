@@ -54,7 +54,7 @@ export function FeedbackModal({ isOpen, onClose }) {
 
         {submitted ? (
           <div className="py-8 text-center flex flex-col items-center">
-            <CheckCircle2 className="w-8 h-8 text-emerald-600 mb-2" />
+            <CheckCircle2 className="w-8 h-8 text-amber-700 mb-2" />
             <div className="text-sm font-medium text-charcoal">Feedback recorded</div>
             <p className="text-xs text-bark-grey mt-1">Saved locally to device storage.</p>
           </div>
