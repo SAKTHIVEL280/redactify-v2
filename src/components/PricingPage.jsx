@@ -58,7 +58,7 @@ export function PricingPage({ onNavigateToStudio }) {
         {file && (
           <div className="p-3.5 sm:p-4 rounded-xl bg-soft-cream border border-stone-mist flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-sm">
             <div className="flex items-center gap-2.5 text-charcoal">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+              <span className="w-2 h-2 rounded-full bg-emerald-600 shrink-0" />
               <span>
                 You have an active document in Studio (<strong>{file.name}</strong>). Your redactions and zoom are safe in browser memory.
               </span>
@@ -75,12 +75,11 @@ export function PricingPage({ onNavigateToStudio }) {
 
         {/* Header */}
         <div className="text-center space-y-4 max-w-2xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-soft-cream text-charcoal text-xs font-mono border border-stone-mist">
-            <span className="w-2 h-2 rounded-full bg-emerald-500" />
-            <span>100% Client-Side • No Cloud Servers</span>
+          <div className="font-mono text-xs uppercase tracking-widest text-bark-grey font-semibold">
+            100% Client-Side • Zero Cloud Servers
           </div>
           <h1 className="text-4xl sm:text-5xl font-serif font-normal tracking-tight text-charcoal">
-            Simple pricing for <span className="italic">serious privacy</span>.
+            Simple pricing for <span className="italic text-emerald-700">serious privacy</span>.
           </h1>
           <p className="text-base text-bark-grey leading-relaxed">
             Your files never leave your computer. Choose a flexible monthly plan or lock in permanent lifetime access with zero recurrent fees.
@@ -181,7 +180,7 @@ export function PricingPage({ onNavigateToStudio }) {
                   </span>
                   <span className="text-xs text-bark-grey font-mono">/ month</span>
                 </div>
-                <div className="mt-2 inline-block text-[11px] font-mono font-medium text-charcoal bg-stone-mist/60 border border-stone-mist px-2.5 py-0.5 rounded-full">
+                <div className="mt-2 inline-block text-[11px] font-mono font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-md">
                   Or {currency === 'INR' ? '₹999 Lifetime Pass' : '$29 Lifetime Pass'}
                 </div>
                 <p className="text-xs text-bark-grey mt-2 leading-relaxed">
@@ -295,8 +294,8 @@ export function PricingPage({ onNavigateToStudio }) {
               </p>
             </div>
             {isPro && (
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 text-xs font-mono font-medium border border-emerald-200">
-                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-emerald-50 text-emerald-800 text-xs font-mono font-medium border border-emerald-200">
+                <Check className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
                 <span>Active Key: {typeof licenseKey === 'string' ? licenseKey.slice(0, 12) : licenseKey?.key?.slice(0, 12)}...</span>
               </div>
             )}

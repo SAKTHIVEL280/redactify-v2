@@ -178,15 +178,14 @@ NOTICE: Unauthorized disclosure of this document violates federal HIPAA regulati
   return (
     <div className="flex-1 flex flex-col items-center justify-center p-6 sm:p-12 overflow-y-auto bg-warm-bone">
       <div className="w-full max-w-2xl text-center mb-8">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-soft-cream border border-stone-mist text-xs font-mono text-charcoal mb-4 shadow-sm">
-          <span className="w-2 h-2 rounded-full bg-emerald-500" />
-          <span>Local Browser RAM • Zero Remote Network Calls</span>
+        <div className="font-mono text-xs uppercase tracking-widest text-bark-grey font-semibold mb-3">
+          Air-Gapped Local Studio
         </div>
         <h1 className="text-3xl sm:text-4xl font-serif font-normal tracking-tight text-charcoal mb-2">
           Open a document to redact
         </h1>
         <p className="text-xs sm:text-sm text-bark-grey max-w-md mx-auto">
-          Files are parsed in local volatile memory. Zero telemetry, zero cloud uploads.
+          Files are parsed in local volatile memory. <span className="text-charcoal font-semibold">Zero telemetry, zero cloud uploads.</span>
         </p>
       </div>
 

@@ -67,9 +67,8 @@ export function ProModal({ onNavigateToPricing }) {
 
         {/* Top Header */}
         <div className="p-6 border-b border-stone-mist bg-warm-bone">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-soft-cream border border-stone-mist text-charcoal text-xs font-mono font-medium mb-3 shadow-sm">
-            <span className="w-2 h-2 rounded-full bg-emerald-500" />
-            <span>Commercial License</span>
+          <div className="font-mono text-xs uppercase tracking-widest text-bark-grey font-semibold mb-2">
+            Commercial License
           </div>
 
           <h2 className="text-2xl sm:text-3xl font-serif font-normal text-charcoal tracking-tight">
@@ -83,7 +82,7 @@ export function ProModal({ onNavigateToPricing }) {
           </p>
 
           <div className="mt-2.5 flex items-center gap-1.5 text-[11px] font-mono text-bark-grey">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+            <Check className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
             <span>Your active document and edits remain 100% preserved in memory.</span>
           </div>
         </div>

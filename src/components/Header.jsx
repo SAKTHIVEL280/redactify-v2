@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { KeyRound, ArrowRight } from 'lucide-react';
+import { KeyRound, ArrowRight, ShieldCheck } from 'lucide-react';
 import { useDocumentStore } from '../store/documentStore';
 import { useRedactionStore } from '../store/redactionStore';
 import { useLicenseStore } from '../store/licenseStore';
@@ -108,14 +108,14 @@ export function Header({ activePage, setActivePage }) {
         {/* Right: Status & Actions */}
         <div className="flex items-center gap-2.5 sm:gap-3">
           {/* Subtle Privacy Status */}
-          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-soft-cream border border-stone-mist text-[11px] font-mono text-bark-grey">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-paper-white border border-stone-mist text-[11px] font-mono text-charcoal font-medium shadow-xs">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
             <span>{isOffline ? 'Air-Gapped' : '100% In-Memory'}</span>
           </div>
 
           {/* Pro Status or License Trigger */}
           {isPro ? (
-            <span className="px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-mono font-semibold">
+            <span className="px-2.5 py-1 rounded-md bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-mono font-semibold">
               PRO ACTIVE
             </span>
           ) : (

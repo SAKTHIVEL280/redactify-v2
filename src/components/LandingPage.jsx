@@ -242,32 +242,20 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
       ────────────────────────────────────────────────────────────── */}
       <section className="pt-16 pb-12 px-4 md:px-6 max-w-6xl mx-auto w-full flex flex-col items-center text-center">
         
-        {/* Privacy Highlight Pill */}
-        <div 
-          onClick={onNavigateToStudio}
-          className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-soft-cream border border-stone-mist hover:border-pebble transition-all cursor-pointer mb-8 group shadow-xs"
-          title="Launch Redactify Studio"
-        >
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-          <span className="text-xs font-mono font-semibold text-charcoal">
-            Client-Side Redaction
-          </span>
-          <span className="text-stone-mist text-xs">•</span>
-          <span className="text-xs font-sans text-bark-grey group-hover:text-charcoal transition-colors">
-            Zero files ever leave your device
-          </span>
-          <span className="text-bark-grey group-hover:translate-x-0.5 transition-transform text-xs font-mono">→</span>
+        {/* Editorial Category Kicker */}
+        <div className="font-mono text-xs uppercase tracking-widest text-bark-grey font-semibold mb-4">
+          Private In-Memory Document Sanitization
         </div>
 
         {/* Display Headline in Cooper LtBT serif */}
-        <h1 className="font-serif text-[42px] sm:text-[68px] lg:text-[76px] leading-[1.1] text-charcoal font-normal max-w-4xl tracking-normal mb-6">
+        <h1 className="font-serif text-[42px] sm:text-[68px] lg:text-[76px] leading-[1.08] text-charcoal font-normal max-w-4xl tracking-normal mb-6">
           Document redaction for <em>teams</em> who <br className="hidden md:inline" />
-          care about <em>privacy</em>
+          care about <span className="text-emerald-700 italic">privacy</span>
         </h1>
 
         {/* Human, approachable subtext */}
         <p className="text-bark-grey text-base sm:text-xl max-w-2xl leading-relaxed font-sans mb-8">
-          Permanently remove confidential names, IDs, credit cards, and banking numbers from PDFs, Word documents, and scans. Runs 100% locally on your computer.
+          Permanently remove confidential names, IDs, credit cards, and banking numbers from PDFs, Word documents, and scans. <span className="text-charcoal font-semibold">Zero files ever leave your device: runs 100% locally on your computer.</span>
         </p>
 
         {/* CTA Pair (AutoSend style) */}
@@ -381,7 +369,7 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
           <div className="p-6 sm:p-8 bg-paper-white">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-stone-mist">
               <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-lichen-green animate-pulse" />
+                <span className="w-2 h-2 rounded-full bg-emerald-600" />
                 <span className="font-mono text-xs font-semibold uppercase tracking-wider text-charcoal">
                   Interactive Redaction Preview
                 </span>
@@ -395,7 +383,7 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
                 <button
                   type="button"
                   onClick={() => setFilterMode('all')}
-                  className="px-2.5 py-1 rounded-tag text-[11px] font-mono uppercase font-semibold bg-charcoal text-white hover:bg-obsidian transition-colors"
+                  className="px-2.5 py-1 rounded-tag text-[11px] font-mono uppercase font-semibold bg-charcoal text-white hover:bg-black transition-colors"
                 >
                   All
                 </button>
@@ -435,7 +423,7 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
             <div className="p-4 sm:p-5 rounded-tag bg-warm-bone border border-stone-mist font-mono text-xs sm:text-sm leading-relaxed space-y-3 text-charcoal">
               <div className="text-[10px] font-mono uppercase font-semibold text-bark-grey border-b border-stone-mist pb-2 flex items-center justify-between">
                 <span>EXECUTIVE EMPLOYMENT AGREEMENT • CONFIDENTIAL</span>
-                <span className="text-[9px] text-bark-grey font-sans">Click any black box to unmask</span>
+                <span className="text-[10px] text-bark-grey font-sans">Click any highlighted or blacked-out field to toggle</span>
               </div>
 
               <div className="pt-1">
@@ -443,10 +431,10 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
                 <button
                   type="button"
                   onClick={() => toggleEntity('name')}
-                  className={`inline-flex items-center px-2 py-0.5 rounded transition-all font-mono font-medium ${
+                  className={`inline-flex items-center px-2 py-0.5 rounded transition-all font-mono ${
                     activeToggles.name
-                      ? 'bg-charcoal text-white shadow-sm hover:opacity-90'
-                      : 'bg-stone-mist text-charcoal hover:bg-stone-mist/80'
+                      ? 'bg-charcoal text-white font-bold shadow-xs hover:bg-black'
+                      : 'bg-amber-100 text-amber-950 border border-amber-300 font-semibold hover:bg-amber-200'
                   }`}
                 >
                   {activeToggles.name ? '[NAME REDACTED]' : 'David M. Sterling'}
@@ -458,10 +446,10 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
                 <button
                   type="button"
                   onClick={() => toggleEntity('ssn')}
-                  className={`inline-flex items-center px-2 py-0.5 rounded transition-all font-mono font-medium ${
+                  className={`inline-flex items-center px-2 py-0.5 rounded transition-all font-mono ${
                     activeToggles.ssn
-                      ? 'bg-charcoal text-white shadow-sm hover:opacity-90'
-                      : 'bg-stone-mist text-charcoal hover:bg-stone-mist/80'
+                      ? 'bg-charcoal text-white font-bold shadow-xs hover:bg-black'
+                      : 'bg-amber-100 text-amber-950 border border-amber-300 font-semibold hover:bg-amber-200'
                   }`}
                 >
                   {activeToggles.ssn ? 'XXX-XX-4320' : '987-65-4320'}
@@ -474,10 +462,10 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
                 <button
                   type="button"
                   onClick={() => toggleEntity('phone')}
-                  className={`inline-flex items-center px-2 py-0.5 rounded transition-all font-mono font-medium mr-1.5 ${
+                  className={`inline-flex items-center px-2 py-0.5 rounded transition-all font-mono mr-1.5 ${
                     activeToggles.phone
-                      ? 'bg-charcoal text-white shadow-sm hover:opacity-90'
-                      : 'bg-stone-mist text-charcoal hover:bg-stone-mist/80'
+                      ? 'bg-charcoal text-white font-bold shadow-xs hover:bg-black'
+                      : 'bg-amber-100 text-amber-950 border border-amber-300 font-semibold hover:bg-amber-200'
                   }`}
                 >
                   {activeToggles.phone ? '[PHONE REDACTED]' : '+1 (206) 555-0194'}
@@ -486,10 +474,10 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
                 <button
                   type="button"
                   onClick={() => toggleEntity('email')}
-                  className={`inline-flex items-center px-2 py-0.5 rounded transition-all font-mono font-medium ml-1.5 ${
+                  className={`inline-flex items-center px-2 py-0.5 rounded transition-all font-mono ml-1.5 ${
                     activeToggles.email
-                      ? 'bg-charcoal text-white shadow-sm hover:opacity-90'
-                      : 'bg-stone-mist text-charcoal hover:bg-stone-mist/80'
+                      ? 'bg-charcoal text-white font-bold shadow-xs hover:bg-black'
+                      : 'bg-amber-100 text-amber-950 border border-amber-300 font-semibold hover:bg-amber-200'
                   }`}
                 >
                   {activeToggles.email ? '[EMAIL REDACTED]' : 'd.sterling@apexglobal.io'}
@@ -501,10 +489,10 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
                 <button
                   type="button"
                   onClick={() => toggleEntity('salary')}
-                  className={`inline-flex items-center px-2 py-0.5 rounded transition-all font-mono font-medium ${
+                  className={`inline-flex items-center px-2 py-0.5 rounded transition-all font-mono ${
                     activeToggles.salary
-                      ? 'bg-charcoal text-white shadow-sm hover:opacity-90'
-                      : 'bg-stone-mist text-charcoal hover:bg-stone-mist/80'
+                      ? 'bg-charcoal text-white font-bold shadow-xs hover:bg-black'
+                      : 'bg-amber-100 text-amber-950 border border-amber-300 font-semibold hover:bg-amber-200'
                   }`}
                 >
                   {activeToggles.salary ? '[SALARY CONFIDENTIAL]' : '$185,000 USD / year'}
@@ -517,10 +505,10 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
                 <button
                   type="button"
                   onClick={() => toggleEntity('routing')}
-                  className={`inline-flex items-center px-2 py-0.5 rounded transition-all font-mono font-medium mr-1.5 ${
+                  className={`inline-flex items-center px-2 py-0.5 rounded transition-all font-mono mr-1.5 ${
                     activeToggles.routing
-                      ? 'bg-charcoal text-white shadow-sm hover:opacity-90'
-                      : 'bg-stone-mist text-charcoal hover:bg-stone-mist/80'
+                      ? 'bg-charcoal text-white font-bold shadow-xs hover:bg-black'
+                      : 'bg-amber-100 text-amber-950 border border-amber-300 font-semibold hover:bg-amber-200'
                   }`}
                 >
                   {activeToggles.routing ? '[ROUTING SCRUBBED]' : '021000021'}
@@ -529,10 +517,10 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
                 <button
                   type="button"
                   onClick={() => toggleEntity('account')}
-                  className={`inline-flex items-center px-2 py-0.5 rounded transition-all font-mono font-medium ml-1.5 ${
+                  className={`inline-flex items-center px-2 py-0.5 rounded transition-all font-mono ml-1.5 ${
                     activeToggles.account
-                      ? 'bg-charcoal text-white shadow-sm hover:opacity-90'
-                      : 'bg-stone-mist text-charcoal hover:bg-stone-mist/80'
+                      ? 'bg-charcoal text-white font-bold shadow-xs hover:bg-black'
+                      : 'bg-amber-100 text-amber-950 border border-amber-300 font-semibold hover:bg-amber-200'
                   }`}
                 >
                   {activeToggles.account ? '••••••••9482' : '8492019482'}
@@ -543,12 +531,12 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
             {/* Bottom metrics & trigger row */}
             <div className="mt-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t border-stone-mist">
               <div className="flex items-center gap-2 text-xs text-bark-grey">
-                <span className="w-2 h-2 rounded-full bg-lichen-green" />
+                <span className="w-2 h-2 rounded-full bg-emerald-600" />
                 <span className="font-mono text-charcoal font-semibold">
                   {activeCount} of 7 Entities Protected
                 </span>
                 <span className="text-pebble">•</span>
-                <span className="font-mono text-[11px] text-charcoal">0 bytes sent to servers</span>
+                <span className="font-mono text-[11px] text-emerald-700 font-semibold">0 bytes sent to servers</span>
               </div>
 
               <div className="flex items-center gap-2">
@@ -632,21 +620,21 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
           <div className="border-t border-b border-stone-mist">
             {/* 4 Metric Columns */}
             <div className="grid grid-cols-2 md:grid-cols-4">
-              <div className="flex flex-col justify-center gap-1.5 p-6 border-stone-mist odd:border-r md:odd:border-r-0 md:border-r">
-                <p className="text-charcoal font-normal text-3xl font-datatype text-center">0</p>
-                <p className="text-bark-grey font-normal text-xs text-center">Bytes uploaded to any server</p>
+              <div className="flex flex-col justify-center gap-1.5 p-6 border-stone-mist odd:border-r md:odd:border-r-0 md:border-r bg-paper-white">
+                <p className="text-emerald-700 font-bold text-3xl sm:text-4xl font-datatype text-center">0</p>
+                <p className="text-charcoal font-semibold text-xs text-center">Bytes uploaded to any server</p>
               </div>
-              <div className="flex flex-col justify-center gap-1.5 p-6 border-stone-mist md:border-r">
-                <p className="text-charcoal font-normal text-3xl font-datatype text-center">&lt; 15ms</p>
-                <p className="text-bark-grey font-normal text-xs text-center">Instant detection speed</p>
+              <div className="flex flex-col justify-center gap-1.5 p-6 border-stone-mist md:border-r bg-paper-white">
+                <p className="text-charcoal font-bold text-3xl sm:text-4xl font-datatype text-center">&lt; 15ms</p>
+                <p className="text-bark-grey font-medium text-xs text-center">Instant detection speed</p>
               </div>
-              <div className="flex flex-col justify-center gap-1.5 p-6 border-stone-mist odd:border-r md:odd:border-r-0 md:border-r">
-                <p className="text-charcoal font-normal text-3xl font-datatype text-center">100%</p>
-                <p className="text-bark-grey font-normal text-xs text-center">Client-side offline processing</p>
+              <div className="flex flex-col justify-center gap-1.5 p-6 border-stone-mist odd:border-r md:odd:border-r-0 md:border-r bg-paper-white">
+                <p className="text-emerald-700 font-bold text-3xl sm:text-4xl font-datatype text-center">100%</p>
+                <p className="text-charcoal font-semibold text-xs text-center">Client-side offline processing</p>
               </div>
-              <div className="flex flex-col justify-center gap-1.5 p-6 border-stone-mist">
-                <p className="text-charcoal font-normal text-3xl font-datatype text-center">17+</p>
-                <p className="text-bark-grey font-normal text-xs text-center">Standard PII types recognized</p>
+              <div className="flex flex-col justify-center gap-1.5 p-6 border-stone-mist bg-paper-white">
+                <p className="text-charcoal font-bold text-3xl sm:text-4xl font-datatype text-center">17+</p>
+                <p className="text-bark-grey font-medium text-xs text-center">Standard PII types recognized</p>
               </div>
             </div>
           </div>
@@ -664,11 +652,11 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
           <div className="border-b border-stone-mist">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 md:p-10 items-center">
               <div className="flex flex-col gap-3">
-                <p className="text-rose-600 font-mono text-xs font-semibold uppercase tracking-wider">
+                <p className="text-emerald-700 font-mono text-xs font-bold uppercase tracking-wider">
                   #01: Zero Cloud Exposure
                 </p>
                 <h2 className="font-serif text-3xl md:text-4xl text-charcoal font-normal leading-tight">
-                  Your private files never leave your computer.
+                  Your private files <span className="text-emerald-700">never leave your computer</span>.
                 </h2>
                 <p className="text-bark-grey text-sm md:text-base leading-relaxed font-sans">
                   Most online redaction websites upload your contracts, tax returns, and client IDs to remote cloud servers. If their server is ever compromised, your sensitive files are exposed.
@@ -678,8 +666,8 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
                 </p>
                 <div className="pt-2">
                   <span className="inline-flex items-center gap-2 px-3 py-1 rounded-tag bg-paper-white border border-stone-mist text-xs font-mono text-charcoal">
-                    <span className="w-2 h-2 rounded-full bg-lichen-green" />
-                    <span>0 HTTP Network Requests Sent</span>
+                    <span className="w-2 h-2 rounded-full bg-emerald-600" />
+                    <span className="font-semibold">0 HTTP Network Requests Sent</span>
                   </span>
                 </div>
               </div>
@@ -688,20 +676,20 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
               <div className="relative rounded-card border border-stone-mist overflow-hidden bg-paper-white shadow-card p-6">
                 <div className="font-mono text-xs text-bark-grey uppercase pb-3 border-b border-stone-mist flex items-center justify-between">
                   <span>Browser Network Inspector</span>
-                  <span className="text-lichen-green font-semibold">100% Offline Ready</span>
+                  <span className="text-emerald-700 font-bold">100% Offline Ready</span>
                 </div>
                 <div className="py-4 space-y-3 font-mono text-xs">
                   <div className="p-3 rounded-tag bg-warm-bone border border-stone-mist flex items-center justify-between">
                     <span className="text-charcoal font-medium">Document Upload Request</span>
-                    <span className="text-lichen-green font-semibold">BLOCKED (0 Bytes)</span>
+                    <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">BLOCKED (0 Bytes)</span>
                   </div>
                   <div className="p-3 rounded-tag bg-warm-bone border border-stone-mist flex items-center justify-between">
                     <span className="text-charcoal font-medium">Telemetry & Analytics</span>
-                    <span className="text-lichen-green font-semibold">NONE (Zero Tracking)</span>
+                    <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">NONE (Zero Tracking)</span>
                   </div>
                   <div className="p-3 rounded-tag bg-warm-bone border border-stone-mist flex items-center justify-between">
                     <span className="text-charcoal font-medium">Processing Engine</span>
-                    <span className="text-charcoal font-semibold">Local Browser RAM</span>
+                    <span className="text-charcoal font-bold">Local Browser RAM</span>
                   </div>
                 </div>
                 <p className="text-[11px] text-bark-grey font-sans pt-2 border-t border-stone-mist">
@@ -718,24 +706,24 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
               <div className="order-2 md:order-1 rounded-card border border-stone-mist overflow-hidden bg-paper-white shadow-card p-6">
                 <div className="font-mono text-xs text-bark-grey uppercase pb-3 border-b border-stone-mist flex items-center justify-between">
                   <span>Smart Pattern Checksums</span>
-                  <span className="text-charcoal font-semibold">&lt; 15ms Speed</span>
+                  <span className="text-charcoal font-bold">&lt; 15ms Speed</span>
                 </div>
                 <div className="py-4 space-y-2.5 font-mono text-xs">
                   <div className="p-2.5 rounded-tag bg-warm-bone border border-stone-mist flex items-center justify-between">
                     <span className="text-bark-grey">Social Security / Tax ID</span>
-                    <span className="font-semibold text-charcoal bg-stone-mist/60 px-2 py-0.5 rounded">XXX-XX-4320</span>
+                    <span className="font-bold text-white bg-charcoal px-2 py-0.5 rounded">XXX-XX-4320</span>
                   </div>
                   <div className="p-2.5 rounded-tag bg-warm-bone border border-stone-mist flex items-center justify-between">
                     <span className="text-bark-grey">Credit Card & IBAN</span>
-                    <span className="font-semibold text-charcoal bg-stone-mist/60 px-2 py-0.5 rounded">•••• •••• •••• 1092</span>
+                    <span className="font-bold text-white bg-charcoal px-2 py-0.5 rounded">•••• •••• •••• 1092</span>
                   </div>
                   <div className="p-2.5 rounded-tag bg-warm-bone border border-stone-mist flex items-center justify-between">
                     <span className="text-bark-grey">Executive Compensation</span>
-                    <span className="font-semibold text-charcoal bg-stone-mist/60 px-2 py-0.5 rounded">[SALARY CONFIDENTIAL]</span>
+                    <span className="font-bold text-white bg-charcoal px-2 py-0.5 rounded">[SALARY CONFIDENTIAL]</span>
                   </div>
                   <div className="p-2.5 rounded-tag bg-warm-bone border border-stone-mist flex items-center justify-between">
                     <span className="text-bark-grey">Direct Contact Info</span>
-                    <span className="font-semibold text-charcoal bg-stone-mist/60 px-2 py-0.5 rounded">[CONTACT REDACTED]</span>
+                    <span className="font-bold text-white bg-charcoal px-2 py-0.5 rounded">[CONTACT REDACTED]</span>
                   </div>
                 </div>
                 <p className="text-[11px] text-bark-grey font-sans pt-2 border-t border-stone-mist">
@@ -744,11 +732,11 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
               </div>
 
               <div className="order-1 md:order-2 flex flex-col gap-3">
-                <p className="text-amber-600 font-mono text-xs font-semibold uppercase tracking-wider">
+                <p className="text-amber-800 font-mono text-xs font-bold uppercase tracking-wider">
                   #02: Smart Pattern Detection
                 </p>
                 <h2 className="font-serif text-3xl md:text-4xl text-charcoal font-normal leading-tight">
-                  Automatically spots sensitive data before you hit send.
+                  Automatically spots sensitive data <span className="text-amber-800">before you hit send</span>.
                 </h2>
                 <p className="text-bark-grey text-sm md:text-base leading-relaxed font-sans">
                   Forget searching through dozens of pages by hand. Redactify automatically detects Social Security Numbers, Tax IDs, IBANs, bank accounts, emails, phone numbers, and compensation details.
@@ -775,11 +763,11 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
           <div className="border-b border-stone-mist">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 md:p-10 items-center">
               <div className="flex flex-col gap-3">
-                <p className="text-charcoal font-mono text-xs font-semibold uppercase tracking-wider">
+                <p className="text-charcoal font-mono text-xs font-bold uppercase tracking-wider">
                   #03: Scans & Phone Photos
                 </p>
                 <h2 className="font-serif text-3xl md:text-4xl text-charcoal font-normal leading-tight">
-                  Fix sideways phone photos and black out signatures.
+                  Fix sideways phone photos and <span className="text-charcoal font-bold">black out signatures</span>.
                 </h2>
                 <p className="text-bark-grey text-sm md:text-base leading-relaxed font-sans">
                   Took a photo of an ID card, contract, or receipt on your mobile phone that saved vertically instead of horizontally? Rotate it 90 degrees with one click.
