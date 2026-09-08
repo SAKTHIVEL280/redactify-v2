@@ -1,5 +1,7 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { 
   UploadCloud, ShieldAlert, ShieldCheck, BadgeCheck, Scale, Landmark, 
   Activity, UserCheck, WifiOff, FileText, CheckCircle2, Zap, ArrowRight, 
@@ -61,8 +63,282 @@ const FAQS = [
 ];
 
 export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
+  const pageRef = useRef(null);
+  const heroCardRef = useRef(null);
+  const [activeSection, setActiveSection] = useState('01 / ZERO-TRUST');
+  const [scrollProgress, setScrollProgress] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
+
+  // Precision 3D Card Tilt Physics
+  const handleHeroMouseMove = useCallback((e) => {
+    if (!heroCardRef.current) return;
+    const rect = heroCardRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left - rect.width / 2;
+    const y = e.clientY - rect.top - rect.height / 2;
+    
+    const rotY = (x / (rect.width / 2)) * 3.5;
+    const rotX = -(y / (rect.height / 2)) * 3.5;
+
+    gsap.to(heroCardRef.current, {
+      rotateX: rotX,
+      rotateY: rotY,
+      transformPerspective: 1200,
+      duration: 0.35,
+      ease: 'power2.out',
+    });
+  }, []);
+
+  const handleHeroMouseLeave = useCallback(() => {
+    if (!heroCardRef.current) return;
+    gsap.to(heroCardRef.current, {
+      rotateX: 0,
+      rotateY: 0,
+      duration: 0.65,
+      ease: 'power3.out',
+    });
+  }, []);
+
+  // GSAP ScrollTrigger and Orchestrated Transitions
+  useEffect(() => {
+    gsap.registerPlugin(ScrollTrigger);
+    const scroller = document.getElementById('landing-scroll-container') || window;
+
+    const ctx = gsap.context(() => {
+      // 1. Overall scroll progress tracker
+      ScrollTrigger.create({
+        scroller,
+        trigger: pageRef.current,
+        start: 'top top',
+        end: 'bottom bottom',
+        onUpdate: (self) => {
+          setScrollProgress(self.progress);
+        },
+      });
+
+      // 2. Active section tracking for floating pill
+      const sections = [
+        { id: 'hero-section', label: '01 / ZERO-TRUST' },
+        { id: 'features-section', label: '02 / ENGINES' },
+        { id: 'metrics-section', label: '03 / BENCHMARKS' },
+        { id: 'deep-dive-01', label: '04 / AIR-GAP' },
+        { id: 'deep-dive-02', label: '05 / DETECTION' },
+        { id: 'deep-dive-03', label: '06 / ROTATION' },
+        { id: 'comparison-section', label: '07 / AUDIT' },
+        { id: 'faq-section', label: '08 / FAQ' },
+      ];
+
+      sections.forEach(({ id, label }) => {
+        const el = document.getElementById(id);
+        if (el) {
+          ScrollTrigger.create({
+            scroller,
+            trigger: el,
+            start: 'top 45%',
+            end: 'bottom 45%',
+            onEnter: () => setActiveSection(label),
+            onEnterBack: () => setActiveSection(label),
+          });
+        }
+      });
+
+      // 3. Hero Entry Timeline
+      const heroTl = gsap.timeline({ defaults: { ease: 'power4.out' } });
+      heroTl
+        .from('.gsap-hero-kicker', { y: -24, opacity: 0, duration: 0.8, ease: 'back.out(2)' })
+        .from('.gsap-hero-title', { y: 40, opacity: 0, duration: 1.1 }, '-=0.5')
+        .from('.gsap-hero-sub', { y: 25, opacity: 0, duration: 0.9, ease: 'power3.out' }, '-=0.7')
+        .from('.gsap-hero-cta', { scale: 0.94, y: 15, opacity: 0, duration: 0.7, ease: 'back.out(1.6)' }, '-=0.6')
+        .from('.gsap-hero-card', { y: 55, scale: 0.97, opacity: 0, duration: 1.1, ease: 'power3.out' }, '-=0.6');
+
+      // 4. Parallax effect on all vector images inside cards
+      const parallaxImages = gsap.utils.toArray('.gsap-parallax-img');
+      parallaxImages.forEach((img) => {
+        gsap.fromTo(
+          img,
+          { yPercent: -5 },
+          {
+            yPercent: 5,
+            ease: 'none',
+            scrollTrigger: {
+              scroller,
+              trigger: img.closest('.gsap-parallax-container') || img,
+              start: 'top bottom',
+              end: 'bottom top',
+              scrub: 1.2,
+            },
+          }
+        );
+      });
+
+      // 5. Section Divider Hairlines Drawing
+      const dividers = gsap.utils.toArray('.gsap-draw-line');
+      dividers.forEach((line) => {
+        gsap.fromTo(
+          line,
+          { scaleX: 0, opacity: 0 },
+          {
+            scaleX: 1,
+            opacity: 1,
+            transformOrigin: 'center center',
+            duration: 1.1,
+            ease: 'power3.inOut',
+            scrollTrigger: {
+              scroller,
+              trigger: line,
+              start: 'top 88%',
+              toggleActions: 'play none none none',
+            },
+          }
+        );
+      });
+
+      // 6. Feature Cards Stagger & Depth Reveal
+      const featureCards = gsap.utils.toArray('.gsap-feature-card');
+      if (featureCards.length > 0) {
+        gsap.from(featureCards, {
+          y: 45,
+          opacity: 0,
+          stagger: 0.12,
+          duration: 0.85,
+          ease: 'power3.out',
+          scrollTrigger: {
+            scroller,
+            trigger: '#features-section',
+            start: 'top 80%',
+            toggleActions: 'play none none none',
+          },
+        });
+      }
+
+      // 7. Live Scrubbed / Scroll-Triggered Metric Counters
+      const metricsContainer = document.getElementById('metrics-section');
+      if (metricsContainer) {
+        const metricEl15 = document.getElementById('gsap-metric-15ms');
+        const metricEl100 = document.getElementById('gsap-metric-100pct');
+        const metricEl17 = document.getElementById('gsap-metric-17plus');
+
+        ScrollTrigger.create({
+          scroller,
+          trigger: metricsContainer,
+          start: 'top 80%',
+          once: true,
+          onEnter: () => {
+            if (metricEl15) {
+              const count15 = { val: 0 };
+              gsap.to(count15, {
+                val: 15,
+                duration: 1.4,
+                ease: 'power2.out',
+                onUpdate: () => {
+                  metricEl15.innerText = `< ${Math.round(count15.val)}ms`;
+                },
+              });
+            }
+            if (metricEl100) {
+              const count100 = { val: 0 };
+              gsap.to(count100, {
+                val: 100,
+                duration: 1.6,
+                ease: 'power2.out',
+                onUpdate: () => {
+                  metricEl100.innerText = `${Math.round(count100.val)}%`;
+                },
+              });
+            }
+            if (metricEl17) {
+              const count17 = { val: 0 };
+              gsap.to(count17, {
+                val: 17,
+                duration: 1.3,
+                ease: 'power2.out',
+                onUpdate: () => {
+                  metricEl17.innerText = `${Math.round(count17.val)}+`;
+                },
+              });
+            }
+          },
+        });
+      }
+
+      // 8. Deep Dive Sections Text & Card Entrances
+      ['#deep-dive-01', '#deep-dive-02', '#deep-dive-03'].forEach((id, idx) => {
+        const section = document.querySelector(id);
+        if (section) {
+          const textCol = section.querySelector('.gsap-deep-text');
+          const cardCol = section.querySelector('.gsap-deep-card');
+
+          if (textCol) {
+            gsap.from(textCol, {
+              x: idx % 2 === 0 ? -35 : 35,
+              opacity: 0,
+              duration: 0.9,
+              ease: 'power3.out',
+              scrollTrigger: {
+                scroller,
+                trigger: section,
+                start: 'top 75%',
+                toggleActions: 'play none none none',
+              },
+            });
+          }
+          if (cardCol) {
+            gsap.from(cardCol, {
+              x: idx % 2 === 0 ? 35 : -35,
+              opacity: 0,
+              scale: 0.97,
+              duration: 0.9,
+              ease: 'power3.out',
+              scrollTrigger: {
+                scroller,
+                trigger: section,
+                start: 'top 75%',
+                toggleActions: 'play none none none',
+              },
+            });
+          }
+        }
+      });
+
+      // 9. Comparison Table Cascade
+      const compRows = gsap.utils.toArray('.gsap-comp-row');
+      if (compRows.length > 0) {
+        gsap.from(compRows, {
+          y: 20,
+          opacity: 0,
+          stagger: 0.06,
+          duration: 0.65,
+          ease: 'power2.out',
+          scrollTrigger: {
+            scroller,
+            trigger: '#comparison-section',
+            start: 'top 75%',
+            toggleActions: 'play none none none',
+          },
+        });
+      }
+
+      // 10. FAQ Stagger Reveal
+      const faqItems = gsap.utils.toArray('.gsap-faq-item');
+      if (faqItems.length > 0) {
+        gsap.from(faqItems, {
+          y: 25,
+          opacity: 0,
+          stagger: 0.08,
+          duration: 0.7,
+          ease: 'power3.out',
+          scrollTrigger: {
+            scroller,
+            trigger: '#faq-section',
+            start: 'top 78%',
+            toggleActions: 'play none none none',
+          },
+        });
+      }
+    }, pageRef);
+
+    return () => ctx.revert();
+  }, []);
 
 
   const setFile = useDocumentStore((s) => s.setFile);
@@ -205,48 +481,48 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
 
 
   return (
-    <div className="flex flex-col min-h-screen bg-warm-bone text-charcoal">
+    <div ref={pageRef} className="relative flex flex-col min-h-screen bg-warm-bone text-charcoal">
       
+      {/* Top Edge GSAP Scroll Progress Hairline */}
+      <div 
+        className="fixed top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-amber-700 via-charcoal to-amber-800 z-50 origin-left transition-transform duration-75 pointer-events-none"
+        style={{ transform: `scaleX(${scrollProgress})` }}
+      />
+
+      {/* Editorial Floating Section Pill */}
+      <div className="fixed top-3 right-4 z-40 hidden sm:flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-paper-white/90 backdrop-blur-md border border-stone-mist shadow-xs text-charcoal font-mono text-[11px] select-none pointer-events-none transition-opacity duration-300">
+        <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse" />
+        <span className="font-semibold">{activeSection}</span>
+        <span className="text-stone-mist">|</span>
+        <span className="text-bark-grey">{Math.round(scrollProgress * 100)}%</span>
+      </div>
+
       {/* ─────────────────────────────────────────────────────────────
-          1. AUTOSEND HERO SECTION WITH FRAMER MOTION STAGGER
+          1. HERO SECTION WITH GSAP ORCHESTRATION & 3D PERSPECTIVE
       ────────────────────────────────────────────────────────────── */}
-      <motion.section 
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
+      <section 
+        id="hero-section"
         className="pt-16 pb-12 px-4 md:px-6 max-w-6xl mx-auto w-full flex flex-col items-center text-center"
       >
         
         {/* Editorial Category Kicker */}
-        <motion.div 
-          variants={itemVariants}
-          className="font-mono text-xs uppercase tracking-widest text-bark-grey font-semibold mb-4"
-        >
+        <div className="gsap-hero-kicker font-mono text-xs uppercase tracking-widest text-bark-grey font-semibold mb-4">
           Private In-Memory Document Sanitization
-        </motion.div>
+        </div>
 
         {/* Display Headline in Cooper LtBT serif */}
-        <motion.h1 
-          variants={itemVariants}
-          className="font-serif text-[42px] sm:text-[68px] lg:text-[76px] leading-[1.08] text-charcoal font-normal max-w-4xl tracking-normal mb-6"
-        >
+        <h1 className="gsap-hero-title font-serif text-[42px] sm:text-[68px] lg:text-[76px] leading-[1.08] text-charcoal font-normal max-w-4xl tracking-normal mb-6">
           Document redaction for <em>teams</em> who <br className="hidden md:inline" />
           care about <span className="text-amber-800 italic">privacy</span>
-        </motion.h1>
+        </h1>
 
         {/* Human, approachable subtext */}
-        <motion.p 
-          variants={itemVariants}
-          className="text-bark-grey text-base sm:text-xl max-w-2xl leading-relaxed font-sans mb-8"
-        >
+        <p className="gsap-hero-sub text-bark-grey text-base sm:text-xl max-w-2xl leading-relaxed font-sans mb-8">
           Permanently remove confidential names, IDs, credit cards, and banking numbers from PDFs, Word documents, and scans. <span className="text-charcoal font-semibold">Zero files ever leave your device: runs 100% locally on your computer.</span>
-        </motion.p>
+        </p>
 
-        {/* CTA Pair (AutoSend style) with subtle tactile feedback */}
-        <motion.div 
-          variants={itemVariants}
-          className="flex items-center justify-center gap-4 mb-12"
-        >
+        {/* CTA Pair with subtle tactile feedback */}
+        <div className="gsap-hero-cta flex items-center justify-center gap-4 mb-12">
           <motion.button
             type="button"
             whileHover={{ scale: 1.02, y: -1 }}
@@ -266,21 +542,24 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
             <span>Open Studio</span>
             <ArrowRight className="w-4 h-4" />
           </motion.button>
-        </motion.div>
+        </div>
 
         {/* ─────────────────────────────────────────────────────────────
-            UNIFIED HERO WORKSPACE: INTEGRATED DROPZONE + LIVE SANDBOX
+            UNIFIED HERO WORKSPACE: INTEGRATED DROPZONE + 3D TILT CARD
         ────────────────────────────────────────────────────────────── */}
-        <motion.div 
-          variants={itemVariants}
+        <div 
+          ref={heroCardRef}
+          onMouseMove={handleHeroMouseMove}
+          onMouseLeave={handleHeroMouseLeave}
           onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
           onDragLeave={() => setIsDragging(false)}
           onDrop={handleDrop}
-          className={`relative w-full max-w-4xl bg-paper-white rounded-card border transition-all duration-200 shadow-showcase mb-14 text-left overflow-hidden ${
+          className={`gsap-hero-card relative w-full max-w-4xl bg-paper-white rounded-card border transition-all duration-200 shadow-showcase mb-14 text-left overflow-hidden ${
             isDragging
               ? 'border-charcoal ring-4 ring-charcoal/10 bg-soft-cream'
               : 'border-stone-mist'
           }`}
+          style={{ transformStyle: 'preserve-3d' }}
         >
           {/* Active Drag-and-Drop High-Contrast Overlay */}
           <AnimatePresence>
@@ -370,33 +649,30 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
           </div>
 
           {/* Studio Document Redaction Preview Showcase */}
-          <div className="relative overflow-hidden bg-paper-white group">
+          <div className="gsap-parallax-container relative overflow-hidden bg-paper-white group">
             <img
               src="/images/studio-preview-vector.jpg"
               alt="Redactify document redaction studio preview"
-              className="w-full h-auto object-cover transition-transform duration-500 ease-out group-hover:scale-[1.01]"
+              className="gsap-parallax-img w-full h-auto object-cover scale-[1.06] transition-transform duration-500 ease-out group-hover:scale-[1.09]"
               loading="lazy"
             />
           </div>
-        </motion.div>
+        </div>
 
-      </motion.section>
+      </section>
+
+      {/* GSAP Architectural Drawing Hairline */}
+      <div className="gsap-draw-line max-w-6xl mx-auto w-full h-px bg-stone-mist mb-16" />
 
       {/* ─────────────────────────────────────────────────────────────
-          2. AUTOSEND 3-COLUMN FEATURE CARDS GRID WITH SCROLL REVEAL
+          2. 3-COLUMN FEATURE CARDS GRID WITH GSAP STAGGER & DEPTH
       ────────────────────────────────────────────────────────────── */}
-      <section className="max-w-6xl mx-auto w-full px-4 md:px-6 mb-16">
+      <section id="features-section" className="max-w-6xl mx-auto w-full px-4 md:px-6 mb-16">
         <div className="border-x border-stone-mist">
           <ul className="grid grid-cols-1 sm:grid-cols-3 sm:border-b border-t border-stone-mist">
             {/* Card 1 */}
-            <motion.li 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-40px" }}
-              transition={{ duration: 0.45, delay: 0 }}
-              className="group flex flex-col border-b border-stone-mist sm:border-b-0 sm:border-r border-stone-mist"
-            >
-              <div className="flex flex-col gap-2 p-6 flex-1 bg-paper-white">
+            <li className="gsap-feature-card group flex flex-col border-b border-stone-mist sm:border-b-0 sm:border-r border-stone-mist hover:bg-warm-bone/40 transition-colors">
+              <div className="flex flex-col gap-2 p-6 flex-1 bg-paper-white group-hover:bg-transparent transition-colors">
                 <p className="text-charcoal font-medium text-base font-mono">PDF Vector Scrubbing</p>
                 <p className="text-bark-grey font-normal text-sm leading-relaxed">
                   Permanently deletes underlying text glyphs and metadata streams. Black boxes cannot be copied, selected, or inspected.
@@ -406,17 +682,11 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
                 <span className="text-charcoal font-medium text-xs font-mono uppercase">Zero Text Leaks</span>
                 <ArrowRight className="w-3.5 h-3.5 text-charcoal group-hover:translate-x-1 transition-transform" />
               </div>
-            </motion.li>
+            </li>
 
             {/* Card 2 */}
-            <motion.li 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-40px" }}
-              transition={{ duration: 0.45, delay: 0.1 }}
-              className="group flex flex-col border-b border-stone-mist sm:border-b-0 sm:border-r border-stone-mist"
-            >
-              <div className="flex flex-col gap-2 p-6 flex-1 bg-paper-white">
+            <li className="gsap-feature-card group flex flex-col border-b border-stone-mist sm:border-b-0 sm:border-r border-stone-mist hover:bg-warm-bone/40 transition-colors">
+              <div className="flex flex-col gap-2 p-6 flex-1 bg-paper-white group-hover:bg-transparent transition-colors">
                 <p className="text-charcoal font-medium text-base font-mono">Word Documents (.docx)</p>
                 <p className="text-bark-grey font-normal text-sm leading-relaxed">
                   Cleans sensitive names and banking numbers across tables, paragraphs, and headers while keeping your exact layout intact.
@@ -426,17 +696,11 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
                 <span className="text-charcoal font-medium text-xs font-mono uppercase">Layout Preserved</span>
                 <ArrowRight className="w-3.5 h-3.5 text-charcoal group-hover:translate-x-1 transition-transform" />
               </div>
-            </motion.li>
+            </li>
 
             {/* Card 3 */}
-            <motion.li 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-40px" }}
-              transition={{ duration: 0.45, delay: 0.2 }}
-              className="group flex flex-col border-stone-mist"
-            >
-              <div className="flex flex-col gap-2 p-6 flex-1 bg-paper-white">
+            <li className="gsap-feature-card group flex flex-col border-stone-mist hover:bg-warm-bone/40 transition-colors">
+              <div className="flex flex-col gap-2 p-6 flex-1 bg-paper-white group-hover:bg-transparent transition-colors">
                 <p className="text-charcoal font-medium text-base font-mono">ID Cards & Scans (OCR)</p>
                 <p className="text-bark-grey font-normal text-sm leading-relaxed">
                   Built-in offline OCR detects text on photos. Easily rotate sideways phone photos 90° and draw manual blackout rectangles.
@@ -446,80 +710,58 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
                 <span className="text-charcoal font-medium text-xs font-mono uppercase">Rotate & Draw</span>
                 <ArrowRight className="w-3.5 h-3.5 text-charcoal group-hover:translate-x-1 transition-transform" />
               </div>
-            </motion.li>
+            </li>
           </ul>
         </div>
       </section>
 
+      {/* GSAP Architectural Drawing Hairline */}
+      <div className="gsap-draw-line max-w-6xl mx-auto w-full h-px bg-stone-mist mb-16" />
+
       {/* ─────────────────────────────────────────────────────────────
-          3. METRICS BAR WITH STAGGERED SCROLL REVEALS
+          3. METRICS BAR WITH LIVE GSAP ANIMATED COUNTERS
       ────────────────────────────────────────────────────────────── */}
-      <section className="max-w-6xl mx-auto w-full px-4 md:px-6 mb-20">
+      <section id="metrics-section" className="max-w-6xl mx-auto w-full px-4 md:px-6 mb-20">
         <div className="border-x border-stone-mist">
           <div className="border-t border-b border-stone-mist">
             {/* 4 Metric Columns */}
             <div className="grid grid-cols-2 md:grid-cols-4">
-              <motion.div 
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-40px" }}
-                transition={{ duration: 0.4, delay: 0 }}
-                className="flex flex-col justify-center gap-1.5 p-6 border-stone-mist odd:border-r md:odd:border-r-0 md:border-r bg-paper-white"
-              >
-                <p className="text-amber-800 font-bold text-3xl sm:text-4xl font-datatype text-center">0</p>
+              <div className="flex flex-col justify-center gap-1.5 p-6 border-stone-mist odd:border-r md:odd:border-r-0 md:border-r bg-paper-white">
+                <p className="text-amber-800 font-bold text-3xl sm:text-4xl font-datatype text-center flex items-center justify-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-amber-600 animate-ping inline-block" />
+                  <span>0</span>
+                </p>
                 <p className="text-charcoal font-semibold text-xs text-center">Bytes uploaded to any server</p>
-              </motion.div>
-              <motion.div 
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-40px" }}
-                transition={{ duration: 0.4, delay: 0.08 }}
-                className="flex flex-col justify-center gap-1.5 p-6 border-stone-mist md:border-r bg-paper-white"
-              >
-                <p className="text-charcoal font-bold text-3xl sm:text-4xl font-datatype text-center">&lt; 15ms</p>
+              </div>
+              <div className="flex flex-col justify-center gap-1.5 p-6 border-stone-mist md:border-r bg-paper-white">
+                <p id="gsap-metric-15ms" className="text-charcoal font-bold text-3xl sm:text-4xl font-datatype text-center">&lt; 15ms</p>
                 <p className="text-bark-grey font-medium text-xs text-center">Instant detection speed</p>
-              </motion.div>
-              <motion.div 
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-40px" }}
-                transition={{ duration: 0.4, delay: 0.16 }}
-                className="flex flex-col justify-center gap-1.5 p-6 border-stone-mist odd:border-r md:odd:border-r-0 md:border-r bg-paper-white"
-              >
-                <p className="text-amber-800 font-bold text-3xl sm:text-4xl font-datatype text-center">100%</p>
+              </div>
+              <div className="flex flex-col justify-center gap-1.5 p-6 border-stone-mist odd:border-r md:odd:border-r-0 md:border-r bg-paper-white">
+                <p id="gsap-metric-100pct" className="text-amber-800 font-bold text-3xl sm:text-4xl font-datatype text-center">100%</p>
                 <p className="text-charcoal font-semibold text-xs text-center">Client-side offline processing</p>
-              </motion.div>
-              <motion.div 
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-40px" }}
-                transition={{ duration: 0.4, delay: 0.24 }}
-                className="flex flex-col justify-center gap-1.5 p-6 border-stone-mist bg-paper-white"
-              >
-                <p className="text-charcoal font-bold text-3xl sm:text-4xl font-datatype text-center">17+</p>
+              </div>
+              <div className="flex flex-col justify-center gap-1.5 p-6 border-stone-mist bg-paper-white">
+                <p id="gsap-metric-17plus" className="text-charcoal font-bold text-3xl sm:text-4xl font-datatype text-center">17+</p>
                 <p className="text-bark-grey font-medium text-xs text-center">Standard PII types recognized</p>
-              </motion.div>
+              </div>
             </div>
           </div>
         </div>
       </section>
+      {/* GSAP Architectural Drawing Hairline */}
+      <div className="gsap-draw-line max-w-6xl mx-auto w-full h-px bg-stone-mist mb-20" />
 
       {/* ─────────────────────────────────────────────────────────────
-          4. AUTOSEND NUMBERED DEEP-DIVE SECTIONS (#01, #02, #03)
+          4. NUMBERED DEEP-DIVE SECTIONS (#01, #02, #03) WITH GSAP PARALLAX
       ────────────────────────────────────────────────────────────── */}
       <section className="max-w-6xl mx-auto w-full px-4 md:px-6 mb-20">
         <div className="flex flex-col border-x border-t border-stone-mist">
           
           {/* #01 - Zero Cloud Exposure with Vector Illustration */}
-          <motion.div 
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-50px" }}
-            transition={{ duration: 0.55 }}
-            className="border-b border-stone-mist"
-          >
+          <div id="deep-dive-01" className="border-b border-stone-mist">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 md:p-10 items-center">
-              <div className="flex flex-col gap-3">
+              <div className="gsap-deep-text flex flex-col gap-3">
                 <p className="text-amber-800 font-mono text-xs font-bold uppercase tracking-wider">
                   #01: Zero Cloud Exposure
                 </p>
@@ -540,38 +782,32 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
                 </div>
               </div>
 
-              {/* Pure Vector Illustration Showcase */}
-              <div className="relative rounded-card border border-stone-mist overflow-hidden bg-paper-white shadow-showcase group">
+              {/* Pure Vector Illustration Showcase with GSAP Parallax */}
+              <div className="gsap-deep-card gsap-parallax-container relative rounded-card border border-stone-mist overflow-hidden bg-paper-white shadow-showcase group">
                 <img
                   src="/images/airgap-vault-vector.jpg"
                   alt="Air-gap vault security and client-side isolation"
-                  className="w-full h-auto object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02]"
+                  className="gsap-parallax-img w-full h-auto object-cover scale-[1.06] transition-transform duration-500 ease-out group-hover:scale-[1.09]"
                   loading="lazy"
                 />
               </div>
             </div>
-          </motion.div>
+          </div>
 
           {/* #02 - Smart Automatic Detection with Vector Illustration */}
-          <motion.div 
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-50px" }}
-            transition={{ duration: 0.55 }}
-            className="border-b border-stone-mist"
-          >
+          <div id="deep-dive-02" className="border-b border-stone-mist">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 md:p-10 items-center">
-              {/* Pure Vector Illustration Showcase */}
-              <div className="order-2 md:order-1 relative rounded-card border border-stone-mist overflow-hidden bg-paper-white shadow-showcase group">
+              {/* Pure Vector Illustration Showcase with GSAP Parallax */}
+              <div className="order-2 md:order-1 gsap-deep-card gsap-parallax-container relative rounded-card border border-stone-mist overflow-hidden bg-paper-white shadow-showcase group">
                 <img
                   src="/images/pattern-detection-vector.jpg"
                   alt="Automated pattern detection and document sanitization"
-                  className="w-full h-auto object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02]"
+                  className="gsap-parallax-img w-full h-auto object-cover scale-[1.06] transition-transform duration-500 ease-out group-hover:scale-[1.09]"
                   loading="lazy"
                 />
               </div>
 
-              <div className="order-1 md:order-2 flex flex-col gap-3">
+              <div className="order-1 md:order-2 gsap-deep-text flex flex-col gap-3">
                 <p className="text-amber-800 font-mono text-xs font-bold uppercase tracking-wider">
                   #02: Smart Pattern Detection
                 </p>
@@ -597,18 +833,12 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
                 </div>
               </div>
             </div>
-          </motion.div>
+          </div>
 
           {/* #03 - Scanned Documents & Photos with Vector Illustration */}
-          <motion.div 
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-50px" }}
-            transition={{ duration: 0.55 }}
-            className="border-b border-stone-mist"
-          >
+          <div id="deep-dive-03" className="border-b border-stone-mist">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 md:p-10 items-center">
-              <div className="flex flex-col gap-3">
+              <div className="gsap-deep-text flex flex-col gap-3">
                 <p className="text-charcoal font-mono text-xs font-bold uppercase tracking-wider">
                   #03: Scans & Phone Photos
                 </p>
@@ -639,29 +869,29 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
                 </div>
               </div>
 
-              {/* Pure Vector Illustration Showcase */}
-              <div className="relative rounded-card border border-stone-mist overflow-hidden bg-paper-white shadow-showcase group">
+              {/* Pure Vector Illustration Showcase with GSAP Parallax */}
+              <div className="gsap-deep-card gsap-parallax-container relative rounded-card border border-stone-mist overflow-hidden bg-paper-white shadow-showcase group">
                 <img
                   src="/images/rotation-blackout-vector.jpg"
                   alt="Document orientation rotation and signature blackout"
-                  className="w-full h-auto object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02]"
+                  className="gsap-parallax-img w-full h-auto object-cover scale-[1.06] transition-transform duration-500 ease-out group-hover:scale-[1.09]"
                   loading="lazy"
                 />
               </div>
             </div>
-          </motion.div>
+          </div>
 
         </div>
       </section>
 
+      {/* GSAP Architectural Drawing Hairline */}
+      <div className="gsap-draw-line max-w-6xl mx-auto w-full h-px bg-stone-mist mb-20" />
+
       {/* ─────────────────────────────────────────────────────────────
-          5. AUTOSEND COMPARISON TABLE WITH SCROLL REVEAL
+          5. COMPARISON TABLE WITH GSAP CASCADE
       ────────────────────────────────────────────────────────────── */}
-      <motion.section 
-        initial={{ opacity: 0, y: 24 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-40px" }}
-        transition={{ duration: 0.5 }}
+      <section 
+        id="comparison-section"
         className="max-w-6xl mx-auto w-full px-4 md:px-6 mb-20"
       >
         <div className="text-center max-w-2xl mx-auto mb-10">
@@ -690,7 +920,7 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-stone-mist text-xs sm:text-sm font-sans text-charcoal">
-                <tr>
+                <tr className="gsap-comp-row transition-colors hover:bg-warm-bone/50">
                   <td className="py-4 px-6 font-medium">Where files are processed</td>
                   <td className="py-4 px-6 font-semibold bg-paper-white border-x border-stone-mist text-amber-800 flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-amber-600" /> 100% On Your Device (RAM)
@@ -698,7 +928,7 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
                   <td className="py-4 px-6 text-bark-grey">Adobe Document Cloud</td>
                   <td className="py-4 px-6 text-rose-600">Third-Party Cloud Servers</td>
                 </tr>
-                <tr>
+                <tr className="gsap-comp-row transition-colors hover:bg-warm-bone/50">
                   <td className="py-4 px-6 font-medium">Offline and air-gapped support</td>
                   <td className="py-4 px-6 font-semibold bg-paper-white border-x border-stone-mist">
                     Yes (Fully offline capable)
@@ -706,7 +936,7 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
                   <td className="py-4 px-6 text-bark-grey">Requires cloud license checks</td>
                   <td className="py-4 px-6 text-rose-600">No (Fails without internet)</td>
                 </tr>
-                <tr>
+                <tr className="gsap-comp-row transition-colors hover:bg-warm-bone/50">
                   <td className="py-4 px-6 font-medium">Permanent vector text deletion</td>
                   <td className="py-4 px-6 font-semibold bg-paper-white border-x border-stone-mist">
                     Yes (Glyphs fully destroyed)
@@ -714,7 +944,7 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
                   <td className="py-4 px-6 text-bark-grey">Yes (Sanitize document)</td>
                   <td className="py-4 px-6 text-rose-600">Often superficial black boxes</td>
                 </tr>
-                <tr>
+                <tr className="gsap-comp-row transition-colors hover:bg-warm-bone/50">
                   <td className="py-4 px-6 font-medium">Sideways photo 90° rotation</td>
                   <td className="py-4 px-6 font-semibold bg-paper-white border-x border-stone-mist">
                     Yes (One-click CW & CCW)
@@ -722,7 +952,7 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
                   <td className="py-4 px-6 text-bark-grey">Requires page organize tool</td>
                   <td className="py-4 px-6 text-rose-600">Not supported</td>
                 </tr>
-                <tr>
+                <tr className="gsap-comp-row transition-colors hover:bg-warm-bone/50">
                   <td className="py-4 px-6 font-medium">Pricing model</td>
                   <td className="py-4 px-6 font-semibold bg-paper-white border-x border-stone-mist text-charcoal">
                     $9 / mo or $29 Early-Bird Lifetime
@@ -734,16 +964,16 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
             </table>
           </div>
         </div>
-      </motion.section>
+      </section>
+
+      {/* GSAP Architectural Drawing Hairline */}
+      <div className="gsap-draw-line max-w-4xl mx-auto w-full h-px bg-stone-mist mb-20" />
 
       {/* ─────────────────────────────────────────────────────────────
-          6. AUTOSEND CLEAN FAQ ACCORDION WITH ANIMATEPRESENCE
+          6. FAQ ACCORDION WITH GSAP STAGGER
       ────────────────────────────────────────────────────────────── */}
-      <motion.section 
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-40px" }}
-        transition={{ duration: 0.5 }}
+      <section 
+        id="faq-section"
         className="max-w-4xl mx-auto w-full px-4 md:px-6 mb-20"
       >
         <div className="text-center mb-10">
@@ -761,7 +991,7 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
             return (
               <div
                 key={idx}
-                className="rounded-xl border border-stone-mist bg-paper-white overflow-hidden shadow-sm transition-colors"
+                className="gsap-faq-item rounded-xl border border-stone-mist bg-paper-white overflow-hidden shadow-sm transition-all hover:border-charcoal/30"
               >
                 <button
                   type="button"
@@ -798,7 +1028,7 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
             );
           })}
         </div>
-      </motion.section>
+      </section>
 
       {/* ─────────────────────────────────────────────────────────────
           7. AUTOSEND 4-COLUMN FOOTER

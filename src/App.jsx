@@ -29,7 +29,7 @@ export function App() {
       <main className="flex-1 flex overflow-hidden relative">
         <ErrorBoundary>
           {activePage === 'overview' && (
-            <div className="flex-1 overflow-y-auto bg-warm-bone">
+            <div id="landing-scroll-container" className="flex-1 overflow-y-auto bg-warm-bone">
               <LandingPage 
                 onNavigateToStudio={handleNavigateToStudio}
                 onNavigateToPricing={handleNavigateToPricing}
