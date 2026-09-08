@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
-import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, AlertCircle, X, ShieldAlert, Sparkles, Loader2, RotateCw, RotateCcw } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, AlertCircle, X, ShieldAlert, Sparkles, Loader2, RotateCw, RotateCcw, Undo2, Redo2 } from 'lucide-react';
 import { useDocumentStore } from '../store/documentStore';
 import { useRedactionStore } from '../store/redactionStore';
 import { scanImageWithOCR } from '../core/parsers/ocrScanner';
@@ -34,6 +34,11 @@ export function DocumentViewer() {
   const addRedaction = useRedactionStore((s) => s.addRedaction);
   const setRedactions = useRedactionStore((s) => s.setRedactions);
   const isDrawingMode = useRedactionStore((s) => s.isDrawingMode);
+  const setDrawingMode = useRedactionStore((s) => s.setDrawingMode);
+  const undo = useRedactionStore((s) => s.undo);
+  const redo = useRedactionStore((s) => s.redo);
+  const history = useRedactionStore((s) => s.history);
+  const future = useRedactionStore((s) => s.future);
   const toggleInspector = useRedactionStore((s) => s.toggleInspector);
   const style = useRedactionStore((s) => s.style);
   const activePreset = useRedactionStore((s) => s.activePreset);
@@ -450,34 +455,73 @@ export function DocumentViewer() {
 
   return (
     <div className="flex-1 flex flex-col h-full bg-warm-bone overflow-hidden select-none">
-      {/* Viewer Top Toolbar (Pagination & Zoom) */}
+      {/* Viewer Top Toolbar (Pagination, Editing, Rotation & Zoom) */}
       <div className="h-12 border-b border-stone-mist bg-paper-white px-4 flex items-center justify-between text-xs text-charcoal shrink-0">
-        {/* Pagination */}
-        {pageCount > 1 ? (
-          <div className="flex items-center gap-2">
+        {/* Left: Pagination & Edit Controls */}
+        <div className="flex items-center gap-3">
+          {pageCount > 1 ? (
+            <div className="flex items-center gap-1.5 bg-soft-cream border border-stone-mist rounded-lg px-2 py-1">
+              <button
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                disabled={currentPage <= 1}
+                className="p-1 rounded hover:bg-stone-mist/30 disabled:opacity-25 text-charcoal transition-colors"
+                title="Previous Page"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <span className="text-xs font-mono text-bark-grey">
+                Page <strong className="text-charcoal font-semibold">{currentPage}</strong> of {pageCount}
+              </span>
+              <button
+                onClick={() => setCurrentPage(Math.min(pageCount, currentPage + 1))}
+                disabled={currentPage >= pageCount}
+                className="p-1 rounded hover:bg-stone-mist/30 disabled:opacity-25 text-charcoal transition-colors"
+                title="Next Page"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="text-xs font-mono text-bark-grey hidden sm:block">
+              {fileType === 'image' ? 'Image Mode: Drag to redact' : 'Single Page'}
+            </div>
+          )}
+
+          {/* Undo, Redo & Manual Box */}
+          <div className="flex items-center gap-1 bg-soft-cream border border-stone-mist rounded-lg p-1">
             <button
-              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-              disabled={currentPage <= 1}
-              className="p-1 rounded-button hover:bg-stone-mist/30 disabled:opacity-25 text-charcoal transition-colors"
+              onClick={undo}
+              disabled={history.length === 0}
+              className="p-1 rounded hover:bg-stone-mist/50 disabled:opacity-25 text-charcoal transition-colors"
+              title="Undo (Ctrl+Z)"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <Undo2 className="w-3.5 h-3.5" />
             </button>
-            <span className="text-xs font-mono text-bark-grey">
-              Page <strong className="text-charcoal font-semibold">{currentPage}</strong> of {pageCount}
-            </span>
             <button
-              onClick={() => setCurrentPage(Math.min(pageCount, currentPage + 1))}
-              disabled={currentPage >= pageCount}
-              className="p-1 rounded-button hover:bg-stone-mist/30 disabled:opacity-25 text-charcoal transition-colors"
+              onClick={redo}
+              disabled={future.length === 0}
+              className="p-1 rounded hover:bg-stone-mist/50 disabled:opacity-25 text-charcoal transition-colors"
+              title="Redo (Ctrl+Y)"
             >
-              <ChevronRight className="w-4 h-4" />
+              <Redo2 className="w-3.5 h-3.5" />
+            </button>
+
+            <div className="w-px h-3.5 bg-stone-mist mx-0.5" />
+
+            <button
+              onClick={() => setDrawingMode(!isDrawingMode)}
+              className={`px-2 py-0.5 text-xs font-mono rounded transition-all flex items-center gap-1 ${
+                isDrawingMode
+                  ? 'bg-charcoal text-white shadow-xs font-semibold'
+                  : 'text-charcoal hover:bg-stone-mist/40'
+              }`}
+              title="Draw manual redaction box over scans, signatures, or stamps"
+            >
+              <span className="text-xs leading-none">+</span>
+              <span>Manual Box</span>
             </button>
           </div>
-        ) : (
-          <div className="text-xs font-mono text-bark-grey">
-            {fileType === 'image' ? 'Image Mode: Drag crosshair to blackout areas' : 'Single Page Document'}
-          </div>
-        )}
+        </div>
 
         {/* Toolbar Controls: Rotation & Zoom */}
         <div className="flex items-center gap-3">
