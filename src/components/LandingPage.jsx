@@ -142,14 +142,24 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
         }
       });
 
-      // 3. Hero Entry Timeline
-      const heroTl = gsap.timeline({ defaults: { ease: 'power4.out' } });
+      // 3. Hero Entry Timeline (Guaranteed Visibility with clearProps)
+      const heroTl = gsap.timeline({ defaults: { ease: 'power3.out' } });
       heroTl
-        .from('.gsap-hero-kicker', { y: -24, opacity: 0, duration: 0.8, ease: 'back.out(2)' })
-        .from('.gsap-hero-title', { y: 40, opacity: 0, duration: 1.1 }, '-=0.5')
-        .from('.gsap-hero-sub', { y: 25, opacity: 0, duration: 0.9, ease: 'power3.out' }, '-=0.7')
-        .from('.gsap-hero-cta', { scale: 0.94, y: 15, opacity: 0, duration: 0.7, ease: 'back.out(1.6)' }, '-=0.6')
-        .from('.gsap-hero-card', { y: 55, scale: 0.97, opacity: 0, duration: 1.1, ease: 'power3.out' }, '-=0.6');
+        .fromTo('.gsap-hero-kicker', { y: -20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: 'back.out(2)' })
+        .fromTo('.gsap-hero-title', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.85 }, '-=0.4')
+        .fromTo('.gsap-hero-sub', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.75 }, '-=0.5')
+        .fromTo('.gsap-hero-cta', { scale: 0.95, y: 15, opacity: 0 }, { scale: 1, y: 0, opacity: 1, duration: 0.6 }, '-=0.4')
+        .fromTo(
+          '.gsap-hero-card',
+          { y: 35, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.8,
+            clearProps: 'opacity,transform',
+          },
+          '-=0.4'
+        );
 
       // 4. Parallax effect on vector images inside deep dive cards
       const parallaxImages = gsap.utils.toArray('.gsap-parallax-img');
@@ -607,33 +617,33 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
       ────────────────────────────────────────────────────────────── */}
       <section 
         id="hero-section"
-        className="pt-16 pb-12 px-4 md:px-6 max-w-6xl mx-auto w-full flex flex-col items-center text-center"
+        className="pt-8 sm:pt-14 pb-8 sm:pb-12 px-3.5 sm:px-6 max-w-6xl mx-auto w-full flex flex-col items-center text-center"
       >
         
         {/* Editorial Category Kicker */}
-        <div className="gsap-hero-kicker font-mono text-xs uppercase tracking-widest text-bark-grey font-semibold mb-4">
+        <div className="gsap-hero-kicker font-mono text-[11px] sm:text-xs uppercase tracking-widest text-bark-grey font-semibold mb-3 sm:mb-4">
           Private In-Memory Document Sanitization
         </div>
 
         {/* Display Headline in Cooper LtBT serif */}
-        <h1 className="gsap-hero-title font-serif text-[42px] sm:text-[68px] lg:text-[76px] leading-[1.08] text-charcoal font-normal max-w-4xl tracking-normal mb-6">
-          Document redaction for <em>teams</em> who <br className="hidden md:inline" />
+        <h1 className="gsap-hero-title font-serif text-[32px] sm:text-[54px] md:text-[66px] lg:text-[76px] leading-[1.14] sm:leading-[1.08] text-charcoal font-normal max-w-4xl tracking-normal mb-4 sm:mb-6">
+          Document redaction for <em>teams</em> who <br className="hidden sm:inline" />
           care about <span className="text-amber-800 italic">privacy</span>
         </h1>
 
         {/* Human, approachable subtext */}
-        <p className="gsap-hero-sub text-bark-grey text-base sm:text-xl max-w-2xl leading-relaxed font-sans mb-8">
+        <p className="gsap-hero-sub text-bark-grey text-sm sm:text-lg md:text-xl max-w-2xl leading-relaxed font-sans mb-6 sm:mb-8 px-1 sm:px-0">
           Permanently remove confidential names, IDs, credit cards, and banking numbers from PDFs, Word documents, and scans. <span className="text-charcoal font-semibold">Zero files ever leave your device: runs 100% locally on your computer.</span>
         </p>
 
-        {/* CTA Pair with subtle tactile feedback */}
-        <div className="gsap-hero-cta flex items-center justify-center gap-4 mb-12">
+        {/* CTA Pair with responsive touch-friendly targets */}
+        <div className="gsap-hero-cta flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 mb-8 sm:mb-12 w-full sm:w-auto max-w-xs sm:max-w-none">
           <motion.button
             type="button"
             whileHover={{ scale: 1.02, y: -1 }}
             whileTap={{ scale: 0.97 }}
             onClick={loadSampleOfferLetter}
-            className="cursor-pointer font-semibold font-mono uppercase border text-xs sm:text-sm rounded-xl px-5 py-2.5 bg-paper-white border-stone-mist hover:bg-stone-mist/40 text-charcoal shadow-sm transition-colors"
+            className="cursor-pointer font-semibold font-mono uppercase border text-xs sm:text-sm rounded-xl px-5 py-3 sm:py-2.5 bg-paper-white border-stone-mist hover:bg-stone-mist/40 text-charcoal shadow-sm transition-colors text-center"
           >
             Try Sample File
           </motion.button>
@@ -642,7 +652,7 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
             whileHover={{ scale: 1.02, y: -1 }}
             whileTap={{ scale: 0.97 }}
             onClick={onNavigateToStudio}
-            className="cursor-pointer font-semibold font-mono uppercase border text-xs sm:text-sm rounded-xl px-6 py-2.5 text-white bg-charcoal border-charcoal hover:bg-black shadow-sm transition-colors flex items-center gap-2 tracking-wider"
+            className="cursor-pointer font-semibold font-mono uppercase border text-xs sm:text-sm rounded-xl px-6 py-3 sm:py-2.5 text-white bg-charcoal border-charcoal hover:bg-black shadow-sm transition-colors flex items-center justify-center gap-2 tracking-wider"
           >
             <span>Open Studio</span>
             <ArrowRight className="w-4 h-4" />
@@ -659,12 +669,11 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
           onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
           onDragLeave={() => setIsDragging(false)}
           onDrop={handleDrop}
-          className={`gsap-hero-card relative w-full max-w-4xl bg-paper-white rounded-card border transition-all duration-200 shadow-showcase mb-14 text-left overflow-hidden ${
+          className={`gsap-hero-card relative w-full max-w-4xl bg-paper-white rounded-card border transition-colors duration-200 shadow-showcase mb-10 sm:mb-14 text-left overflow-hidden ${
             isDragging
               ? 'border-charcoal ring-4 ring-charcoal/10 bg-soft-cream'
               : 'border-stone-mist'
           }`}
-          style={{ transformStyle: 'preserve-3d' }}
         >
           {/* Active Drag-and-Drop High-Contrast Overlay */}
           <AnimatePresence>
@@ -688,7 +697,7 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
           </AnimatePresence>
 
           {/* Top Integrated Dropzone Area */}
-          <div className="p-6 sm:p-8 bg-warm-bone/40 border-b border-stone-mist relative">
+          <div className="p-4 sm:p-6 md:p-8 bg-warm-bone/40 border-b border-stone-mist relative">
             <input
               type="file"
               accept=".pdf,.docx,.txt,.csv,.log,.png,.jpg,.jpeg,.webp"
@@ -709,19 +718,19 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
                 </div>
               </div>
             ) : (
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-paper-white border border-stone-mist flex items-center justify-center text-charcoal shadow-sm shrink-0 mt-0.5">
-                    <UploadCloud className="w-6 h-6 text-charcoal" />
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6">
+                <div className="flex items-start gap-3 sm:gap-4">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-paper-white border border-stone-mist flex items-center justify-center text-charcoal shadow-sm shrink-0 mt-0.5">
+                    <UploadCloud className="w-5 h-5 sm:w-6 sm:h-6 text-charcoal" />
                   </div>
                   <div>
-                    <h3 className="text-base sm:text-lg font-semibold text-charcoal">
+                    <h3 className="text-sm sm:text-lg font-semibold text-charcoal">
                       Drop your PDF, Word, or image file here
                     </h3>
                     <p className="text-xs text-bark-grey mt-0.5 font-sans">
                       Everything is processed directly inside your browser memory. <span className="text-charcoal font-semibold underline underline-offset-4">Browse files on device</span>
                     </p>
-                    <div className="flex flex-wrap items-center gap-1.5 mt-2.5 text-[10px] text-bark-grey font-mono uppercase">
+                    <div className="flex flex-wrap items-center gap-1.5 mt-2 text-[10px] text-bark-grey font-mono uppercase">
                       <span className="px-2 py-0.5 rounded-tag bg-paper-white border border-stone-mist">PDF</span>
                       <span className="px-2 py-0.5 rounded-tag bg-paper-white border border-stone-mist">DOCX</span>
                       <span className="px-2 py-0.5 rounded-tag bg-paper-white border border-stone-mist">PNG / JPG</span>
@@ -730,13 +739,13 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
                   <motion.button
                     type="button"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.97 }}
                     onClick={loadSampleOfferLetter}
-                    className="relative z-20 px-3.5 py-2 rounded-xl bg-paper-white hover:bg-stone-mist/50 text-charcoal border border-stone-mist text-xs font-mono font-medium shadow-sm transition-colors flex items-center gap-1.5"
+                    className="relative z-20 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-paper-white hover:bg-stone-mist/50 text-charcoal border border-stone-mist text-xs font-mono font-medium shadow-sm transition-colors flex items-center gap-1.5"
                   >
                     <FileCheck className="w-3.5 h-3.5 text-charcoal" />
                     <span>Try Sample PDF</span>
@@ -756,26 +765,26 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
           {/* Studio Document Redaction Preview Showcase */}
           <div className="relative border-t border-stone-mist bg-paper-white group">
             {/* Editorial Studio Canvas Header Bar */}
-            <div className="px-4 sm:px-6 py-2.5 bg-warm-bone/60 border-b border-stone-mist flex items-center justify-between text-xs font-mono">
+            <div className="px-3.5 sm:px-6 py-2 sm:py-2.5 bg-warm-bone/60 border-b border-stone-mist flex items-center justify-between text-[11px] sm:text-xs font-mono">
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
                 <span className="font-semibold text-charcoal tracking-wide">REDACTION STUDIO PREVIEW</span>
               </div>
-              <div className="hidden sm:flex items-center gap-3 text-bark-grey text-[11px]">
-                <span>VOLATILE RAM BUFFER</span>
-                <span className="text-stone-mist">•</span>
+              <div className="flex items-center gap-2 sm:gap-3 text-bark-grey text-[10px] sm:text-[11px]">
+                <span className="hidden xs:inline sm:inline">VOLATILE RAM BUFFER</span>
+                <span className="hidden xs:inline sm:inline text-stone-mist">•</span>
                 <span className="text-charcoal font-semibold">0 BYTES TRANSMITTED</span>
               </div>
             </div>
 
-            {/* Vector Illustration Container with explicit dimensions and instant eager loading */}
-            <div className="relative w-full aspect-[16/10] sm:aspect-[16/9] min-h-[320px] sm:min-h-[460px] overflow-hidden bg-warm-bone/20">
+            {/* Vector Illustration Container with centered containment */}
+            <div className="relative w-full h-[220px] xs:h-[260px] sm:h-[360px] md:h-[440px] overflow-hidden bg-[#FAF8F5] flex items-center justify-center p-2 sm:p-6">
               <img
                 src="/images/studio-preview-vector.jpg"
                 alt="Redactify document redaction studio preview"
-                className="w-full h-full object-cover object-top transition-transform duration-700 ease-out group-hover:scale-[1.02]"
+                className="w-full h-full object-contain object-center transition-transform duration-700 ease-out group-hover:scale-[1.02]"
                 loading="eager"
-                fetchPriority="high"
+                fetchpriority="high"
                 decoding="async"
                 onLoad={() => ScrollTrigger.refresh()}
               />
