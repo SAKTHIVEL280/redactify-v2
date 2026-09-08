@@ -841,39 +841,14 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
                 </div>
               </div>
 
-              {/* Vector Illustration Showcase Card: Air-Gap Vault */}
-              <div className="relative rounded-card border border-stone-mist overflow-hidden bg-paper-white shadow-card p-5 sm:p-6 flex flex-col justify-between">
-                <div className="font-mono text-xs text-bark-grey uppercase pb-3 border-b border-stone-mist flex items-center justify-between">
-                  <span>Air-Gap Vault Architecture</span>
-                  <span className="text-amber-800 font-bold flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-amber-600" />
-                    100% In-Memory Isolation
-                  </span>
-                </div>
-
-                <div className="my-4 relative overflow-hidden rounded-xl border border-stone-mist bg-warm-bone/40 group">
-                  <img
-                    src="/images/airgap-vault-vector.jpg"
-                    alt="Vector illustration of secure client-side air-gap vault architecture"
-                    className="w-full h-56 sm:h-64 object-cover object-center transition-transform duration-500 ease-out group-hover:scale-[1.02]"
-                    loading="lazy"
-                  />
-                  <div className="absolute bottom-2.5 left-2.5 right-2.5 px-3 py-1.5 rounded-lg bg-paper-white/95 backdrop-blur-xs border border-stone-mist/80 flex items-center justify-between text-[11px] font-mono shadow-xs">
-                    <span className="text-charcoal font-medium">Local Browser Volatile RAM</span>
-                    <span className="text-amber-800 font-bold">0 HTTP Egress</span>
-                  </div>
-                </div>
-
-                <div className="pt-2 border-t border-stone-mist flex flex-col gap-1.5 font-mono text-xs">
-                  <div className="flex items-center justify-between text-bark-grey">
-                    <span>Upload Egress to Cloud</span>
-                    <span className="text-amber-800 font-bold">BLOCKED (0 Bytes)</span>
-                  </div>
-                  <div className="flex items-center justify-between text-bark-grey">
-                    <span>Analytics & Telemetry</span>
-                    <span className="text-amber-800 font-bold">NONE (Zero Tracking)</span>
-                  </div>
-                </div>
+              {/* Pure Vector Illustration Showcase */}
+              <div className="relative rounded-card border border-stone-mist overflow-hidden bg-paper-white shadow-showcase group">
+                <img
+                  src="/images/airgap-vault-vector.jpg"
+                  alt="Air-gap vault security and client-side isolation"
+                  className="w-full h-auto object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02]"
+                  loading="lazy"
+                />
               </div>
             </div>
           </motion.div>
@@ -887,38 +862,14 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
             className="border-b border-stone-mist"
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 md:p-10 items-center">
-              {/* Vector Illustration Showcase Card: Smart Pattern Detection */}
-              <div className="order-2 md:order-1 relative rounded-card border border-stone-mist overflow-hidden bg-paper-white shadow-card p-5 sm:p-6 flex flex-col justify-between">
-                <div className="font-mono text-xs text-bark-grey uppercase pb-3 border-b border-stone-mist flex items-center justify-between">
-                  <span>Smart Pattern Detection</span>
-                  <span className="text-charcoal font-bold font-mono text-[11px] bg-warm-bone px-2 py-0.5 rounded border border-stone-mist">
-                    &lt; 15ms Scanning Engine
-                  </span>
-                </div>
-
-                <div className="my-4 relative overflow-hidden rounded-xl border border-stone-mist bg-warm-bone/40 group">
-                  <img
-                    src="/images/pattern-detection-vector.jpg"
-                    alt="Vector illustration of precision document scanning and pattern detection"
-                    className="w-full h-56 sm:h-64 object-cover object-center transition-transform duration-500 ease-out group-hover:scale-[1.02]"
-                    loading="lazy"
-                  />
-                  <div className="absolute bottom-2.5 left-2.5 right-2.5 px-3 py-1.5 rounded-lg bg-paper-white/95 backdrop-blur-xs border border-stone-mist/80 flex items-center justify-between text-[11px] font-mono shadow-xs">
-                    <span className="text-charcoal font-medium">PII & Financial Recognition</span>
-                    <span className="text-amber-800 font-bold">Luhn Validated</span>
-                  </div>
-                </div>
-
-                <div className="pt-2 border-t border-stone-mist flex flex-col gap-1.5 font-mono text-xs">
-                  <div className="flex items-center justify-between text-bark-grey">
-                    <span>Verified PII Types</span>
-                    <span className="text-charcoal font-bold">SSN, IBAN, Tax IDs, NPI</span>
-                  </div>
-                  <div className="flex items-center justify-between text-bark-grey">
-                    <span>False Positive Rejection</span>
-                    <span className="text-amber-800 font-bold">Mathematical Checksums</span>
-                  </div>
-                </div>
+              {/* Pure Vector Illustration Showcase */}
+              <div className="order-2 md:order-1 relative rounded-card border border-stone-mist overflow-hidden bg-paper-white shadow-showcase group">
+                <img
+                  src="/images/pattern-detection-vector.jpg"
+                  alt="Automated pattern detection and document sanitization"
+                  className="w-full h-auto object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02]"
+                  loading="lazy"
+                />
               </div>
 
               <div className="order-1 md:order-2 flex flex-col gap-3">
@@ -989,38 +940,14 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
                 </div>
               </div>
 
-              {/* Vector Illustration Showcase Card: Document Rotation & Blackout */}
-              <div className="relative rounded-card border border-stone-mist overflow-hidden bg-paper-white shadow-card p-5 sm:p-6 flex flex-col justify-between">
-                <div className="font-mono text-xs text-bark-grey uppercase pb-3 border-b border-stone-mist flex items-center justify-between">
-                  <span>Document Rotation & Blackout</span>
-                  <span className="text-charcoal font-bold font-mono text-[11px] bg-warm-bone px-2 py-0.5 rounded border border-stone-mist">
-                    90° Lossless Rotation
-                  </span>
-                </div>
-
-                <div className="my-4 relative overflow-hidden rounded-xl border border-stone-mist bg-warm-bone/40 group">
-                  <img
-                    src="/images/rotation-blackout-vector.jpg"
-                    alt="Vector illustration of ID card rotation and signature blackout redaction"
-                    className="w-full h-56 sm:h-64 object-cover object-center transition-transform duration-500 ease-out group-hover:scale-[1.02]"
-                    loading="lazy"
-                  />
-                  <div className="absolute bottom-2.5 left-2.5 right-2.5 px-3 py-1.5 rounded-lg bg-paper-white/95 backdrop-blur-xs border border-stone-mist/80 flex items-center justify-between text-[11px] font-mono shadow-xs">
-                    <span className="text-charcoal font-medium">Scanned IDs & Signatures</span>
-                    <span className="text-amber-800 font-bold">Permanent Flattening</span>
-                  </div>
-                </div>
-
-                <div className="pt-2 border-t border-stone-mist flex flex-col gap-1.5 font-mono text-xs">
-                  <div className="flex items-center justify-between text-bark-grey">
-                    <span>Phone Photo Orientation</span>
-                    <span className="text-charcoal font-bold">90° CW & CCW One-Click</span>
-                  </div>
-                  <div className="flex items-center justify-between text-bark-grey">
-                    <span>Image Canvas Security</span>
-                    <span className="text-amber-800 font-bold">Burned Pixel Overlays</span>
-                  </div>
-                </div>
+              {/* Pure Vector Illustration Showcase */}
+              <div className="relative rounded-card border border-stone-mist overflow-hidden bg-paper-white shadow-showcase group">
+                <img
+                  src="/images/rotation-blackout-vector.jpg"
+                  alt="Document orientation rotation and signature blackout"
+                  className="w-full h-auto object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02]"
+                  loading="lazy"
+                />
               </div>
             </div>
           </motion.div>
