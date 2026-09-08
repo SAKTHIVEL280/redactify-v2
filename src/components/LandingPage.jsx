@@ -4,8 +4,8 @@ import {
   UploadCloud, ShieldAlert, ShieldCheck, BadgeCheck, Scale, Landmark, 
   Activity, UserCheck, WifiOff, FileText, CheckCircle2, Zap, ArrowRight, 
   ChevronDown, ChevronUp, Lock, Sparkles, Check, HelpCircle, EyeOff, 
-  Layers, Download, ServerOff, FileCheck, ExternalLink, AlertCircle, RefreshCw,
-  RotateCw, RotateCcw, Crosshair
+  Layers, Download, ServerOff, FileCheck, ExternalLink, AlertCircle,
+  RotateCw, Crosshair
 } from 'lucide-react';
 import { useDocumentStore } from '../store/documentStore';
 import { useRedactionStore } from '../store/redactionStore';
@@ -64,36 +64,6 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
   const [isDragging, setIsDragging] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
 
-  // Interactive Live Hero Sandbox State
-  const [activeToggles, setActiveToggles] = useState({
-    name: true,
-    ssn: true,
-    phone: true,
-    email: true,
-    salary: true,
-    routing: true,
-    account: true
-  });
-
-  const toggleEntity = (key) => {
-    setActiveToggles(prev => ({ ...prev, [key]: !prev[key] }));
-  };
-
-  const setFilterMode = (mode) => {
-    if (mode === 'all') {
-      setActiveToggles({ name: true, ssn: true, phone: true, email: true, salary: true, routing: true, account: true });
-    } else if (mode === 'ids') {
-      setActiveToggles({ name: true, ssn: true, phone: false, email: false, salary: false, routing: false, account: false });
-    } else if (mode === 'finance') {
-      setActiveToggles({ name: false, ssn: false, phone: false, email: false, salary: true, routing: true, account: true });
-    } else if (mode === 'contact') {
-      setActiveToggles({ name: false, ssn: false, phone: true, email: true, salary: false, routing: false, account: false });
-    } else if (mode === 'none') {
-      setActiveToggles({ name: false, ssn: false, phone: false, email: false, salary: false, routing: false, account: false });
-    }
-  };
-
-  const activeCount = Object.values(activeToggles).filter(Boolean).length;
 
   const setFile = useDocumentStore((s) => s.setFile);
   const setDocumentData = useDocumentStore((s) => s.setDocumentData);
@@ -233,28 +203,6 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
     }
   };
 
-  const loadSampleMedicalRecord = () => {
-    const sampleMedicalText = `PATIENT MEDICAL RECORD & DISCHARGE SUMMARY
-FACILITY: Metro Health Center
-CONFIDENTIAL - PROTECTED HEALTH INFORMATION
-
-PATIENT DETAILS:
-Patient Name: Sarah Jenkins
-Date of Birth: 14-04-1988
-Medical Record Number: MRN-8849201
-National ID / SSN: 987-12-8941
-Insurance Policy ID: BCBS-994820194
-Primary Phone: +1 (415) 555-0182
-Email: sarah.j.health@providermail.com
-
-CLINICAL EVALUATION:
-Attending Physician: Dr. Robert Harrison, MD (NPI: 1487295103)
-Diagnostic Notes: Annual preventative exam completed. All indicators normal.
-Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
-
-    const file = new File([sampleMedicalText], 'Sample_Patient_Record.txt', { type: 'text/plain' });
-    processFile(file);
-  };
 
   return (
     <div className="flex flex-col min-h-screen bg-warm-bone text-charcoal">
@@ -421,263 +369,14 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
             )}
           </div>
 
-          {/* Interactive Redaction Sandbox Header */}
-          <div className="p-6 sm:p-8 bg-paper-white">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-stone-mist">
-              <div className="flex items-center gap-2">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-600"></span>
-                </span>
-                <span className="font-mono text-xs font-semibold uppercase tracking-wider text-charcoal">
-                  Interactive Redaction Preview
-                </span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-tag bg-warm-bone text-bark-grey border border-stone-mist">
-                  Local RAM
-                </span>
-              </div>
-
-              {/* Scrubber pills with tactile micro-interactions */}
-              <div className="flex flex-wrap items-center gap-1.5">
-                <motion.button
-                  type="button"
-                  whileHover={{ scale: 1.04 }}
-                  whileTap={{ scale: 0.96 }}
-                  onClick={() => setFilterMode('all')}
-                  className="px-2.5 py-1 rounded-tag text-[11px] font-mono uppercase font-semibold bg-charcoal text-white hover:bg-black transition-colors"
-                >
-                  All
-                </motion.button>
-                <motion.button
-                  type="button"
-                  whileHover={{ scale: 1.04 }}
-                  whileTap={{ scale: 0.96 }}
-                  onClick={() => setFilterMode('ids')}
-                  className="px-2.5 py-1 rounded-tag text-[11px] font-mono uppercase font-semibold bg-warm-bone text-charcoal hover:bg-stone-mist border border-stone-mist transition-colors"
-                >
-                  IDs
-                </motion.button>
-                <motion.button
-                  type="button"
-                  whileHover={{ scale: 1.04 }}
-                  whileTap={{ scale: 0.96 }}
-                  onClick={() => setFilterMode('finance')}
-                  className="px-2.5 py-1 rounded-tag text-[11px] font-mono uppercase font-semibold bg-warm-bone text-charcoal hover:bg-stone-mist border border-stone-mist transition-colors"
-                >
-                  Salary
-                </motion.button>
-                <motion.button
-                  type="button"
-                  whileHover={{ scale: 1.04 }}
-                  whileTap={{ scale: 0.96 }}
-                  onClick={() => setFilterMode('contact')}
-                  className="px-2.5 py-1 rounded-tag text-[11px] font-mono uppercase font-semibold bg-warm-bone text-charcoal hover:bg-stone-mist border border-stone-mist transition-colors"
-                >
-                  Contacts
-                </motion.button>
-                <motion.button
-                  type="button"
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => setFilterMode('none')}
-                  className="p-1 rounded-tag text-[11px] text-bark-grey hover:text-charcoal transition-colors"
-                  title="Reset"
-                >
-                  <RefreshCw className="w-3.5 h-3.5" />
-                </motion.button>
-              </div>
-            </div>
-
-            {/* Document body with interactive toggle pills and ambient scanning laser */}
-            <div className="relative p-4 sm:p-5 rounded-tag bg-warm-bone border border-stone-mist font-mono text-xs sm:text-sm leading-relaxed space-y-3 text-charcoal overflow-hidden">
-              
-              {/* Ambient In-Memory Scanning Laser Hairline */}
-              <motion.div
-                className="absolute left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-amber-600/70 to-transparent pointer-events-none z-10"
-                animate={{
-                  top: ['2%', '96%', '2%'],
-                  opacity: [0.25, 0.8, 0.25]
-                }}
-                transition={{
-                  duration: 4.8,
-                  repeat: Infinity,
-                  ease: 'easeInOut'
-                }}
-              />
-
-              <div className="text-[10px] font-mono uppercase font-semibold text-bark-grey border-b border-stone-mist pb-2 flex items-center justify-between">
-                <span>EXECUTIVE EMPLOYMENT AGREEMENT • CONFIDENTIAL</span>
-                <span className="text-[10px] text-bark-grey font-sans">Click any highlighted or blacked-out field to toggle</span>
-              </div>
-
-              <div className="pt-1">
-                Candidate:{' '}
-                <motion.button
-                  type="button"
-                  layout
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.95 }}
-                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                  onClick={() => toggleEntity('name')}
-                  className={`inline-flex items-center px-2 py-0.5 rounded font-mono ${
-                    activeToggles.name
-                      ? 'bg-charcoal text-white font-bold shadow-xs hover:bg-black'
-                      : 'bg-amber-100 text-amber-950 border border-amber-300 font-semibold hover:bg-amber-200'
-                  }`}
-                >
-                  {activeToggles.name ? '[NAME REDACTED]' : 'David M. Sterling'}
-                </motion.button>
-              </div>
-
-              <div>
-                Social Security Number:{' '}
-                <motion.button
-                  type="button"
-                  layout
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.95 }}
-                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                  onClick={() => toggleEntity('ssn')}
-                  className={`inline-flex items-center px-2 py-0.5 rounded font-mono ${
-                    activeToggles.ssn
-                      ? 'bg-charcoal text-white font-bold shadow-xs hover:bg-black'
-                      : 'bg-amber-100 text-amber-950 border border-amber-300 font-semibold hover:bg-amber-200'
-                  }`}
-                >
-                  {activeToggles.ssn ? 'XXX-XX-4320' : '987-65-4320'}
-                </motion.button>
-                <span className="text-[10px] text-bark-grey ml-2 font-sans">(Checksum Verified)</span>
-              </div>
-
-              <div>
-                Contact Info:{' '}
-                <motion.button
-                  type="button"
-                  layout
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.95 }}
-                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                  onClick={() => toggleEntity('phone')}
-                  className={`inline-flex items-center px-2 py-0.5 rounded font-mono mr-1.5 ${
-                    activeToggles.phone
-                      ? 'bg-charcoal text-white font-bold shadow-xs hover:bg-black'
-                      : 'bg-amber-100 text-amber-950 border border-amber-300 font-semibold hover:bg-amber-200'
-                  }`}
-                >
-                  {activeToggles.phone ? '[PHONE REDACTED]' : '+1 (206) 555-0194'}
-                </motion.button>
-                •{' '}
-                <motion.button
-                  type="button"
-                  layout
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.95 }}
-                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                  onClick={() => toggleEntity('email')}
-                  className={`inline-flex items-center px-2 py-0.5 rounded font-mono ml-1.5 ${
-                    activeToggles.email
-                      ? 'bg-charcoal text-white font-bold shadow-xs hover:bg-black'
-                      : 'bg-amber-100 text-amber-950 border border-amber-300 font-semibold hover:bg-amber-200'
-                  }`}
-                >
-                  {activeToggles.email ? '[EMAIL REDACTED]' : 'd.sterling@apexglobal.io'}
-                </motion.button>
-              </div>
-
-              <div>
-                Compensation:{' '}
-                <motion.button
-                  type="button"
-                  layout
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.95 }}
-                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                  onClick={() => toggleEntity('salary')}
-                  className={`inline-flex items-center px-2 py-0.5 rounded font-mono ${
-                    activeToggles.salary
-                      ? 'bg-charcoal text-white font-bold shadow-xs hover:bg-black'
-                      : 'bg-amber-100 text-amber-950 border border-amber-300 font-semibold hover:bg-amber-200'
-                  }`}
-                >
-                  {activeToggles.salary ? '[SALARY CONFIDENTIAL]' : '$185,000 USD / year'}
-                </motion.button>
-              </div>
-
-              <div>
-                Payroll Details:{' '}
-                Routing:{' '}
-                <motion.button
-                  type="button"
-                  layout
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.95 }}
-                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                  onClick={() => toggleEntity('routing')}
-                  className={`inline-flex items-center px-2 py-0.5 rounded font-mono mr-1.5 ${
-                    activeToggles.routing
-                      ? 'bg-charcoal text-white font-bold shadow-xs hover:bg-black'
-                      : 'bg-amber-100 text-amber-950 border border-amber-300 font-semibold hover:bg-amber-200'
-                  }`}
-                >
-                  {activeToggles.routing ? '[ROUTING SCRUBBED]' : '021000021'}
-                </motion.button>
-                Account:{' '}
-                <motion.button
-                  type="button"
-                  layout
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.95 }}
-                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                  onClick={() => toggleEntity('account')}
-                  className={`inline-flex items-center px-2 py-0.5 rounded font-mono ml-1.5 ${
-                    activeToggles.account
-                      ? 'bg-charcoal text-white font-bold shadow-xs hover:bg-black'
-                      : 'bg-amber-100 text-amber-950 border border-amber-300 font-semibold hover:bg-amber-200'
-                  }`}
-                >
-                  {activeToggles.account ? '••••••••9482' : '8492019482'}
-                </motion.button>
-              </div>
-            </div>
-
-            {/* Bottom metrics & trigger row */}
-            <div className="mt-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t border-stone-mist">
-              <div className="flex items-center gap-2 text-xs text-bark-grey">
-                <span className="w-2 h-2 rounded-full bg-amber-600" />
-                <motion.span 
-                  key={activeCount}
-                  initial={{ opacity: 0, y: -2 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="font-mono text-charcoal font-semibold"
-                >
-                  {activeCount} of 7 Entities Protected
-                </motion.span>
-                <span className="text-pebble">•</span>
-                <span className="font-mono text-[11px] text-amber-800 font-semibold">0 bytes sent to servers</span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <motion.button
-                  type="button"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={loadSampleMedicalRecord}
-                  className="px-3 py-1.5 rounded-xl bg-warm-bone hover:bg-stone-mist text-charcoal border border-stone-mist text-xs font-mono font-medium transition-colors"
-                >
-                  Sample Medical Record (.txt)
-                </motion.button>
-                <motion.button
-                  type="button"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={onNavigateToStudio}
-                  className="inline-flex items-center justify-center font-mono font-semibold uppercase text-xs rounded-xl px-4 py-1.5 bg-charcoal hover:bg-black text-white shadow-sm transition-colors gap-1.5"
-                >
-                  <span>Open Studio</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </motion.button>
-              </div>
-            </div>
+          {/* Studio Document Redaction Preview Showcase */}
+          <div className="relative overflow-hidden bg-paper-white group">
+            <img
+              src="/images/studio-preview-vector.jpg"
+              alt="Redactify document redaction studio preview"
+              className="w-full h-auto object-cover transition-transform duration-500 ease-out group-hover:scale-[1.01]"
+              loading="lazy"
+            />
           </div>
         </motion.div>
 
