@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   UploadCloud, ShieldAlert, ShieldCheck, BadgeCheck, Scale, Landmark, 
   Activity, UserCheck, WifiOff, FileText, CheckCircle2, Zap, ArrowRight, 
@@ -14,6 +15,27 @@ import { parseAndScanPDF } from '../core/parsers/pdfParser';
 import { parseAndExtractDOCX } from '../core/parsers/docxParser';
 import { detectEntities } from '../core/engine/detector';
 import { createSampleOfferLetterPdf } from '../core/parsers/samplePdfGenerator';
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.09,
+      delayChildren: 0.04,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] },
+  },
+};
+
 
 const FAQS = [
   {
@@ -72,6 +94,22 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
   };
 
   const activeCount = Object.values(activeToggles).filter(Boolean).length;
+
+  // Interactive Pattern Toggles (Deep Dive #02)
+  const [activePatternToggles, setActivePatternToggles] = useState({
+    ssn: true,
+    card: true,
+    salary: true,
+    contact: true
+  });
+
+  const togglePatternEntity = (key) => {
+    setActivePatternToggles(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  // Interactive Live Rotation Sandbox State (Deep Dive #03)
+  const [demoRotation, setDemoRotation] = useState(0);
+  const [demoRedacted, setDemoRedacted] = useState(true);
 
   const setFile = useDocumentStore((s) => s.setFile);
   const setDocumentData = useDocumentStore((s) => s.setDocumentData);
@@ -238,47 +276,71 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
     <div className="flex flex-col min-h-screen bg-warm-bone text-charcoal">
       
       {/* ─────────────────────────────────────────────────────────────
-          1. AUTOSEND HERO SECTION
+          1. AUTOSEND HERO SECTION WITH FRAMER MOTION STAGGER
       ────────────────────────────────────────────────────────────── */}
-      <section className="pt-16 pb-12 px-4 md:px-6 max-w-6xl mx-auto w-full flex flex-col items-center text-center">
+      <motion.section 
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
+        className="pt-16 pb-12 px-4 md:px-6 max-w-6xl mx-auto w-full flex flex-col items-center text-center"
+      >
         
         {/* Editorial Category Kicker */}
-        <div className="font-mono text-xs uppercase tracking-widest text-bark-grey font-semibold mb-4">
+        <motion.div 
+          variants={itemVariants}
+          className="font-mono text-xs uppercase tracking-widest text-bark-grey font-semibold mb-4"
+        >
           Private In-Memory Document Sanitization
-        </div>
+        </motion.div>
 
         {/* Display Headline in Cooper LtBT serif */}
-        <h1 className="font-serif text-[42px] sm:text-[68px] lg:text-[76px] leading-[1.08] text-charcoal font-normal max-w-4xl tracking-normal mb-6">
+        <motion.h1 
+          variants={itemVariants}
+          className="font-serif text-[42px] sm:text-[68px] lg:text-[76px] leading-[1.08] text-charcoal font-normal max-w-4xl tracking-normal mb-6"
+        >
           Document redaction for <em>teams</em> who <br className="hidden md:inline" />
           care about <span className="text-amber-800 italic">privacy</span>
-        </h1>
+        </motion.h1>
 
         {/* Human, approachable subtext */}
-        <p className="text-bark-grey text-base sm:text-xl max-w-2xl leading-relaxed font-sans mb-8">
+        <motion.p 
+          variants={itemVariants}
+          className="text-bark-grey text-base sm:text-xl max-w-2xl leading-relaxed font-sans mb-8"
+        >
           Permanently remove confidential names, IDs, credit cards, and banking numbers from PDFs, Word documents, and scans. <span className="text-charcoal font-semibold">Zero files ever leave your device: runs 100% locally on your computer.</span>
-        </p>
+        </motion.p>
 
-        {/* CTA Pair (AutoSend style) */}
-        <div className="flex items-center justify-center gap-4 mb-12">
-          <button
+        {/* CTA Pair (AutoSend style) with subtle tactile feedback */}
+        <motion.div 
+          variants={itemVariants}
+          className="flex items-center justify-center gap-4 mb-12"
+        >
+          <motion.button
+            type="button"
+            whileHover={{ scale: 1.02, y: -1 }}
+            whileTap={{ scale: 0.97 }}
             onClick={loadSampleOfferLetter}
-            className="cursor-pointer font-semibold font-mono uppercase border text-xs sm:text-sm rounded-xl px-5 py-2.5 bg-paper-white border-stone-mist hover:bg-stone-mist/40 text-charcoal shadow-sm active:scale-95 transition-all"
+            className="cursor-pointer font-semibold font-mono uppercase border text-xs sm:text-sm rounded-xl px-5 py-2.5 bg-paper-white border-stone-mist hover:bg-stone-mist/40 text-charcoal shadow-sm transition-colors"
           >
             Try Sample File
-          </button>
-          <button
+          </motion.button>
+          <motion.button
+            type="button"
+            whileHover={{ scale: 1.02, y: -1 }}
+            whileTap={{ scale: 0.97 }}
             onClick={onNavigateToStudio}
-            className="cursor-pointer font-semibold font-mono uppercase border text-xs sm:text-sm rounded-xl px-6 py-2.5 text-white bg-charcoal border-charcoal hover:bg-black shadow-sm active:scale-95 transition-all flex items-center gap-2 tracking-wider"
+            className="cursor-pointer font-semibold font-mono uppercase border text-xs sm:text-sm rounded-xl px-6 py-2.5 text-white bg-charcoal border-charcoal hover:bg-black shadow-sm transition-colors flex items-center gap-2 tracking-wider"
           >
             <span>Open Studio</span>
             <ArrowRight className="w-4 h-4" />
-          </button>
-        </div>
+          </motion.button>
+        </motion.div>
 
         {/* ─────────────────────────────────────────────────────────────
             UNIFIED HERO WORKSPACE: INTEGRATED DROPZONE + LIVE SANDBOX
         ────────────────────────────────────────────────────────────── */}
-        <div 
+        <motion.div 
+          variants={itemVariants}
           onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
           onDragLeave={() => setIsDragging(false)}
           onDrop={handleDrop}
@@ -289,17 +351,25 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
           }`}
         >
           {/* Active Drag-and-Drop High-Contrast Overlay */}
-          {isDragging && (
-            <div className="absolute inset-0 z-30 bg-paper-white/95 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-150">
-              <div className="w-16 h-16 rounded-2xl bg-charcoal text-white flex items-center justify-center mb-4 shadow-lg animate-bounce">
-                <UploadCloud className="w-8 h-8" />
-              </div>
-              <h3 className="text-xl font-serif text-charcoal">Release to redact immediately</h3>
-              <p className="text-xs font-mono text-bark-grey mt-1 max-w-sm">
-                Processed 100% in local browser volatile memory. Zero network uploads.
-              </p>
-            </div>
-          )}
+          <AnimatePresence>
+            {isDragging && (
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+                className="absolute inset-0 z-30 bg-paper-white/95 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center"
+              >
+                <div className="w-16 h-16 rounded-2xl bg-charcoal text-white flex items-center justify-center mb-4 shadow-lg animate-bounce">
+                  <UploadCloud className="w-8 h-8" />
+                </div>
+                <h3 className="text-xl font-serif text-charcoal">Release to redact immediately</h3>
+                <p className="text-xs font-mono text-bark-grey mt-1 max-w-sm">
+                  Processed 100% in local browser volatile memory. Zero network uploads.
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Top Integrated Dropzone Area */}
           <div className="p-6 sm:p-8 bg-warm-bone/40 border-b border-stone-mist relative">
@@ -345,14 +415,16 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
-                  <button
+                  <motion.button
                     type="button"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.97 }}
                     onClick={loadSampleOfferLetter}
-                    className="relative z-20 px-3.5 py-2 rounded-xl bg-paper-white hover:bg-stone-mist/50 text-charcoal border border-stone-mist text-xs font-mono font-medium shadow-sm transition-all flex items-center gap-1.5"
+                    className="relative z-20 px-3.5 py-2 rounded-xl bg-paper-white hover:bg-stone-mist/50 text-charcoal border border-stone-mist text-xs font-mono font-medium shadow-sm transition-colors flex items-center gap-1.5"
                   >
                     <FileCheck className="w-3.5 h-3.5 text-charcoal" />
                     <span>Try Sample PDF</span>
-                  </button>
+                  </motion.button>
                 </div>
               </div>
             )}
@@ -369,7 +441,10 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
           <div className="p-6 sm:p-8 bg-paper-white">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-stone-mist">
               <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-amber-600" />
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-600"></span>
+                </span>
                 <span className="font-mono text-xs font-semibold uppercase tracking-wider text-charcoal">
                   Interactive Redaction Preview
                 </span>
@@ -378,49 +453,74 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
                 </span>
               </div>
 
-              {/* Scrubber pills */}
+              {/* Scrubber pills with tactile micro-interactions */}
               <div className="flex flex-wrap items-center gap-1.5">
-                <button
+                <motion.button
                   type="button"
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.96 }}
                   onClick={() => setFilterMode('all')}
                   className="px-2.5 py-1 rounded-tag text-[11px] font-mono uppercase font-semibold bg-charcoal text-white hover:bg-black transition-colors"
                 >
                   All
-                </button>
-                <button
+                </motion.button>
+                <motion.button
                   type="button"
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.96 }}
                   onClick={() => setFilterMode('ids')}
                   className="px-2.5 py-1 rounded-tag text-[11px] font-mono uppercase font-semibold bg-warm-bone text-charcoal hover:bg-stone-mist border border-stone-mist transition-colors"
                 >
                   IDs
-                </button>
-                <button
+                </motion.button>
+                <motion.button
                   type="button"
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.96 }}
                   onClick={() => setFilterMode('finance')}
                   className="px-2.5 py-1 rounded-tag text-[11px] font-mono uppercase font-semibold bg-warm-bone text-charcoal hover:bg-stone-mist border border-stone-mist transition-colors"
                 >
                   Salary
-                </button>
-                <button
+                </motion.button>
+                <motion.button
                   type="button"
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.96 }}
                   onClick={() => setFilterMode('contact')}
                   className="px-2.5 py-1 rounded-tag text-[11px] font-mono uppercase font-semibold bg-warm-bone text-charcoal hover:bg-stone-mist border border-stone-mist transition-colors"
                 >
                   Contacts
-                </button>
-                <button
+                </motion.button>
+                <motion.button
                   type="button"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
                   onClick={() => setFilterMode('none')}
                   className="p-1 rounded-tag text-[11px] text-bark-grey hover:text-charcoal transition-colors"
                   title="Reset"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
-                </button>
+                </motion.button>
               </div>
             </div>
 
-            {/* Document body with interactive toggle pills */}
-            <div className="p-4 sm:p-5 rounded-tag bg-warm-bone border border-stone-mist font-mono text-xs sm:text-sm leading-relaxed space-y-3 text-charcoal">
+            {/* Document body with interactive toggle pills and ambient scanning laser */}
+            <div className="relative p-4 sm:p-5 rounded-tag bg-warm-bone border border-stone-mist font-mono text-xs sm:text-sm leading-relaxed space-y-3 text-charcoal overflow-hidden">
+              
+              {/* Ambient In-Memory Scanning Laser Hairline */}
+              <motion.div
+                className="absolute left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-amber-600/70 to-transparent pointer-events-none z-10"
+                animate={{
+                  top: ['2%', '96%', '2%'],
+                  opacity: [0.25, 0.8, 0.25]
+                }}
+                transition={{
+                  duration: 4.8,
+                  repeat: Infinity,
+                  ease: 'easeInOut'
+                }}
+              />
+
               <div className="text-[10px] font-mono uppercase font-semibold text-bark-grey border-b border-stone-mist pb-2 flex items-center justify-between">
                 <span>EXECUTIVE EMPLOYMENT AGREEMENT • CONFIDENTIAL</span>
                 <span className="text-[10px] text-bark-grey font-sans">Click any highlighted or blacked-out field to toggle</span>
@@ -428,103 +528,131 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
 
               <div className="pt-1">
                 Candidate:{' '}
-                <button
+                <motion.button
                   type="button"
+                  layout
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
                   onClick={() => toggleEntity('name')}
-                  className={`inline-flex items-center px-2 py-0.5 rounded transition-all font-mono ${
+                  className={`inline-flex items-center px-2 py-0.5 rounded font-mono ${
                     activeToggles.name
                       ? 'bg-charcoal text-white font-bold shadow-xs hover:bg-black'
                       : 'bg-amber-100 text-amber-950 border border-amber-300 font-semibold hover:bg-amber-200'
                   }`}
                 >
                   {activeToggles.name ? '[NAME REDACTED]' : 'David M. Sterling'}
-                </button>
+                </motion.button>
               </div>
 
               <div>
                 Social Security Number:{' '}
-                <button
+                <motion.button
                   type="button"
+                  layout
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
                   onClick={() => toggleEntity('ssn')}
-                  className={`inline-flex items-center px-2 py-0.5 rounded transition-all font-mono ${
+                  className={`inline-flex items-center px-2 py-0.5 rounded font-mono ${
                     activeToggles.ssn
                       ? 'bg-charcoal text-white font-bold shadow-xs hover:bg-black'
                       : 'bg-amber-100 text-amber-950 border border-amber-300 font-semibold hover:bg-amber-200'
                   }`}
                 >
                   {activeToggles.ssn ? 'XXX-XX-4320' : '987-65-4320'}
-                </button>
+                </motion.button>
                 <span className="text-[10px] text-bark-grey ml-2 font-sans">(Checksum Verified)</span>
               </div>
 
               <div>
                 Contact Info:{' '}
-                <button
+                <motion.button
                   type="button"
+                  layout
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
                   onClick={() => toggleEntity('phone')}
-                  className={`inline-flex items-center px-2 py-0.5 rounded transition-all font-mono mr-1.5 ${
+                  className={`inline-flex items-center px-2 py-0.5 rounded font-mono mr-1.5 ${
                     activeToggles.phone
                       ? 'bg-charcoal text-white font-bold shadow-xs hover:bg-black'
                       : 'bg-amber-100 text-amber-950 border border-amber-300 font-semibold hover:bg-amber-200'
                   }`}
                 >
                   {activeToggles.phone ? '[PHONE REDACTED]' : '+1 (206) 555-0194'}
-                </button>
+                </motion.button>
                 •{' '}
-                <button
+                <motion.button
                   type="button"
+                  layout
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
                   onClick={() => toggleEntity('email')}
-                  className={`inline-flex items-center px-2 py-0.5 rounded transition-all font-mono ml-1.5 ${
+                  className={`inline-flex items-center px-2 py-0.5 rounded font-mono ml-1.5 ${
                     activeToggles.email
                       ? 'bg-charcoal text-white font-bold shadow-xs hover:bg-black'
                       : 'bg-amber-100 text-amber-950 border border-amber-300 font-semibold hover:bg-amber-200'
                   }`}
                 >
                   {activeToggles.email ? '[EMAIL REDACTED]' : 'd.sterling@apexglobal.io'}
-                </button>
+                </motion.button>
               </div>
 
               <div>
                 Compensation:{' '}
-                <button
+                <motion.button
                   type="button"
+                  layout
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
                   onClick={() => toggleEntity('salary')}
-                  className={`inline-flex items-center px-2 py-0.5 rounded transition-all font-mono ${
+                  className={`inline-flex items-center px-2 py-0.5 rounded font-mono ${
                     activeToggles.salary
                       ? 'bg-charcoal text-white font-bold shadow-xs hover:bg-black'
                       : 'bg-amber-100 text-amber-950 border border-amber-300 font-semibold hover:bg-amber-200'
                   }`}
                 >
                   {activeToggles.salary ? '[SALARY CONFIDENTIAL]' : '$185,000 USD / year'}
-                </button>
+                </motion.button>
               </div>
 
               <div>
                 Payroll Details:{' '}
                 Routing:{' '}
-                <button
+                <motion.button
                   type="button"
+                  layout
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
                   onClick={() => toggleEntity('routing')}
-                  className={`inline-flex items-center px-2 py-0.5 rounded transition-all font-mono mr-1.5 ${
+                  className={`inline-flex items-center px-2 py-0.5 rounded font-mono mr-1.5 ${
                     activeToggles.routing
                       ? 'bg-charcoal text-white font-bold shadow-xs hover:bg-black'
                       : 'bg-amber-100 text-amber-950 border border-amber-300 font-semibold hover:bg-amber-200'
                   }`}
                 >
                   {activeToggles.routing ? '[ROUTING SCRUBBED]' : '021000021'}
-                </button>
+                </motion.button>
                 Account:{' '}
-                <button
+                <motion.button
                   type="button"
+                  layout
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
                   onClick={() => toggleEntity('account')}
-                  className={`inline-flex items-center px-2 py-0.5 rounded transition-all font-mono ml-1.5 ${
+                  className={`inline-flex items-center px-2 py-0.5 rounded font-mono ml-1.5 ${
                     activeToggles.account
                       ? 'bg-charcoal text-white font-bold shadow-xs hover:bg-black'
                       : 'bg-amber-100 text-amber-950 border border-amber-300 font-semibold hover:bg-amber-200'
                   }`}
                 >
                   {activeToggles.account ? '••••••••9482' : '8492019482'}
-                </button>
+                </motion.button>
               </div>
             </div>
 
@@ -532,43 +660,59 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
             <div className="mt-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t border-stone-mist">
               <div className="flex items-center gap-2 text-xs text-bark-grey">
                 <span className="w-2 h-2 rounded-full bg-amber-600" />
-                <span className="font-mono text-charcoal font-semibold">
+                <motion.span 
+                  key={activeCount}
+                  initial={{ opacity: 0, y: -2 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="font-mono text-charcoal font-semibold"
+                >
                   {activeCount} of 7 Entities Protected
-                </span>
+                </motion.span>
                 <span className="text-pebble">•</span>
                 <span className="font-mono text-[11px] text-amber-800 font-semibold">0 bytes sent to servers</span>
               </div>
 
               <div className="flex items-center gap-2">
-                <button
+                <motion.button
                   type="button"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.97 }}
                   onClick={loadSampleMedicalRecord}
                   className="px-3 py-1.5 rounded-xl bg-warm-bone hover:bg-stone-mist text-charcoal border border-stone-mist text-xs font-mono font-medium transition-colors"
                 >
                   Sample Medical Record (.txt)
-                </button>
-                <button
+                </motion.button>
+                <motion.button
+                  type="button"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.97 }}
                   onClick={onNavigateToStudio}
-                  className="inline-flex items-center justify-center font-mono font-semibold uppercase text-xs rounded-xl px-4 py-1.5 bg-charcoal hover:bg-black text-white shadow-sm transition-all gap-1.5"
+                  className="inline-flex items-center justify-center font-mono font-semibold uppercase text-xs rounded-xl px-4 py-1.5 bg-charcoal hover:bg-black text-white shadow-sm transition-colors gap-1.5"
                 >
                   <span>Open Studio</span>
                   <ArrowRight className="w-3.5 h-3.5" />
-                </button>
+                </motion.button>
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
 
-      </section>
+      </motion.section>
 
       {/* ─────────────────────────────────────────────────────────────
-          2. AUTOSEND 3-COLUMN FEATURE CARDS GRID
+          2. AUTOSEND 3-COLUMN FEATURE CARDS GRID WITH SCROLL REVEAL
       ────────────────────────────────────────────────────────────── */}
       <section className="max-w-6xl mx-auto w-full px-4 md:px-6 mb-16">
         <div className="border-x border-stone-mist">
           <ul className="grid grid-cols-1 sm:grid-cols-3 sm:border-b border-t border-stone-mist">
             {/* Card 1 */}
-            <li className="flex flex-col border-b border-stone-mist sm:border-b-0 sm:border-r border-stone-mist">
+            <motion.li 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-40px" }}
+              transition={{ duration: 0.45, delay: 0 }}
+              className="group flex flex-col border-b border-stone-mist sm:border-b-0 sm:border-r border-stone-mist"
+            >
               <div className="flex flex-col gap-2 p-6 flex-1 bg-paper-white">
                 <p className="text-charcoal font-medium text-base font-mono">PDF Vector Scrubbing</p>
                 <p className="text-bark-grey font-normal text-sm leading-relaxed">
@@ -577,12 +721,18 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
               </div>
               <div className="border-t border-stone-mist px-6 py-3 bg-warm-bone flex items-center justify-between">
                 <span className="text-charcoal font-medium text-xs font-mono uppercase">Zero Text Leaks</span>
-                <ArrowRight className="w-3.5 h-3.5 text-charcoal" />
+                <ArrowRight className="w-3.5 h-3.5 text-charcoal group-hover:translate-x-1 transition-transform" />
               </div>
-            </li>
+            </motion.li>
 
             {/* Card 2 */}
-            <li className="flex flex-col border-b border-stone-mist sm:border-b-0 sm:border-r border-stone-mist">
+            <motion.li 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-40px" }}
+              transition={{ duration: 0.45, delay: 0.1 }}
+              className="group flex flex-col border-b border-stone-mist sm:border-b-0 sm:border-r border-stone-mist"
+            >
               <div className="flex flex-col gap-2 p-6 flex-1 bg-paper-white">
                 <p className="text-charcoal font-medium text-base font-mono">Word Documents (.docx)</p>
                 <p className="text-bark-grey font-normal text-sm leading-relaxed">
@@ -591,12 +741,18 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
               </div>
               <div className="border-t border-stone-mist px-6 py-3 bg-warm-bone flex items-center justify-between">
                 <span className="text-charcoal font-medium text-xs font-mono uppercase">Layout Preserved</span>
-                <ArrowRight className="w-3.5 h-3.5 text-charcoal" />
+                <ArrowRight className="w-3.5 h-3.5 text-charcoal group-hover:translate-x-1 transition-transform" />
               </div>
-            </li>
+            </motion.li>
 
             {/* Card 3 */}
-            <li className="flex flex-col border-stone-mist">
+            <motion.li 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-40px" }}
+              transition={{ duration: 0.45, delay: 0.2 }}
+              className="group flex flex-col border-stone-mist"
+            >
               <div className="flex flex-col gap-2 p-6 flex-1 bg-paper-white">
                 <p className="text-charcoal font-medium text-base font-mono">ID Cards & Scans (OCR)</p>
                 <p className="text-bark-grey font-normal text-sm leading-relaxed">
@@ -605,41 +761,64 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
               </div>
               <div className="border-t border-stone-mist px-6 py-3 bg-warm-bone flex items-center justify-between">
                 <span className="text-charcoal font-medium text-xs font-mono uppercase">Rotate & Draw</span>
-                <ArrowRight className="w-3.5 h-3.5 text-charcoal" />
+                <ArrowRight className="w-3.5 h-3.5 text-charcoal group-hover:translate-x-1 transition-transform" />
               </div>
-            </li>
+            </motion.li>
           </ul>
         </div>
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          3. METRICS BAR
+          3. METRICS BAR WITH STAGGERED SCROLL REVEALS
       ────────────────────────────────────────────────────────────── */}
       <section className="max-w-6xl mx-auto w-full px-4 md:px-6 mb-20">
         <div className="border-x border-stone-mist">
           <div className="border-t border-b border-stone-mist">
             {/* 4 Metric Columns */}
             <div className="grid grid-cols-2 md:grid-cols-4">
-              <div className="flex flex-col justify-center gap-1.5 p-6 border-stone-mist odd:border-r md:odd:border-r-0 md:border-r bg-paper-white">
+              <motion.div 
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ duration: 0.4, delay: 0 }}
+                className="flex flex-col justify-center gap-1.5 p-6 border-stone-mist odd:border-r md:odd:border-r-0 md:border-r bg-paper-white"
+              >
                 <p className="text-amber-800 font-bold text-3xl sm:text-4xl font-datatype text-center">0</p>
                 <p className="text-charcoal font-semibold text-xs text-center">Bytes uploaded to any server</p>
-              </div>
-              <div className="flex flex-col justify-center gap-1.5 p-6 border-stone-mist md:border-r bg-paper-white">
+              </motion.div>
+              <motion.div 
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ duration: 0.4, delay: 0.08 }}
+                className="flex flex-col justify-center gap-1.5 p-6 border-stone-mist md:border-r bg-paper-white"
+              >
                 <p className="text-charcoal font-bold text-3xl sm:text-4xl font-datatype text-center">&lt; 15ms</p>
                 <p className="text-bark-grey font-medium text-xs text-center">Instant detection speed</p>
-              </div>
-              <div className="flex flex-col justify-center gap-1.5 p-6 border-stone-mist odd:border-r md:odd:border-r-0 md:border-r bg-paper-white">
+              </motion.div>
+              <motion.div 
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ duration: 0.4, delay: 0.16 }}
+                className="flex flex-col justify-center gap-1.5 p-6 border-stone-mist odd:border-r md:odd:border-r-0 md:border-r bg-paper-white"
+              >
                 <p className="text-amber-800 font-bold text-3xl sm:text-4xl font-datatype text-center">100%</p>
                 <p className="text-charcoal font-semibold text-xs text-center">Client-side offline processing</p>
-              </div>
-              <div className="flex flex-col justify-center gap-1.5 p-6 border-stone-mist bg-paper-white">
+              </motion.div>
+              <motion.div 
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ duration: 0.4, delay: 0.24 }}
+                className="flex flex-col justify-center gap-1.5 p-6 border-stone-mist bg-paper-white"
+              >
                 <p className="text-charcoal font-bold text-3xl sm:text-4xl font-datatype text-center">17+</p>
                 <p className="text-bark-grey font-medium text-xs text-center">Standard PII types recognized</p>
-              </div>
+              </motion.div>
             </div>
           </div>
         </div>
-
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
@@ -648,8 +827,14 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
       <section className="max-w-6xl mx-auto w-full px-4 md:px-6 mb-20">
         <div className="flex flex-col border-x border-t border-stone-mist">
           
-          {/* #01 - Zero Cloud Exposure */}
-          <div className="border-b border-stone-mist">
+          {/* #01 - Zero Cloud Exposure with Animated Vector Air-Gap Vault */}
+          <motion.div 
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.55 }}
+            className="border-b border-stone-mist"
+          >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 md:p-10 items-center">
               <div className="flex flex-col gap-3">
                 <p className="text-amber-800 font-mono text-xs font-bold uppercase tracking-wider">
@@ -672,24 +857,95 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
                 </div>
               </div>
 
-              {/* Visual Showcase Card */}
+              {/* Animated Vector Air-Gap Vault Showcase */}
               <div className="relative rounded-card border border-stone-mist overflow-hidden bg-paper-white shadow-card p-6">
                 <div className="font-mono text-xs text-bark-grey uppercase pb-3 border-b border-stone-mist flex items-center justify-between">
-                  <span>Browser Network Inspector</span>
-                  <span className="text-amber-800 font-bold">100% Offline Ready</span>
+                  <span>Air-Gap Vault Architecture</span>
+                  <span className="text-amber-800 font-bold flex items-center gap-1.5">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-600"></span>
+                    </span>
+                    100% Air-Gapped RAM
+                  </span>
                 </div>
-                <div className="py-4 space-y-3 font-mono text-xs">
-                  <div className="p-3 rounded-tag bg-warm-bone border border-stone-mist flex items-center justify-between">
+
+                {/* Animated Vector Diagram */}
+                <div className="py-4 my-3 relative bg-warm-bone/70 rounded-xl border border-stone-mist/80 overflow-hidden flex flex-col items-center">
+                  <div className="w-full h-36 relative flex items-center justify-between px-3 sm:px-6">
+                    
+                    {/* Left Node: Local Browser Memory */}
+                    <motion.div 
+                      className="w-24 sm:w-28 bg-paper-white border border-stone-mist rounded-xl p-2.5 shadow-xs flex flex-col items-center text-center z-10"
+                      whileHover={{ y: -2 }}
+                    >
+                      <div className="w-7 h-7 rounded-lg bg-charcoal text-white flex items-center justify-center mb-1.5 shadow-xs">
+                        <FileText className="w-4 h-4" />
+                      </div>
+                      <span className="font-mono text-[10px] sm:text-[11px] font-bold text-charcoal leading-tight">Local RAM</span>
+                      <span className="font-mono text-[8px] sm:text-[9px] text-amber-800 mt-0.5 font-semibold">Volatile Memory</span>
+                    </motion.div>
+
+                    {/* Center Barrier: Air Gap Wall with Pulsing Laser */}
+                    <div className="relative flex flex-col items-center justify-center z-10">
+                      <div className="h-28 w-[2px] bg-gradient-to-b from-transparent via-amber-600 to-transparent relative">
+                        <motion.div 
+                          className="absolute -left-1 w-2.5 h-6 bg-amber-600 rounded-full blur-[1px]"
+                          animate={{ top: ['0%', '75%', '0%'] }}
+                          transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
+                        />
+                      </div>
+                      <div className="absolute top-1/2 -translate-y-1/2 px-2 py-0.5 rounded-full bg-paper-white border border-amber-500 shadow-xs flex items-center gap-1 font-mono text-[8px] sm:text-[9px] font-bold text-amber-900 tracking-wider">
+                        <ShieldAlert className="w-3 h-3 text-amber-700" />
+                        <span>AIR GAP</span>
+                      </div>
+                    </div>
+
+                    {/* Right Node: Cloud Servers (Blocked) */}
+                    <div className="w-24 sm:w-28 bg-paper-white/70 border border-stone-mist/60 rounded-xl p-2.5 flex flex-col items-center text-center opacity-60 z-10">
+                      <div className="w-7 h-7 rounded-lg bg-stone-mist text-bark-grey flex items-center justify-center mb-1.5">
+                        <ServerOff className="w-4 h-4" />
+                      </div>
+                      <span className="font-mono text-[10px] sm:text-[11px] font-semibold text-bark-grey leading-tight">Cloud Web</span>
+                      <span className="font-mono text-[8px] sm:text-[9px] text-rose-700 mt-0.5 font-semibold">Zero Egress</span>
+                    </div>
+
+                    {/* Animated Traveling Packet Blocked at Wall */}
+                    <motion.div
+                      className="absolute top-1/2 -translate-y-1/2 left-[28%] w-3 h-3 rounded-full bg-amber-600 flex items-center justify-center text-white shadow-xs z-0"
+                      animate={{
+                        x: [0, 42, 0],
+                        opacity: [0, 1, 0],
+                        scale: [0.7, 1, 0.4]
+                      }}
+                      transition={{
+                        duration: 2.2,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                      }}
+                    >
+                      <span className="w-1 h-1 bg-white rounded-full" />
+                    </motion.div>
+                  </div>
+
+                  {/* Real-time Status Micro-bar */}
+                  <div className="w-full px-4 py-1.5 border-t border-stone-mist/80 bg-paper-white flex items-center justify-between text-[10px] font-mono">
+                    <span className="text-bark-grey flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-600" />
+                      External HTTP Egress
+                    </span>
+                    <span className="font-semibold text-amber-800">BLOCKED (0 KB / s)</span>
+                  </div>
+                </div>
+
+                <div className="py-2 space-y-2 font-mono text-xs">
+                  <div className="p-2.5 rounded-tag bg-warm-bone border border-stone-mist flex items-center justify-between">
                     <span className="text-charcoal font-medium">Document Upload Request</span>
                     <span className="text-amber-800 font-bold bg-amber-50 px-2 py-0.5 rounded border border-amber-200">BLOCKED (0 Bytes)</span>
                   </div>
-                  <div className="p-3 rounded-tag bg-warm-bone border border-stone-mist flex items-center justify-between">
+                  <div className="p-2.5 rounded-tag bg-warm-bone border border-stone-mist flex items-center justify-between">
                     <span className="text-charcoal font-medium">Telemetry & Analytics</span>
                     <span className="text-amber-800 font-bold bg-amber-50 px-2 py-0.5 rounded border border-amber-200">NONE (Zero Tracking)</span>
-                  </div>
-                  <div className="p-3 rounded-tag bg-warm-bone border border-stone-mist flex items-center justify-between">
-                    <span className="text-charcoal font-medium">Processing Engine</span>
-                    <span className="text-charcoal font-bold">Local Browser RAM</span>
                   </div>
                 </div>
                 <p className="text-[11px] text-bark-grey font-sans pt-2 border-t border-stone-mist">
@@ -697,38 +953,110 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
                 </p>
               </div>
             </div>
-          </div>
+          </motion.div>
 
-          {/* #02 - Smart Automatic Detection */}
-          <div className="border-b border-stone-mist">
+          {/* #02 - Smart Automatic Detection with Interactive Pattern Inspection */}
+          <motion.div 
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.55 }}
+            className="border-b border-stone-mist"
+          >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 md:p-10 items-center">
-              {/* Visual Showcase Card */}
+              {/* Visual Showcase Card with Interactive Toggle Pills */}
               <div className="order-2 md:order-1 rounded-card border border-stone-mist overflow-hidden bg-paper-white shadow-card p-6">
                 <div className="font-mono text-xs text-bark-grey uppercase pb-3 border-b border-stone-mist flex items-center justify-between">
                   <span>Smart Pattern Checksums</span>
                   <span className="text-charcoal font-bold">&lt; 15ms Speed</span>
                 </div>
                 <div className="py-4 space-y-2.5 font-mono text-xs">
-                  <div className="p-2.5 rounded-tag bg-warm-bone border border-stone-mist flex items-center justify-between">
+                  
+                  {/* SSN Pattern Row */}
+                  <motion.div 
+                    onClick={() => togglePatternEntity('ssn')}
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="p-2.5 rounded-tag bg-warm-bone border border-stone-mist flex items-center justify-between cursor-pointer select-none transition-colors hover:bg-stone-mist/40"
+                  >
                     <span className="text-bark-grey">Social Security / Tax ID</span>
-                    <span className="font-bold text-white bg-charcoal px-2 py-0.5 rounded">XXX-XX-4320</span>
-                  </div>
-                  <div className="p-2.5 rounded-tag bg-warm-bone border border-stone-mist flex items-center justify-between">
+                    <motion.span 
+                      layout
+                      className={`font-bold px-2 py-0.5 rounded transition-colors ${
+                        activePatternToggles.ssn
+                          ? 'text-white bg-charcoal'
+                          : 'text-amber-950 bg-amber-200 border border-amber-300 font-normal'
+                      }`}
+                    >
+                      {activePatternToggles.ssn ? 'XXX-XX-4320' : '987-65-4320'}
+                    </motion.span>
+                  </motion.div>
+
+                  {/* Card Pattern Row */}
+                  <motion.div 
+                    onClick={() => togglePatternEntity('card')}
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="p-2.5 rounded-tag bg-warm-bone border border-stone-mist flex items-center justify-between cursor-pointer select-none transition-colors hover:bg-stone-mist/40"
+                  >
                     <span className="text-bark-grey">Credit Card & IBAN</span>
-                    <span className="font-bold text-white bg-charcoal px-2 py-0.5 rounded">•••• •••• •••• 1092</span>
-                  </div>
-                  <div className="p-2.5 rounded-tag bg-warm-bone border border-stone-mist flex items-center justify-between">
+                    <motion.span 
+                      layout
+                      className={`font-bold px-2 py-0.5 rounded transition-colors ${
+                        activePatternToggles.card
+                          ? 'text-white bg-charcoal'
+                          : 'text-amber-950 bg-amber-200 border border-amber-300 font-normal'
+                      }`}
+                    >
+                      {activePatternToggles.card ? '•••• •••• •••• 1092' : '4532 8901 2341 1092'}
+                    </motion.span>
+                  </motion.div>
+
+                  {/* Salary Pattern Row */}
+                  <motion.div 
+                    onClick={() => togglePatternEntity('salary')}
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="p-2.5 rounded-tag bg-warm-bone border border-stone-mist flex items-center justify-between cursor-pointer select-none transition-colors hover:bg-stone-mist/40"
+                  >
                     <span className="text-bark-grey">Executive Compensation</span>
-                    <span className="font-bold text-white bg-charcoal px-2 py-0.5 rounded">[SALARY CONFIDENTIAL]</span>
-                  </div>
-                  <div className="p-2.5 rounded-tag bg-warm-bone border border-stone-mist flex items-center justify-between">
+                    <motion.span 
+                      layout
+                      className={`font-bold px-2 py-0.5 rounded transition-colors ${
+                        activePatternToggles.salary
+                          ? 'text-white bg-charcoal'
+                          : 'text-amber-950 bg-amber-200 border border-amber-300 font-normal'
+                      }`}
+                    >
+                      {activePatternToggles.salary ? '[SALARY CONFIDENTIAL]' : '$185,000 USD / yr'}
+                    </motion.span>
+                  </motion.div>
+
+                  {/* Contact Pattern Row */}
+                  <motion.div 
+                    onClick={() => togglePatternEntity('contact')}
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="p-2.5 rounded-tag bg-warm-bone border border-stone-mist flex items-center justify-between cursor-pointer select-none transition-colors hover:bg-stone-mist/40"
+                  >
                     <span className="text-bark-grey">Direct Contact Info</span>
-                    <span className="font-bold text-white bg-charcoal px-2 py-0.5 rounded">[CONTACT REDACTED]</span>
-                  </div>
+                    <motion.span 
+                      layout
+                      className={`font-bold px-2 py-0.5 rounded transition-colors ${
+                        activePatternToggles.contact
+                          ? 'text-white bg-charcoal'
+                          : 'text-amber-950 bg-amber-200 border border-amber-300 font-normal'
+                      }`}
+                    >
+                      {activePatternToggles.contact ? '[CONTACT REDACTED]' : 'john@company.com'}
+                    </motion.span>
+                  </motion.div>
+
                 </div>
-                <p className="text-[11px] text-bark-grey font-sans pt-2 border-t border-stone-mist">
-                  Mathematical validation algorithms eliminate false alarms and catch disguised numbers.
-                </p>
+                <div className="flex items-center justify-between text-[11px] text-bark-grey font-sans pt-2 border-t border-stone-mist">
+                  <span>Click any row to test live redaction toggle</span>
+                  <span className="font-mono text-amber-800 font-semibold text-[10px]">Luhn & Regex Validated</span>
+                </div>
               </div>
 
               <div className="order-1 md:order-2 flex flex-col gap-3">
@@ -757,10 +1085,16 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
 
-          {/* #03 - Scanned Documents & Photos */}
-          <div className="border-b border-stone-mist">
+          {/* #03 - Scanned Documents & Photos with Interactive Spring Rotation Sandbox */}
+          <motion.div 
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.55 }}
+            className="border-b border-stone-mist"
+          >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 md:p-10 items-center">
               <div className="flex flex-col gap-3">
                 <p className="text-charcoal font-mono text-xs font-bold uppercase tracking-wider">
@@ -776,68 +1110,137 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
                   Use the manual crosshair tool to draw custom blackout rectangles over handwritten signatures, official rubber stamps, or ID portrait photos. Everything burns directly into the image upon download.
                 </p>
                 <div className="pt-2 flex items-center gap-3">
-                  <button 
-                    onClick={onNavigateToStudio}
+                  <motion.button 
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => setDemoRotation(r => r + 90)}
                     className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-paper-white border border-stone-mist text-xs font-mono uppercase font-semibold text-charcoal hover:bg-stone-mist/40 transition-colors"
                   >
                     <RotateCw className="w-3.5 h-3.5 text-charcoal" />
-                    <span>Rotate 90° Controls</span>
-                  </button>
-                  <button 
+                    <span>Rotate 90° Demo</span>
+                  </motion.button>
+                  <motion.button 
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.97 }}
                     onClick={onNavigateToStudio}
                     className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-paper-white border border-stone-mist text-xs font-mono uppercase font-semibold text-charcoal hover:bg-stone-mist/40 transition-colors"
                   >
                     <Crosshair className="w-3.5 h-3.5 text-charcoal" />
                     <span>Manual Crosshair</span>
-                  </button>
+                  </motion.button>
                 </div>
               </div>
 
-              {/* Visual Showcase Card */}
+              {/* Visual Showcase Card with Interactive Spring Rotation Playground */}
               <div className="rounded-card border border-stone-mist overflow-hidden bg-paper-white shadow-card p-6">
                 <div className="font-mono text-xs text-bark-grey uppercase pb-3 border-b border-stone-mist flex items-center justify-between">
-                  <span>Scanned ID Orientation & Blackout</span>
-                  <span className="text-charcoal font-semibold">Tesseract WASM</span>
+                  <span>Interactive ID Orientation Sandbox</span>
+                  <span className="text-charcoal font-semibold font-mono text-[11px] bg-warm-bone px-2 py-0.5 rounded border border-stone-mist">
+                    {demoRotation % 360}° Angle
+                  </span>
                 </div>
-                <div className="py-6 flex flex-col items-center justify-center gap-4 bg-warm-bone/60 rounded-tag border border-stone-mist my-4">
-                  <div className="flex items-center gap-3">
-                    <div className="px-3 py-1 rounded-tag bg-paper-white border border-stone-mist font-mono text-xs text-charcoal flex items-center gap-1.5 shadow-sm">
+                
+                {/* Interactive Controls & Spring-Rotated Mock Document */}
+                <div className="py-6 flex flex-col items-center justify-center gap-4 bg-warm-bone/60 rounded-tag border border-stone-mist my-4 overflow-hidden min-h-[220px]">
+                  <div className="flex items-center gap-2">
+                    <motion.button 
+                      type="button"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setDemoRotation(r => r - 90)}
+                      className="px-3 py-1 rounded-tag bg-paper-white hover:bg-stone-mist/50 border border-stone-mist font-mono text-xs text-charcoal flex items-center gap-1.5 shadow-xs transition-colors"
+                    >
                       <RotateCcw className="w-3 h-3" />
                       <span>Rotate CCW</span>
-                    </div>
-                    <div className="px-3 py-1 rounded-tag bg-paper-white border border-stone-mist font-mono text-xs text-charcoal flex items-center gap-1.5 shadow-sm">
+                    </motion.button>
+                    <motion.button 
+                      type="button"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setDemoRotation(r => r + 90)}
+                      className="px-3 py-1 rounded-tag bg-paper-white hover:bg-stone-mist/50 border border-stone-mist font-mono text-xs text-charcoal flex items-center gap-1.5 shadow-xs transition-colors"
+                    >
                       <RotateCw className="w-3 h-3" />
                       <span>Rotate CW</span>
-                    </div>
+                    </motion.button>
+                    {demoRotation !== 0 && (
+                      <motion.button 
+                        type="button"
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setDemoRotation(0)}
+                        className="px-2 py-1 rounded-tag bg-warm-bone hover:bg-stone-mist border border-stone-mist font-mono text-xs text-bark-grey"
+                        title="Reset angle"
+                      >
+                        Reset
+                      </motion.button>
+                    )}
                   </div>
-                  <div className="w-48 h-28 bg-paper-white border border-stone-mist rounded-tag shadow-sm relative p-3 flex flex-col justify-between">
+
+                  {/* Tactile Rotatable Document Card */}
+                  <motion.div 
+                    animate={{ rotate: demoRotation }}
+                    transition={{ type: "spring", stiffness: 200, damping: 22 }}
+                    className="w-52 h-32 bg-paper-white border border-stone-mist rounded-xl shadow-sm relative p-3.5 flex flex-col justify-between select-none cursor-pointer"
+                    onClick={() => setDemoRedacted(r => !r)}
+                    title="Click to toggle signature blackout"
+                  >
                     <div className="flex items-center justify-between">
-                      <div className="w-12 h-2 bg-stone-mist rounded" />
-                      <div className="w-6 h-6 rounded-full bg-stone-mist" />
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-md bg-stone-mist/80 border border-stone-mist flex items-center justify-center font-mono text-[9px] text-bark-grey font-bold">
+                          ID
+                        </div>
+                        <div>
+                          <div className="w-14 h-2 bg-stone-mist rounded mb-1" />
+                          <div className="w-9 h-1.5 bg-stone-mist/60 rounded" />
+                        </div>
+                      </div>
+                      <span className="font-mono text-[8px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300 font-semibold">
+                        PASSPORT
+                      </span>
                     </div>
-                    <div className="h-6 w-full bg-charcoal text-white rounded flex items-center justify-center font-mono text-[9px]">
-                      [SIGNATURE BLACKOUT]
+
+                    <motion.div 
+                      layout
+                      className={`h-6 w-full rounded flex items-center justify-center font-mono text-[9px] transition-colors ${
+                        demoRedacted
+                          ? 'bg-charcoal text-white font-bold'
+                          : 'bg-amber-100 text-amber-900 border border-amber-300'
+                      }`}
+                    >
+                      {demoRedacted ? '[SIGNATURE BLACKOUT]' : 'Signed: Sarah Jenkins'}
+                    </motion.div>
+
+                    <div className="flex items-center justify-between text-[8px] font-mono text-bark-grey">
+                      <span>DOC: 8942-019</span>
+                      <span className="text-amber-800 font-semibold">TAP TO TOGGLE</span>
                     </div>
-                    <div className="flex gap-2">
-                      <div className="w-16 h-2 bg-stone-mist rounded" />
-                      <div className="w-8 h-2 bg-stone-mist rounded" />
-                    </div>
-                  </div>
+                  </motion.div>
                 </div>
+
                 <p className="text-[11px] text-bark-grey font-sans pt-2 border-t border-stone-mist">
-                  Permanent image canvas flattening: text cannot be extracted or uncovered.
+                  Permanent image canvas flattening: rotated pixels and blackout overlays cannot be recovered.
                 </p>
               </div>
             </div>
-          </div>
+          </motion.div>
 
         </div>
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          5. AUTOSEND COMPARISON TABLE
+          5. AUTOSEND COMPARISON TABLE WITH SCROLL REVEAL
       ────────────────────────────────────────────────────────────── */}
-      <section className="max-w-6xl mx-auto w-full px-4 md:px-6 mb-20">
+      <motion.section 
+        initial={{ opacity: 0, y: 24 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-40px" }}
+        transition={{ duration: 0.5 }}
+        className="max-w-6xl mx-auto w-full px-4 md:px-6 mb-20"
+      >
         <div className="text-center max-w-2xl mx-auto mb-10">
           <p className="text-xs font-mono uppercase tracking-[0.10em] text-bark-grey mb-2">
             Comparison
@@ -908,12 +1311,18 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
             </table>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* ─────────────────────────────────────────────────────────────
-          6. AUTOSEND CLEAN FAQ ACCORDION
+          6. AUTOSEND CLEAN FAQ ACCORDION WITH ANIMATEPRESENCE
       ────────────────────────────────────────────────────────────── */}
-      <section className="max-w-4xl mx-auto w-full px-4 md:px-6 mb-20">
+      <motion.section 
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-40px" }}
+        transition={{ duration: 0.5 }}
+        className="max-w-4xl mx-auto w-full px-4 md:px-6 mb-20"
+      >
         <div className="text-center mb-10">
           <p className="text-xs font-mono uppercase tracking-[0.10em] text-bark-grey mb-2">
             Clear Answers
@@ -929,30 +1338,44 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
             return (
               <div
                 key={idx}
-                className="rounded-xl border border-stone-mist bg-paper-white overflow-hidden transition-colors shadow-sm"
+                className="rounded-xl border border-stone-mist bg-paper-white overflow-hidden shadow-sm transition-colors"
               >
                 <button
+                  type="button"
                   onClick={() => setOpenFaqIndex(isOpen ? -1 : idx)}
                   className="w-full p-4 sm:p-5 text-left flex items-center justify-between gap-4 font-sans font-medium text-sm sm:text-base text-charcoal hover:text-black transition-colors"
                 >
                   <span>{faq.q}</span>
-                  {isOpen ? (
-                    <ChevronUp className="w-4 h-4 text-bark-grey shrink-0" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4 text-bark-grey shrink-0" />
-                  )}
+                  <motion.div
+                    animate={{ rotate: isOpen ? 180 : 0 }}
+                    transition={{ duration: 0.22, ease: "easeInOut" }}
+                    className="shrink-0"
+                  >
+                    <ChevronDown className="w-4 h-4 text-bark-grey" />
+                  </motion.div>
                 </button>
 
-                {isOpen && (
-                  <div className="px-4 sm:px-5 pb-5 text-xs sm:text-sm text-bark-grey leading-relaxed border-t border-stone-mist pt-3 font-sans">
-                    {faq.a}
-                  </div>
-                )}
+                <AnimatePresence initial={false}>
+                  {isOpen && (
+                    <motion.div
+                      key="faq-content"
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.26, ease: [0.16, 1, 0.3, 1] }}
+                      className="overflow-hidden"
+                    >
+                      <div className="px-4 sm:px-5 pb-5 text-xs sm:text-sm text-bark-grey leading-relaxed border-t border-stone-mist pt-3 font-sans">
+                        {faq.a}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             );
           })}
         </div>
-      </section>
+      </motion.section>
 
       {/* ─────────────────────────────────────────────────────────────
           7. AUTOSEND 4-COLUMN FOOTER
