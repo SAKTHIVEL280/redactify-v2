@@ -357,11 +357,10 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
 
         gsap.fromTo(
           '#comparison-table-card',
-          { y: 40, opacity: 0, scale: 0.98 },
+          { y: 35, opacity: 0 },
           {
             y: 0,
             opacity: 1,
-            scale: 1,
             duration: 0.8,
             ease: 'power3.out',
             scrollTrigger: {
@@ -377,13 +376,12 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
         if (compRows.length > 0) {
           gsap.fromTo(
             compRows,
-            { y: 22, opacity: 0, x: -8 },
+            { y: 18, opacity: 0 },
             {
               y: 0,
               opacity: 1,
-              x: 0,
-              stagger: 0.08,
-              duration: 0.65,
+              stagger: 0.07,
+              duration: 0.6,
               ease: 'power2.out',
               scrollTrigger: {
                 scroller,
@@ -1028,7 +1026,7 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
       ────────────────────────────────────────────────────────────── */}
       <section 
         id="comparison-section"
-        className="max-w-6xl mx-auto w-full px-4 md:px-6 mb-20"
+        className="max-w-6xl mx-auto w-full px-4 md:px-6 mb-20 overflow-hidden"
       >
         <div className="gsap-comp-header text-center max-w-2xl mx-auto mb-10">
           <p className="text-xs font-mono uppercase tracking-[0.10em] text-bark-grey mb-2">
@@ -1043,7 +1041,7 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
         </div>
 
         <div id="comparison-table-card" className="border border-stone-mist rounded-card overflow-hidden bg-paper-white shadow-card">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-stone-mist bg-warm-bone text-xs font-mono text-charcoal">
