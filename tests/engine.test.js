@@ -583,6 +583,24 @@ for (const file of srcFiles) {
 }
 assert(emDashCount === 0, 'Quality Invariant: Zero em dashes exist across all src files');
 
+console.log('\n─── Testing Commercial SaaS Positioning Invariant ───────────────');
+const componentFiles = globFiles('src/components');
+let openSourceMentions = 0;
+let repoLinks = 0;
+for (const file of componentFiles) {
+  const content = fs.readFileSync(file, 'utf8');
+  if (/open\s+source/i.test(content)) {
+    openSourceMentions++;
+    console.error(`Commercial violation: "Open Source" found in ${file}`);
+  }
+  if (/github\.com\/[a-zA-Z0-9_-]+\/redactify/i.test(content)) {
+    repoLinks++;
+    console.error(`Commercial violation: GitHub repository link found in ${file}`);
+  }
+}
+assert(openSourceMentions === 0, 'Commercial Invariant: Zero "Open Source" claims in user-facing UI');
+assert(repoLinks === 0, 'Commercial Invariant: Zero public repo links in user-facing UI');
+
 console.log(`\n──────────────────────────────────────────────────────────────────`);
 console.log(`Total Passed: ${passed} | Total Failed: ${failed}`);
 

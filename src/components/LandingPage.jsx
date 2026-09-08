@@ -1002,16 +1002,10 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
             </div>
 
             <div className="flex flex-col gap-2">
-              <span className="font-mono uppercase font-semibold text-charcoal text-xs">Open Source</span>
-              <a 
-                href="https://github.com/SAKTHIVEL280/redactify-v2" 
-                target="_blank" 
-                rel="noreferrer"
-                className="text-bark-grey hover:text-charcoal transition-colors"
-              >
-                GitHub Repository ↗
-              </a>
-              <span className="text-bark-grey">WebAssembly WASM</span>
+              <span className="font-mono uppercase font-semibold text-charcoal text-xs">Security</span>
+              <span className="text-bark-grey">Air-Gapped Operation</span>
+              <span className="text-bark-grey">Client-Side WASM</span>
+              <span className="text-bark-grey">Zero Network Egress</span>
             </div>
           </div>
         </div>
