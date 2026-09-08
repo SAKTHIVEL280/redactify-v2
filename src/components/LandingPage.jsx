@@ -618,13 +618,13 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          3. AUTOSEND METRICS BAR & LOGO STRIP
+          3. METRICS BAR
       ────────────────────────────────────────────────────────────── */}
       <section className="max-w-6xl mx-auto w-full px-4 md:px-6 mb-20">
         <div className="border-x border-stone-mist">
           <div className="border-t border-b border-stone-mist">
             {/* 4 Metric Columns */}
-            <div className="grid grid-cols-2 md:grid-cols-4 border-b border-stone-mist">
+            <div className="grid grid-cols-2 md:grid-cols-4">
               <div className="flex flex-col justify-center gap-1.5 p-6 border-stone-mist odd:border-r md:odd:border-r-0 md:border-r">
                 <p className="text-charcoal font-normal text-3xl font-datatype text-center">0</p>
                 <p className="text-bark-grey font-normal text-xs text-center">Bytes uploaded to any server</p>
@@ -640,29 +640,6 @@ Prescription: Amoxicillin 500mg, oral daily for 7 days.`;
               <div className="flex flex-col justify-center gap-1.5 p-6 border-stone-mist">
                 <p className="text-charcoal font-normal text-3xl font-datatype text-center">17+</p>
                 <p className="text-bark-grey font-normal text-xs text-center">Standard PII types recognized</p>
-              </div>
-            </div>
-
-            {/* Strip Eyebrow */}
-            <div className="flex justify-center items-center p-5 bg-paper-white border-b border-stone-mist">
-              <p className="text-charcoal font-medium text-xs font-mono uppercase tracking-[0.10em] text-center">
-                Trusted by privacy-minded teams and individuals worldwide
-              </p>
-            </div>
-
-            {/* Social Proof Logos */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 bg-paper-white">
-              <div className="flex items-center justify-center p-6 border-r border-b sm:border-b-0 border-stone-mist">
-                <img src="/images/peerlist.webp" alt="Peerlist" className="h-6 object-contain opacity-70 hover:opacity-100 transition-opacity" />
-              </div>
-              <div className="flex items-center justify-center p-6 sm:border-r border-b sm:border-b-0 border-stone-mist">
-                <img src="/images/supermemory.webp" alt="Supermemory" className="h-7 object-contain opacity-70 hover:opacity-100 transition-opacity" />
-              </div>
-              <div className="flex items-center justify-center p-6 border-r border-stone-mist">
-                <img src="/images/gistr.webp" alt="Gistr" className="h-7 object-contain opacity-70 hover:opacity-100 transition-opacity" />
-              </div>
-              <div className="flex items-center justify-center p-6 border-stone-mist">
-                <img src="/images/guidejar.webp" alt="Guidejar" className="h-7 object-contain opacity-70 hover:opacity-100 transition-opacity" />
               </div>
             </div>
           </div>
