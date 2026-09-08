@@ -605,7 +605,7 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
       />
 
       {/* Editorial Floating Section Pill */}
-      <div className="fixed top-3 right-4 z-40 hidden sm:flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-paper-white/90 backdrop-blur-md border border-stone-mist shadow-xs text-charcoal font-mono text-[11px] select-none pointer-events-none transition-opacity duration-300">
+      <div className="fixed bottom-5 right-5 z-40 hidden md:flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-paper-white/95 backdrop-blur-md border border-stone-mist shadow-card text-charcoal font-mono text-[11px] select-none pointer-events-none transition-opacity duration-300">
         <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse" />
         <span className="font-semibold">{activeSection}</span>
         <span className="text-stone-mist">|</span>

@@ -113,7 +113,7 @@ export function PricingPage({ onNavigateToStudio }) {
         </div>
 
         {/* Pricing Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:max-w-xl md:mx-auto lg:max-w-none items-stretch">
           
           {/* 1. Free Trial */}
           <div className="bg-paper-white rounded-card p-6 sm:p-8 border border-stone-mist flex flex-col justify-between shadow-card hover:shadow-card-hover transition-all">
@@ -163,7 +163,7 @@ export function PricingPage({ onNavigateToStudio }) {
 
           {/* 2. Pro Plan (Featured & High-Contrast POP) */}
           <div className="bg-paper-white rounded-card p-6 sm:p-8 border-2 border-charcoal relative flex flex-col justify-between shadow-card-hover">
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-charcoal text-white text-[10px] font-mono font-medium tracking-wide uppercase shadow-sm">
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-charcoal text-white text-[10px] font-mono font-medium tracking-wide uppercase shadow-sm whitespace-nowrap">
               Most Popular • Full License
             </div>
 

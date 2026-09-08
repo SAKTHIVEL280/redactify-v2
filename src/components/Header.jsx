@@ -113,20 +113,20 @@ export function Header({ activePage, setActivePage }) {
         {/* Right: Status & Actions */}
         <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
           {/* Subtle Privacy Status */}
-          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-paper-white border border-stone-mist text-[11px] font-mono text-charcoal font-medium shadow-xs">
+          <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-paper-white border border-stone-mist text-[11px] font-mono text-charcoal font-medium shadow-xs">
             <ShieldCheck className="w-3.5 h-3.5 text-amber-800" />
             <span>{isOffline ? 'Air-Gapped' : '100% In-Memory'}</span>
           </div>
 
           {/* Pro Status or License Trigger */}
           {isPro ? (
-            <span className="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md bg-amber-50 border border-amber-200 text-amber-900 text-[10px] sm:text-[11px] font-mono font-semibold">
+            <span className="hidden sm:inline-block px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md bg-amber-50 border border-amber-200 text-amber-900 text-[10px] sm:text-[11px] font-mono font-semibold">
               PRO ACTIVE
             </span>
           ) : (
             <button
               onClick={() => openProModal('enter-license')}
-              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-button text-xs font-mono text-bark-grey hover:text-charcoal hover:bg-stone-mist/40 transition-colors"
+              className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-button text-xs font-mono text-bark-grey hover:text-charcoal hover:bg-stone-mist/40 transition-colors"
               title="Activate License Key"
             >
               <KeyRound className="w-3.5 h-3.5" />
@@ -138,10 +138,11 @@ export function Header({ activePage, setActivePage }) {
           {activePage === 'studio' && file ? (
             <button
               onClick={clearDocument}
-              className="font-mono uppercase text-[11px] sm:text-xs font-semibold px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-button bg-paper-white border border-stone-mist hover:bg-warm-bone text-charcoal transition-all shadow-xs"
+              className="font-mono uppercase text-[11px] sm:text-xs font-semibold px-2 sm:px-3.5 py-1 sm:py-1.5 rounded-button bg-paper-white border border-stone-mist hover:bg-warm-bone text-charcoal transition-all shadow-xs shrink-0"
               title="Close current document and start new"
             >
-              New File
+              <span className="hidden sm:inline">New File</span>
+              <span className="sm:hidden">New</span>
             </button>
           ) : activePage !== 'studio' ? (
             <button

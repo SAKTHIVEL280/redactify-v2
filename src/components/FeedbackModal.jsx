@@ -33,11 +33,11 @@ export function FeedbackModal({ isOpen, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal/50 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-md bg-paper-white border border-stone-mist rounded-card shadow-card-hover overflow-hidden text-left p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-charcoal/50 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto">
+      <div className="relative w-full max-w-md my-auto max-h-[90vh] overflow-y-auto bg-paper-white border border-stone-mist rounded-card shadow-card-hover text-left p-5 sm:p-6">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-1.5 rounded-full text-bark-grey hover:text-charcoal hover:bg-stone-mist/30 transition-colors"
+          className="absolute top-3.5 right-3.5 sm:top-4 sm:right-4 p-1.5 rounded-full text-bark-grey hover:text-charcoal hover:bg-stone-mist/30 transition-colors z-10"
         >
           <X className="w-4 h-4" />
         </button>

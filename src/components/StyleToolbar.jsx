@@ -124,19 +124,21 @@ export function StyleToolbar() {
         <div className="flex items-center gap-0.5 sm:gap-1 bg-soft-cream border border-stone-mist rounded-full p-0.5 sm:p-1 font-mono shrink-0">
           <button
             onClick={() => setStyle({ showLabel: false, mode: 'blackout' })}
-            className={`px-2 sm:px-3 py-0.5 sm:py-1 text-[11px] sm:text-xs font-medium rounded-full transition-all ${
+            className={`px-1.5 sm:px-3 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium rounded-full transition-all ${
               !style.showLabel ? 'bg-paper-white text-charcoal shadow-sm' : 'text-bark-grey hover:text-charcoal'
             }`}
           >
-            Blackout
+            <span className="hidden sm:inline">Blackout</span>
+            <span className="sm:hidden">Solid</span>
           </button>
           <button
             onClick={() => setStyle({ showLabel: true, mode: 'label' })}
-            className={`px-2 sm:px-3 py-0.5 sm:py-1 text-[11px] sm:text-xs font-medium rounded-full transition-all ${
+            className={`px-1.5 sm:px-3 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium rounded-full transition-all ${
               style.showLabel ? 'bg-paper-white text-charcoal shadow-sm' : 'text-bark-grey hover:text-charcoal'
             }`}
           >
-            Text Label
+            <span className="hidden sm:inline">Text Label</span>
+            <span className="sm:hidden">Label</span>
           </button>
         </div>
 

@@ -48,7 +48,12 @@ export function DocumentViewer() {
   const containerRef = useRef(null);
   const pdfDocRef = useRef(null);
   const pdfFileRef = useRef(null);
-  const [zoom, setZoom] = useState(1.0);
+  const [zoom, setZoom] = useState(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 640) {
+      return 0.6;
+    }
+    return 1.0;
+  });
 
   // Keyboard Navigation for Multi-Page Documents
   useEffect(() => {
@@ -552,7 +557,7 @@ export function DocumentViewer() {
           {/* Zoom Controls */}
           <div className="flex items-center gap-1 sm:gap-2">
             <button
-              onClick={() => setZoom(Math.max(0.7, zoom - 0.1))}
+              onClick={() => setZoom((prev) => Math.max(0.4, Number((prev - 0.1).toFixed(2))))}
               className="p-1 sm:p-1.5 rounded-button hover:bg-stone-mist/30 text-bark-grey hover:text-charcoal transition-colors"
               title="Zoom Out"
             >
@@ -562,7 +567,7 @@ export function DocumentViewer() {
               {Math.round(zoom * 100)}%
             </span>
             <button
-              onClick={() => setZoom(Math.min(2.0, zoom + 0.1))}
+              onClick={() => setZoom((prev) => Math.min(2.5, Number((prev + 0.1).toFixed(2))))}
               className="p-1 sm:p-1.5 rounded-button hover:bg-stone-mist/30 text-bark-grey hover:text-charcoal transition-colors"
               title="Zoom In"
             >
@@ -652,13 +657,13 @@ export function DocumentViewer() {
       )}
 
       {/* Canvas & Overlay Viewport */}
-      <div className="flex-1 overflow-auto p-4 sm:p-8 flex flex-col items-center bg-warm-bone relative">
+      <div className="flex-1 overflow-auto p-2 sm:p-8 flex bg-warm-bone relative">
         <div
           ref={containerRef}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
-          className={`my-auto relative shadow-card-hover rounded-card border border-stone-mist overflow-hidden bg-white max-w-full transition-transform ${
+          className={`m-auto relative shadow-card-hover rounded-card border border-stone-mist overflow-hidden bg-white max-w-none shrink-0 transition-transform ${
             isDrawingMode ? 'cursor-crosshair' : 'cursor-default'
           }`}
           style={{ width: renderedDimensions.width ? `${renderedDimensions.width}px` : 'auto' }}
@@ -668,7 +673,7 @@ export function DocumentViewer() {
           ) : (
             <div
               onMouseUp={handleTextMouseUp}
-              className="p-8 text-charcoal bg-white min-h-[500px] w-[650px] max-w-full font-mono text-xs whitespace-pre-wrap leading-relaxed select-text"
+              className="p-4 sm:p-8 text-charcoal bg-white min-h-[500px] w-[650px] max-w-full font-mono text-xs whitespace-pre-wrap leading-relaxed select-text"
             >
               <div className="mb-4 pb-3 border-b border-stone-mist/60 text-[11px] font-mono text-bark-grey flex items-center justify-between">
                 <span>Word / Text Document View</span>

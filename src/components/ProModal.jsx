@@ -55,40 +55,42 @@ export function ProModal({ onNavigateToPricing }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal/50 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-lg bg-paper-white border border-stone-mist rounded-card shadow-card-hover overflow-hidden text-left">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-charcoal/50 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto">
+      <div className="relative w-full max-w-lg my-auto max-h-[92vh] flex flex-col bg-paper-white border border-stone-mist rounded-card shadow-card-hover overflow-hidden text-left">
         {/* Close Button */}
         <button
           onClick={closeProModal}
-          className="absolute top-4 right-4 p-1.5 rounded-full text-bark-grey hover:text-charcoal hover:bg-stone-mist/30 transition-colors z-10"
+          className="absolute top-3.5 right-3.5 sm:top-4 sm:right-4 p-1.5 rounded-full text-bark-grey hover:text-charcoal hover:bg-stone-mist/30 transition-colors z-20"
         >
           <X className="w-4 h-4" />
         </button>
 
-        {/* Top Header */}
-        <div className="p-6 border-b border-stone-mist bg-warm-bone">
-          <div className="font-mono text-xs uppercase tracking-widest text-bark-grey font-semibold mb-2">
-            Commercial License
+        {/* Scrollable Container */}
+        <div className="overflow-y-auto flex-1">
+          {/* Top Header */}
+          <div className="p-5 sm:p-6 border-b border-stone-mist bg-warm-bone pr-12">
+            <div className="font-mono text-xs uppercase tracking-widest text-bark-grey font-semibold mb-2">
+              Commercial License
+            </div>
+
+            <h2 className="text-xl sm:text-3xl font-serif font-normal text-charcoal tracking-tight">
+              Unlock complete document exports
+            </h2>
+
+            <p className="text-xs text-bark-grey mt-1.5 leading-relaxed">
+              {proModalFeature === 'multi-page'
+                ? 'Multi-page exports are a Pro feature. Upgrade to export your entire clean document with zero watermarks.'
+                : 'Redactify Pro gives you unlimited exports, multi-page batch processing, and complete offline privacy.'}
+            </p>
+
+            <div className="mt-2.5 flex items-center gap-1.5 text-[11px] font-mono text-bark-grey">
+              <Check className="w-3.5 h-3.5 text-amber-800 shrink-0" />
+              <span>Your active document and edits remain 100% preserved in memory.</span>
+            </div>
           </div>
 
-          <h2 className="text-2xl sm:text-3xl font-serif font-normal text-charcoal tracking-tight">
-            Unlock complete document exports
-          </h2>
-
-          <p className="text-xs text-bark-grey mt-1.5 leading-relaxed">
-            {proModalFeature === 'multi-page'
-              ? 'Multi-page exports are a Pro feature. Upgrade to export your entire clean document with zero watermarks.'
-              : 'Redactify Pro gives you unlimited exports, multi-page batch processing, and complete offline privacy.'}
-          </p>
-
-          <div className="mt-2.5 flex items-center gap-1.5 text-[11px] font-mono text-bark-grey">
-            <Check className="w-3.5 h-3.5 text-amber-800 shrink-0" />
-            <span>Your active document and edits remain 100% preserved in memory.</span>
-          </div>
-        </div>
-
-        {/* Navigation Tabs */}
-        <div className="flex border-b border-stone-mist px-6 pt-2 bg-paper-white">
+          {/* Navigation Tabs */}
+          <div className="flex border-b border-stone-mist px-4 sm:px-6 pt-2 bg-paper-white">
           <button
             onClick={() => setActiveTab('pricing')}
             className={`pb-2.5 px-3 text-xs font-mono font-medium transition-all border-b-2 ${
@@ -268,6 +270,7 @@ export function ProModal({ onNavigateToPricing }) {
               </button>
             </form>
           )}
+        </div>
         </div>
       </div>
     </div>
