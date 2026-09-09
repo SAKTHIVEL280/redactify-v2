@@ -56,7 +56,7 @@ export function PricingPage({ onNavigateToStudio }) {
         
         {/* Active Document Return Banner */}
         {file && (
-          <div className="p-3.5 sm:p-4 rounded-xl bg-soft-cream border border-stone-mist flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-sm">
+          <div className="p-3.5 sm:p-4 rounded-card bg-soft-cream border border-stone-mist flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-card">
             <div className="flex items-center gap-2.5 text-charcoal">
               <span className="w-2 h-2 rounded-full bg-amber-600 shrink-0" />
               <span>
@@ -180,7 +180,7 @@ export function PricingPage({ onNavigateToStudio }) {
                   </span>
                   <span className="text-xs text-bark-grey font-mono">/ month</span>
                 </div>
-                <div className="mt-2 inline-block text-[11px] font-mono font-bold text-amber-900 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-md">
+                <div className="mt-2 inline-block text-[11px] font-mono font-bold text-amber-900 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-tag">
                   Or {currency === 'INR' ? '₹999 Lifetime Pass' : '$29 Lifetime Pass'}
                 </div>
                 <p className="text-xs text-bark-grey mt-2 leading-relaxed">
@@ -294,7 +294,7 @@ export function PricingPage({ onNavigateToStudio }) {
               </p>
             </div>
             {isPro && (
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-amber-50 text-amber-900 text-xs font-mono font-medium border border-amber-200">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-tag bg-amber-50 text-amber-900 text-xs font-mono font-medium border border-amber-200">
                 <Check className="w-3.5 h-3.5 text-amber-800 shrink-0" />
                 <span>Active Key: {typeof licenseKey === 'string' ? licenseKey.slice(0, 12) : licenseKey?.key?.slice(0, 12)}...</span>
               </div>

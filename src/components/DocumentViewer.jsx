@@ -465,7 +465,7 @@ export function DocumentViewer() {
         {/* Left: Pagination & Edit Controls */}
         <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
           {pageCount > 1 ? (
-            <div className="flex items-center gap-1 bg-soft-cream border border-stone-mist rounded-lg px-1.5 py-0.5 sm:px-2 sm:py-1">
+            <div className="flex items-center gap-1 bg-soft-cream border border-stone-mist rounded-button px-1.5 py-0.5 sm:px-2 sm:py-1">
               <button
                 onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                 disabled={currentPage <= 1}
@@ -493,7 +493,7 @@ export function DocumentViewer() {
           )}
 
           {/* Undo, Redo & Manual Box */}
-          <div className="flex items-center gap-0.5 sm:gap-1 bg-soft-cream border border-stone-mist rounded-lg p-0.5 sm:p-1">
+          <div className="flex items-center gap-0.5 sm:gap-1 bg-soft-cream border border-stone-mist rounded-button p-0.5 sm:p-1">
             <button
               onClick={undo}
               disabled={history.length === 0}
@@ -686,7 +686,7 @@ export function DocumentViewer() {
           {/* Floating Text Selection Redact Tooltip */}
           {selectedTextSnippet && selectionCoords && (
             <div
-              className="absolute z-30 bg-charcoal text-white rounded-lg shadow-xl px-3 py-1.5 flex items-center gap-2 text-xs font-mono animate-in fade-in zoom-in-95 duration-150"
+              className="absolute z-30 bg-charcoal text-white rounded-button shadow-xl px-3 py-1.5 flex items-center gap-2 text-xs font-mono animate-in fade-in zoom-in-95 duration-150"
               style={{
                 top: `${selectionCoords.top}px`,
                 left: `${selectionCoords.left}px`
@@ -697,7 +697,7 @@ export function DocumentViewer() {
               </span>
               <button
                 onClick={handleAddTextRedaction}
-                className="px-2 py-0.5 rounded bg-white text-charcoal hover:bg-stone-200 text-[11px] font-semibold transition-colors flex items-center gap-1 shadow-sm"
+                className="px-2 py-0.5 rounded-button bg-white text-charcoal hover:bg-stone-200 text-[11px] font-semibold transition-colors flex items-center gap-1 shadow-sm"
               >
                 <span>+ Redact</span>
               </button>
@@ -715,7 +715,7 @@ export function DocumentViewer() {
               className={`absolute transition-all rounded-sm flex items-center justify-center text-[9px] font-mono font-bold select-none group cursor-pointer ${
                 box.redact
                   ? 'border border-black shadow-sm'
-                  : 'bg-zinc-400/20 border-2 border-dashed border-zinc-500/60 hover:bg-zinc-400/30'
+                  : 'bg-stone-mist/40 border-2 border-dashed border-bark-grey/60 hover:bg-stone-mist/60'
               }`}
               style={{
                 left: `${box.x * 100}%`,

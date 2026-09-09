@@ -118,7 +118,7 @@ export function ProModal({ onNavigateToPricing }) {
           {activeTab === 'pricing' ? (
             <div className="space-y-4">
               {/* Evaluator 1-Click Test Pass Banner */}
-              <div className="p-3.5 rounded-lg bg-amber-50 border border-amber-200 flex items-center justify-between gap-3">
+              <div className="p-3.5 rounded-button bg-amber-50 border border-amber-200 flex items-center justify-between gap-3">
                 <div>
                   <div className="text-xs font-semibold text-amber-950">Testing or Evaluating?</div>
                   <div className="text-[11px] text-amber-800">Unlock full Pro features instantly for testing.</div>

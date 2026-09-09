@@ -82,7 +82,7 @@ export function FeedbackModal({ isOpen, onClose }) {
                 value={feedbackText}
                 onChange={(e) => setFeedbackText(e.target.value)}
                 placeholder="Describe what was missed or your suggestion..."
-                className="w-full bg-soft-cream border border-stone-mist rounded-card p-3 text-xs text-charcoal placeholder-stone-400 focus:outline-none focus:border-charcoal"
+                className="w-full bg-soft-cream border border-stone-mist rounded-button p-3 text-xs text-charcoal placeholder-stone-400 focus:outline-none focus:border-charcoal font-sans"
               />
             </div>
 

@@ -30,6 +30,7 @@
   :root {
     --color-warm-bone: #fafaf9;
     --color-paper-white: #ffffff;
+    --color-soft-cream: #f5f5f4;
     --color-stone-mist: #e7e5e4;
     --color-bark-grey: #79716b;
     --color-charcoal: #292524;
@@ -57,12 +58,14 @@
 @layer utilities {
   .bg-warm-bone { background-color: #fafaf9 !important; }
   .bg-paper-white { background-color: #ffffff !important; }
+  .bg-soft-cream { background-color: #f5f5f4 !important; }
   .bg-electric-indigo { background-color: #18181b !important; color: #ffffff !important; }
   .bg-deep-violet { background-color: #09090b !important; color: #ffffff !important; }
   .hover\:bg-deep-violet:hover { background-color: #09090b !important; }
   .bg-terracotta { background-color: #d97757 !important; }
   .bg-lichen-green { background-color: #92400e !important; }
   .bg-stone-mist { background-color: #e7e5e4 !important; }
+  .border-soft-cream { border-color: #f5f5f4 !important; }
   .bg-charcoal { background-color: #18181b !important; }
 
   .border-stone-mist { border-color: #e7e5e4 !important; }

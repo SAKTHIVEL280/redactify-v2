@@ -50,7 +50,7 @@ export function EntityInspector({ onOpenFeedback }) {
 
       <aside className={`w-full max-w-[320px] sm:max-w-xs md:w-80 border-l border-stone-mist bg-paper-white flex flex-col h-full shrink-0 select-none transition-all duration-200 ${
         !isInspectorOpen ? 'hidden' : 'flex'
-      } fixed inset-y-14 right-0 z-40 md:relative md:inset-y-0 shadow-2xl md:shadow-none`}>
+      } fixed top-16 bottom-0 right-0 z-40 md:relative md:top-auto md:bottom-auto shadow-2xl md:shadow-none`}>
       {/* Header */}
       <div className="p-4 border-b border-stone-mist flex items-center justify-between">
         <div>

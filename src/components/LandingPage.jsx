@@ -643,7 +643,7 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
             whileHover={{ scale: 1.02, y: -1 }}
             whileTap={{ scale: 0.97 }}
             onClick={loadSampleOfferLetter}
-            className="cursor-pointer font-semibold font-mono uppercase border text-xs sm:text-sm rounded-xl px-5 py-3 sm:py-2.5 bg-paper-white border-stone-mist hover:bg-stone-mist/40 text-charcoal shadow-sm transition-colors text-center"
+            className="cursor-pointer font-semibold font-mono uppercase border text-xs sm:text-sm rounded-button px-5 py-3 sm:py-2.5 bg-paper-white border-stone-mist hover:bg-stone-mist/40 text-charcoal shadow-sm transition-colors text-center"
           >
             Try Sample File
           </motion.button>
@@ -652,7 +652,7 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
             whileHover={{ scale: 1.02, y: -1 }}
             whileTap={{ scale: 0.97 }}
             onClick={onNavigateToStudio}
-            className="cursor-pointer font-semibold font-mono uppercase border text-xs sm:text-sm rounded-xl px-6 py-3 sm:py-2.5 text-white bg-charcoal border-charcoal hover:bg-black shadow-sm transition-colors flex items-center justify-center gap-2 tracking-wider"
+            className="cursor-pointer font-semibold font-mono uppercase border text-xs sm:text-sm rounded-button px-6 py-3 sm:py-2.5 text-white bg-charcoal border-charcoal hover:bg-black shadow-sm transition-colors flex items-center justify-center gap-2 tracking-wider"
           >
             <span>Open Studio</span>
             <ArrowRight className="w-4 h-4" />
@@ -685,7 +685,7 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
                 transition={{ duration: 0.15 }}
                 className="absolute inset-0 z-30 bg-paper-white/95 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center"
               >
-                <div className="w-16 h-16 rounded-2xl bg-charcoal text-white flex items-center justify-center mb-4 shadow-lg animate-bounce">
+                <div className="w-16 h-16 rounded-card bg-charcoal text-white flex items-center justify-center mb-4 shadow-lg animate-bounce">
                   <UploadCloud className="w-8 h-8" />
                 </div>
                 <h3 className="text-xl font-serif text-charcoal">Release to redact immediately</h3>
@@ -720,7 +720,7 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
             ) : (
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6">
                 <div className="flex items-start gap-3 sm:gap-4">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-paper-white border border-stone-mist flex items-center justify-center text-charcoal shadow-sm shrink-0 mt-0.5">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-button bg-paper-white border border-stone-mist flex items-center justify-center text-charcoal shadow-sm shrink-0 mt-0.5">
                     <UploadCloud className="w-5 h-5 sm:w-6 sm:h-6 text-charcoal" />
                   </div>
                   <div>
@@ -745,7 +745,7 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.97 }}
                     onClick={loadSampleOfferLetter}
-                    className="relative z-20 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-paper-white hover:bg-stone-mist/50 text-charcoal border border-stone-mist text-xs font-mono font-medium shadow-sm transition-colors flex items-center gap-1.5"
+                    className="relative z-20 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-button bg-paper-white hover:bg-stone-mist/50 text-charcoal border border-stone-mist text-xs font-mono font-medium shadow-sm transition-colors flex items-center gap-1.5"
                   >
                     <FileCheck className="w-3.5 h-3.5 text-charcoal" />
                     <span>Try Sample PDF</span>
@@ -994,14 +994,14 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
                 <div className="pt-2 flex flex-wrap items-center gap-2 sm:gap-3">
                   <button 
                     onClick={onNavigateToStudio}
-                    className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-xl bg-paper-white border border-stone-mist text-xs font-mono uppercase font-semibold text-charcoal hover:bg-stone-mist/40 transition-colors shadow-xs"
+                    className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-button bg-paper-white border border-stone-mist text-xs font-mono uppercase font-semibold text-charcoal hover:bg-stone-mist/40 transition-colors shadow-xs"
                   >
                     <RotateCw className="w-3.5 h-3.5 text-charcoal" />
                     <span>Rotate 90° Controls</span>
                   </button>
                   <button 
                     onClick={onNavigateToStudio}
-                    className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-xl bg-paper-white border border-stone-mist text-xs font-mono uppercase font-semibold text-charcoal hover:bg-stone-mist/40 transition-colors shadow-xs"
+                    className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-button bg-paper-white border border-stone-mist text-xs font-mono uppercase font-semibold text-charcoal hover:bg-stone-mist/40 transition-colors shadow-xs"
                   >
                     <Crosshair className="w-3.5 h-3.5 text-charcoal" />
                     <span>Manual Crosshair</span>
@@ -1178,7 +1178,7 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
             return (
               <div
                 key={idx}
-                className="gsap-faq-item rounded-xl border border-stone-mist bg-paper-white overflow-hidden shadow-sm transition-all hover:border-charcoal/30"
+                className="gsap-faq-item rounded-card border border-stone-mist bg-paper-white overflow-hidden shadow-card transition-all hover:border-charcoal/30"
               >
                 <button
                   type="button"
