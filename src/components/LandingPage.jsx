@@ -65,7 +65,6 @@ const FAQS = [
 export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
   const pageRef = useRef(null);
   const heroCardRef = useRef(null);
-  const [activeSection, setActiveSection] = useState('01 / ZERO-TRUST');
   const [scrollProgress, setScrollProgress] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
@@ -114,32 +113,6 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
         onUpdate: (self) => {
           setScrollProgress(self.progress);
         },
-      });
-
-      // 2. Active section tracking for floating pill
-      const sections = [
-        { id: 'hero-section', label: '01 / ZERO-TRUST' },
-        { id: 'features-section', label: '02 / ENGINES' },
-        { id: 'metrics-section', label: '03 / BENCHMARKS' },
-        { id: 'deep-dive-01', label: '04 / AIR-GAP' },
-        { id: 'deep-dive-02', label: '05 / DETECTION' },
-        { id: 'deep-dive-03', label: '06 / ROTATION' },
-        { id: 'comparison-section', label: '07 / AUDIT' },
-        { id: 'faq-section', label: '08 / FAQ' },
-      ];
-
-      sections.forEach(({ id, label }) => {
-        const el = document.getElementById(id);
-        if (el) {
-          ScrollTrigger.create({
-            scroller,
-            trigger: el,
-            start: 'top 45%',
-            end: 'bottom 45%',
-            onEnter: () => setActiveSection(label),
-            onEnterBack: () => setActiveSection(label),
-          });
-        }
       });
 
       // 3. Hero Entry Timeline (Guaranteed Visibility with clearProps)
@@ -604,13 +577,6 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
         style={{ transform: `scaleX(${scrollProgress})` }}
       />
 
-      {/* Editorial Floating Section Pill */}
-      <div className="fixed bottom-5 right-5 z-40 hidden md:flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-paper-white/95 backdrop-blur-md border border-stone-mist shadow-card text-charcoal font-mono text-[11px] select-none pointer-events-none transition-opacity duration-300">
-        <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse" />
-        <span className="font-semibold">{activeSection}</span>
-        <span className="text-stone-mist">|</span>
-        <span className="text-bark-grey">{Math.round(scrollProgress * 100)}%</span>
-      </div>
 
       {/* ─────────────────────────────────────────────────────────────
           1. HERO SECTION WITH GSAP ORCHESTRATION & 3D PERSPECTIVE
