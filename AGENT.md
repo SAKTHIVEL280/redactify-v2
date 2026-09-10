@@ -28,6 +28,12 @@
 * Never create "God Components" (like V1's 600-line `App.jsx`). Use modular Zustand stores (`useDocumentStore`, `useRedactionStore`, `useLicenseStore`).
 * Use **Normalized Coordinates (0.0 to 1.0)** for all bounding boxes to prevent screen drift across zoom levels and DPIs.
 
+### Rule 4: 158-Test Forensic Quality Invariants
+* All 158 forensic unit tests in `tests/engine.test.js` must pass with 100% accuracy on every change (`npm test`).
+* **Zero Em-Dash Invariant**: Maintain strict typography hygiene with zero unicode em dashes (`\u2014`) across `src/`.
+* **Zero CDN Leaks**: Offline OCR WASM and traineddata must resolve strictly from `public/tessdata/`.
+* **Commercial Invariant**: Zero open-source claims or public repo links in user-facing UI components.
+
 ---
 
 ## 3. Product & Feature Architecture

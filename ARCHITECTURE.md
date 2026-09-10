@@ -83,19 +83,21 @@ Redactify implements **True Vector Burn-In**:
 3. For scanned images and photos, pixels within the bounding box are permanently overwritten in raw CanvasImageData buffers before compression.
 4. For DOCX files, target XML text nodes (`<w:t>`) are replaced with sanitized replacement strings before re-zipping.
 
+### Invariant 4: Orientation & Rotation Normalization (0°, 90°, 180°, 270°)
+Identity cards and mobile camera captures (PAN, Aadhaar, Voter ID) often enter the studio in rotated orientations. Redactify maintains a rotational normalization pipeline that swaps aspect ratios dynamically and maps bounding box coordinates through forward and inverse rotation transforms, preserving exact pixel coverage upon export.
+
+### Invariant 5: DOCX Multi-Run Reconciliation & Metadata Sanitization
+Modern Word documents frequently fragment single sensitive words or numbers across multiple contiguous `<w:t>` tags due to spellchecking and editing history. Redactify traverses runs contiguously, reconciles multi-token entities across tag boundaries, redacts both main body and header/footer XML streams (`header*.xml`, `footer*.xml`), and permanently sanitizes document author metadata (`docProps/core.xml`).
+
+### Invariant 6: PDF Forensic Text Stream Sanitization
+To prevent forensic recovery via command-line utilities (e.g. `pdftotext`) or stream decoders, Redactify burns vector blackout polygons directly into the PDF content stream while preserving non-redacted public content.
+
+### Invariant 7: Air-Gapped Cryptographic Licensing
+License validation for PRO and Enterprise tiers runs 100% client-side using mathematical checksums and cryptographic key verification. No telemetry pings or remote activation servers are contacted.
+
 ---
 
-## 3. Excalidraw Architecture Spec (MCP Mapping)
-
-When visualizing this architecture inside Excalidraw, the system maps to 4 primary functional swimlanes:
-1. **Client Ingestion Zone** (Violet #8b5cf6): Dropzone, PDF.js legacy worker, JSZip XML parser.
-2. **Mathematical Verification Zone** (Emerald #10b981): Luhn, Verhoeff, ISO 7064, Mod-11, Mod-23 validators.
-3. **Reactive State & Canvas Zone** (Blue #3b82f6): Normalized coordinate bus, Crosshair drawing overlay, Zustand store.
-4. **Vector Burn-In Zone** (Rose #f43f5e): pdf-lib vector drawing, JSZip DOM mutation, canvas blob generator.
-
----
-
-## 4. Threat Model & Sandbox Analysis
+## 3. Threat Model & Sandbox Analysis
 
 | Threat Vector | Mitigation Strategy |
 | :--- | :--- |
@@ -103,4 +105,156 @@ When visualizing this architecture inside Excalidraw, the system maps to 4 prima
 | **Memory Leaks Across Documents** | Explicit `URL.revokeObjectURL`, worker termination, and state reset on document clear. |
 | **Malicious PDF / DOCX Payloads** | In-memory unzipping and parsing; script execution disabled in PDF.js worker. |
 | **De-anonymization via PDF Inspection** | Vector burn-in with complete opacity and text stream scrubbing. |
-| **Model Weight Poisoning** | Tesseract WASM is served from integrity-hashed official CDNs or local vendor assets. |
+| **Model Weight Poisoning / CDN Leak** | **Nullified**: Tesseract WASM, workers, and language models are bundled locally in `public/tessdata/` (zero-CDN invariant). Strict CSP forbids third-party worker/WASM fetches. |
+| **Tampered License Bypass** | Algorithmic cryptographic key validation with checksum verification. |
+
+---
+
+## 4. Production Cloud & Edge Infrastructure
+
+```mermaid
+flowchart TB
+    subgraph Client["Client Browser (100% Isolated Execution Sandbox)"]
+        UserBrowser["User Browser (V8 WASM + HTML5 Canvas)"]
+    end
+
+    subgraph EdgeCDN["Cloudflare Global Anycast Edge (300+ Cities)"]
+        CFPages["Cloudflare Pages (Static SPA Assets & WASM)"]
+        CFFunctions["Cloudflare Pages Functions (/api/*)"]
+        CFD1[("Cloudflare D1 (Edge SQLite Database)")]
+    end
+
+    subgraph Payments["Dual Commercial Payment Infrastructure"]
+        Razorpay["Razorpay (Domestic India)\n• UPI, RuPay, Netbanking\n• Settlement in INR to HDFC"]
+        Dodo["Dodo Payments (Global MoR)\n• Global Visa/MC/Amex/ApplePay\n• Automated US Tax / EU VAT\n• Net INR Payout to HDFC + FIRA"]
+    end
+
+    subgraph EmailService["Transactional Dispatch"]
+        Resend["Resend API\n(Instant License Key Dispatch)"]
+    end
+
+    UserBrowser -->|HTTPS GET Static Assets & WASM| CFPages
+    UserBrowser -->|Checkout Request| Payments
+    Payments -->|Signed Webhook Event| CFFunctions
+    CFFunctions -->|Store Order & Key Record| CFD1
+    CFFunctions -->|Dispatch Key to User| Resend
+```
+
+### Optimal Stack Justification
+
+| Layer | Selected Technology | Alternative Considered | Why Winner was Chosen |
+| :--- | :--- | :--- | :--- |
+| **Hosting & CDN** | **Cloudflare Pages** | Vercel / Netlify / AWS S3 | **Unlimited Free Bandwidth**: Redactify ships ~15–20MB WASM and OCR trained data. Vercel's 100GB limit would incur steep egress costs or throttling at scale. Cloudflare offers 100% free unlimited egress across 300+ Anycast edge nodes. |
+| **Edge Database** | **Cloudflare D1 (SQLite)** | Supabase / Neon / Turso | **Never Sleeps & Native Edge Binding**: Free-tier Supabase pauses after 7 days of inactivity. Cloudflare D1 provides 10GB storage, 5M reads/day, 100k writes/day, 0ms cold starts, and zero pause risk without external credentials. |
+| **Payment (India)** | **Razorpay** | Cashfree / PayU | **Highest UPI & RuPay Conversion**: Seamless UPI deep-linking across Indian mobile apps (GPay, PhonePe, Paytm) at 0% MDR, settling directly to domestic Indian current/savings account. |
+| **Payment (Global)** | **Dodo Payments (MoR)** | Stripe India / Lemon Squeezy | **Merchant of Record for Indian Founders**: Standard Stripe in India requires strict RBI export paperwork and invite-only onboarding. Dodo Payments acts as the legal MoR, collects global sales tax/EU VAT, and remits net earnings directly into your Indian bank account in INR with automated FIRA/FIRC issuance. |
+| **Key Dispatch** | **Resend** | SendGrid / AWS SES | **3,000 Free Transactional Emails/Month**: Modern developer API with 99.9% inbox deliverability and instant DKIM/SPF domain verification for `daeq.in`. |
+
+---
+
+## 5. Edge Database Architecture & Schema (Cloudflare D1)
+
+Cloudflare D1 maintains strict separation of concerns. **Zero document bytes, extracted text, or client files are ever stored in the database.** The database holds only metadata for commercial licensing, webhook idempotency, and non-sensitive diagnostic feedback.
+
+### Schema Definition (`schema.sql`)
+
+```sql
+-- 1. License Purchases & Subscriptions Table
+CREATE TABLE IF NOT EXISTS licenses (
+    id TEXT PRIMARY KEY,                       -- UUID or order_id
+    license_key TEXT UNIQUE NOT NULL,          -- Formatted: RDCT.PRO.<PAYLOAD>.<SIG>
+    tier TEXT NOT NULL CHECK (tier IN ('PRO', 'ENT', 'STUDIO')),
+    customer_email TEXT NOT NULL,
+    provider TEXT NOT NULL CHECK (provider IN ('razorpay', 'dodo', 'manual')),
+    provider_order_id TEXT UNIQUE,
+    provider_payment_id TEXT,
+    currency TEXT NOT NULL CHECK (currency IN ('INR', 'USD')),
+    amount_paid INTEGER NOT NULL,              -- Stored in smallest unit (paise or cents)
+    status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'expired', 'revoked')),
+    expires_at TIMESTAMP,                      -- NULL for lifetime pass
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_licenses_key ON licenses(license_key);
+CREATE INDEX IF NOT EXISTS idx_licenses_email ON licenses(customer_email);
+
+-- 2. Webhook Idempotency Event Log Table (Prevents replay attacks)
+CREATE TABLE IF NOT EXISTS webhook_events (
+    id TEXT PRIMARY KEY,                       -- Provider webhook event ID
+    provider TEXT NOT NULL,
+    event_type TEXT NOT NULL,
+    payload_json TEXT NOT NULL,
+    processed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 3. Anonymous Diagnostic Feedback Table (Zero document data)
+CREATE TABLE IF NOT EXISTS user_feedback (
+    id TEXT PRIMARY KEY,
+    category TEXT NOT NULL CHECK (category IN ('missed_entity', 'false_positive', 'feature_request', 'bug_report')),
+    message TEXT NOT NULL,
+    app_version TEXT NOT NULL,
+    user_agent TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+---
+
+## 6. Payment & Automated Key Provisioning Lifecycle
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Customer as User / Customer
+    participant UI as Redactify Studio / Pricing
+    participant Gateway as Payment Gateway (Razorpay / Dodo)
+    participant CF as Cloudflare Pages Function (/api/webhook)
+    participant D1 as Cloudflare D1 Edge Database
+    participant Resend as Resend Email Service
+
+    Customer->>UI: Selects Plan (e.g. ₹999 Lifetime or $9/mo)
+    UI->>Gateway: Redirects to Hosted Checkout (Razorpay / Dodo)
+    Customer->>Gateway: Completes Payment (UPI / Card / Apple Pay)
+    Gateway-->>Customer: Shows Success Receipt Page
+    Gateway->>CF: Dispatches Webhook (payment.captured / payment.succeeded)
+    Note over CF: Verifies HMAC signature with Webhook Secret
+    CF->>D1: Checks webhook_events for idempotency
+    CF->>CF: Generates Asymmetric License Key (Ed25519 Signed)
+    CF->>D1: Inserts new license record
+    CF->>Resend: Dispatches formatted email with License Key
+    Resend-->>Customer: Delivers License Key via Email
+    Customer->>UI: Pastes Key into Studio / Pro Modal
+    UI->>UI: Verifies Ed25519 Public Key 100% Offline in Browser
+    Note over UI: Pro features unlocked immediately (zero network ping)
+```
+
+---
+
+## 7. Cryptographic Key Architecture: Asymmetric Offline Verification
+
+To prevent client-side reverse engineering in browser DevTools:
+1. **Private Signing Key (Ed25519)**: Kept strictly on the server / Cloudflare secret environment (`SIGNING_PRIVATE_KEY`). It is never transmitted or visible to the client browser.
+2. **Public Verification Key**: Embedded statically in client code (`validator.js`).
+3. **Key Format**:
+   `RDCT.<TIER>.<PAYLOAD_BASE64>.<ED25519_SIGNATURE_HEX>`
+4. **Verification Mechanism**:
+   When the user enters a key, `validateLicenseKey()` decodes the payload, extracts `{ tier, email, issuedAt, expiresAt }`, and calls `crypto.subtle.verify()` using the embedded Ed25519 public key.
+   - If signature is valid and `Date.now() < expiresAt`, Pro unlocks.
+   - **Zero server calls required for verification**: The user can activate while in airplane mode.
+   - **Zero vulnerability to DevTools tampering**: It is mathematically impossible for anyone to forge a valid signature without the private key.
+
+---
+
+## 8. Unit Economics & Cost Analysis ($0 Base Overhead)
+
+| Service | Plan | Monthly Cost | Capacity / Limits |
+| :--- | :--- | :--- | :--- |
+| **Cloudflare Pages** | Free | **$0.00** | Unlimited bandwidth, 500 builds/mo |
+| **Cloudflare D1** | Free | **$0.00** | 10 GB storage, 5M read rows/day |
+| **Cloudflare Functions** | Free | **$0.00** | 100,000 requests/day |
+| **Resend** | Free | **$0.00** | 3,000 transactional emails/mo (100/day) |
+| **Razorpay** | Standard | **2% + GST** | Pay-as-you-go per transaction (0% for UPI) |
+| **Dodo Payments** | Standard MoR | **4-5% + $0.30** | Pay-as-you-go per international transaction |
+| **Total Base Monthly Cost** | | **$0.00 / month** | Scales effortlessly to 100,000+ users with zero fixed server expenses |
+
