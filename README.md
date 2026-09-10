@@ -4,7 +4,7 @@
 > Mathematically verified, compliance-grade redaction running 100% inside your browser via WebAssembly. 
 > **Zero document uploads. Zero server logs. Zero data leakage.**
 
-[![Unit Tests](https://img.shields.io/badge/tests-99%2F99%20passing-brightgreen.svg)](tests/engine.test.js)
+[![Unit Tests](https://img.shields.io/badge/tests-158%2F158%20passing-brightgreen.svg)](tests/engine.test.js)
 [![Performance](https://img.shields.io/badge/detection-%3C15ms-blue.svg)](src/core/engine/detector.js)
 [![Privacy](https://img.shields.io/badge/privacy-zero--cloud--upload-emerald.svg)](#zero-knowledge-privacy-guarantee)
 [![Compliance](https://img.shields.io/badge/compliance-DPDP%20%7C%20GDPR%20%7C%20HIPAA%20%7C%20PCI--DSS-violet.svg)](#supported-global-jurisdictions)
@@ -103,7 +103,7 @@ npm run dev
 
 ### Run Unit Tests
 ```bash
-# Execute the complete 99-test benchmark suite (<90ms)
+# Execute the complete 158-test forensic benchmark suite
 npm test
 ```
 
@@ -119,32 +119,50 @@ npm run build
 
 ```
 ─── Testing Mathematical Algorithms ──────────────────────────────
- Valid Visa passes Luhn
- Valid Aadhaar passes Verhoeff
- Valid Person PAN passes
- Valid UK IBAN passes
- Valid Federal Reserve Routing passes
- Valid Indian GSTIN passes
- Valid UK NHS passes Mod-11
- Valid Canadian SIN passes Luhn
- Valid US SSN passes
- Valid UK NINO passes
- Valid Spanish DNI passes Mod-23
- Valid French 13-digit NIR passes
- Valid Italian Codice Fiscale passes check char
- Valid Australian 9-digit TFN passes Mod-11
- Valid Australian Medicare passes check digit
- Valid Singapore NRIC passes Mod-11
- Valid US NPI passes Luhn checksum
+  Valid Visa passes Luhn
+  Valid Aadhaar passes Verhoeff
+  Valid Person PAN passes
+  Valid UK IBAN passes
+  Valid Federal Reserve Routing passes
+  Valid Indian GSTIN passes
+  Valid UK NHS passes Mod-11
+  Valid Canadian SIN passes Luhn
+  Valid US SSN passes
+  Valid UK NINO passes
+  Valid Spanish DNI passes Mod-23
+  Valid French 13-digit NIR passes
+  Valid Italian Codice Fiscale passes check char
+  Valid Australian 9-digit TFN passes Mod-11
+  Valid Australian Medicare passes check digit
+  Valid Singapore NRIC passes Mod-11
+  Valid US NPI passes Luhn checksum
 
-─── Testing Master Entity Detector ───────────────────────────────
-Detection executed in 8.53 ms (<20ms benchmark target)
- All 40+ PII categories verified
- All 5 Regional Compliance Presets verified
- DOCX XML in-memory Parser & Exporter verified
+─── Testing Master Entity Detector & Regional Presets ────────────
+  Detection executed in <15ms benchmark target
+  All 40+ PII categories verified
+  All 5 Regional Compliance Presets verified (KYC, US, EU/UK GDPR, APAC, Secrets)
 
-Total Passed: 99 | Total Failed: 0
- ALL UNIT TESTS PASSED WITH 100% ACCURACY!
+─── Testing DOCX Multi-Run XML Parser & Exporter ─────────────────
+  DOCX Parser & Exporter verified across split <w:t> tags
+  Header & footer XML PII extraction & redaction verified
+  Document core property metadata sanitization verified
+
+─── Testing Cryptographic License Validator ──────────────────────
+  Valid PRO and ENT key cryptographic verification
+  Tampered and bypass keys strictly rejected
+
+─── Testing PDF Forensic Text Stream Sanitization ────────────────
+  pdftotext ghost text stream extraction strictly eliminated
+  Selective vector burn-in verified
+
+─── Testing Zero-CDN Offline OCR & Security Invariants ───────────
+  All WASM and traineddata assets bundled locally in public/tessdata/
+  CORS, COOP, CORP, and HSTS headers enforced
+  0°, 90°, 180°, 270° document rotation geometry transforms verified
+  Zero em-dash code quality & commercial SaaS invariants verified
+
+Total Passed: 158 | Total Failed: 0
+[SUCCESS] ALL UNIT TESTS PASSED WITH 100% ACCURACY!
 ```
 
 ---
