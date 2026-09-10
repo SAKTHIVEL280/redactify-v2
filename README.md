@@ -167,6 +167,31 @@ Total Passed: 158 | Total Failed: 0
 
 ---
 
+## Production Cloud & Edge Architecture
+
+Redactify is architected for **zero ongoing infrastructure costs** with infinite scalability:
+
+* **Frontend & Hosting**: **Cloudflare Pages** (unlimited free bandwidth for WASM binaries, 300+ global Anycast edge nodes, sub-20ms latency across India and worldwide).
+* **Edge Database**: **Cloudflare D1** (Serverless SQLite at the edge, 10 GB storage, 5M reads/day, zero sleep/pause risk, metadata-only storage).
+* **Payment Infrastructure**:
+  - **India (INR ₹)**: **Razorpay Payment Pages** (UPI 0% fee, RuPay, Netbanking, T+1 Indian bank settlement with GSTIN invoice support).
+  - **Global (USD $)**: **Dodo Payments** (Merchant of Record handling US State Sales Tax, EU VAT, global cards, and automated INR payouts with FIRA/FIRC).
+* **Key Provisioning**: **Resend API** (automated transactional email dispatch of Ed25519-signed cryptographic keys).
+
+---
+
+## Commercial Licensing Tiers
+
+| Tier | India (INR ₹) | Global (USD $) | Core Capabilities |
+| :--- | :--- | :--- | :--- |
+| **Free Evaluation** | **₹0** | **$0** | Unlimited client-side PII scanning, Page 1 export with watermark |
+| **Pro Monthly** | **₹499** / mo | **$9** / mo | Unlimited pages, clean vector exports, zero watermarks, cancel anytime |
+| **Pro Annual** | **₹2,499** / yr | **$69** / yr | Active professional pass (saves ~55% vs monthly) |
+| **Lifetime Pass** | **₹2,999** one-time | **$79** one-time | Permanent offline access, all future updates, zero recurring fees |
+| **Enterprise / Firm**| **Custom** | **Custom** | Multi-seat volume license, custom compliance templates, dedicated SLA |
+
+---
+
 ## License
 
 Proprietary & Enterprise Licensed. All rights reserved. 

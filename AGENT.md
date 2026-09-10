@@ -64,10 +64,11 @@ Redactify is **NOT** a free charity utility; the free tier is strictly a **trial
 ## 4. Technology Stack & Unit Economics
 
 * **Frontend & Hosting**: Cloudflare Pages (100% Free Commercial use, unlimited bandwidth).
-* **Database**: Turso (libSQL) / Cloudflare D1 (Never pauses, 9GB storage, $0).
+* **Database**: Cloudflare D1 (Never pauses, 10GB storage, $0).
 * **Payments**:
   - **India**: Razorpay (UPI, RuPay, domestic cards) in INR (₹).
   - **Global**: Dodo Payments (MoR for USD, payouts directly to Indian HDFC account).
+* **Key Dispatch**: Resend API (3,000 free transactional emails/month).
 * **Pricing**:
   - **Global**: $9/month, $69/year, or $79 Lifetime Pass.
   - **India**: ₹499/month, ₹2,499/year, or ₹2,999 Lifetime Pass (with ₹1,999 early-bird for first 50 buyers).
