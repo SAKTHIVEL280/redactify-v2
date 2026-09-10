@@ -239,7 +239,7 @@ When exporting any redacted document, offer an optional companion document: `Red
 - **GST Invoice Issuance**: Enable custom checkout fields on Razorpay:
   - `Customer Company Name`
   - `GSTIN (Goods and Services Tax Number)`
-- When an Indian Chartered Accountant, HR agency, or law firm buys the ₹999 lifetime pass or ₹499/mo plan, Razorpay automatically emails an 18% GST invoice allowing them to claim full Input Tax Credit (ITC).
+- When an Indian Chartered Accountant, HR agency, or law firm buys the ₹2,999 lifetime pass or ₹499/mo plan, Razorpay automatically emails an 18% GST invoice allowing them to claim full Input Tax Credit (ITC).
 
 ### 2. High-Urgency Target Customer Profiles
 | Target Segment | Concrete Pain Point | Winning Sales Pitch |

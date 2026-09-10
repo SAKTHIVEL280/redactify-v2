@@ -1107,7 +1107,7 @@ export function LandingPage({ onNavigateToStudio, onNavigateToPricing }) {
                   <td className="py-4 px-6 font-semibold bg-amber-50/40 border-x border-stone-mist text-charcoal">
                     <div className="flex items-center gap-2">
                       <Zap className="w-4 h-4 text-amber-700 shrink-0" />
-                      <span>$9 / mo or $29 Early-Bird Lifetime</span>
+                      <span>$9 / mo or $79 Lifetime Pass (₹2,999 INR)</span>
                     </div>
                   </td>
                   <td className="py-4 px-6 text-bark-grey">$240+ / year subscription</td>

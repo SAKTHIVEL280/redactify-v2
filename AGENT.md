@@ -69,8 +69,8 @@ Redactify is **NOT** a free charity utility; the free tier is strictly a **trial
   - **India**: Razorpay (UPI, RuPay, domestic cards) in INR (₹).
   - **Global**: Dodo Payments (MoR for USD, payouts directly to Indian HDFC account).
 * **Pricing**:
-  - **Global**: $9/month or $69/year.
-  - **India**: ₹499/month or ₹3,499/year (with ₹999 early-bird lifetime pass for first 100 buyers).
+  - **Global**: $9/month, $69/year, or $79 Lifetime Pass.
+  - **India**: ₹499/month, ₹2,499/year, or ₹2,999 Lifetime Pass (with ₹1,999 early-bird for first 50 buyers).
 
 ---
 

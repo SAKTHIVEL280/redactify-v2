@@ -181,7 +181,7 @@ export function PricingPage({ onNavigateToStudio }) {
                   <span className="text-xs text-bark-grey font-mono">/ month</span>
                 </div>
                 <div className="mt-2 inline-block text-[11px] font-mono font-bold text-amber-900 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-tag">
-                  Or {currency === 'INR' ? '₹999 Lifetime Pass' : '$29 Lifetime Pass'}
+                  Or {currency === 'INR' ? '₹2,999 Lifetime Pass' : '$79 Lifetime Pass'}
                 </div>
                 <p className="text-xs text-bark-grey mt-2 leading-relaxed">
                   For lawyers, HR teams, developers, and founders handling confidential documents.

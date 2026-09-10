@@ -192,10 +192,10 @@ export function ProModal({ onNavigateToPricing }) {
                   <div>
                     <div className="text-[10px] font-mono font-medium text-charcoal uppercase tracking-wider">Lifetime Pass</div>
                     <div className="flex items-baseline gap-1 mt-1">
-                      <span className="text-2xl font-serif text-charcoal">$29</span>
+                      <span className="text-2xl font-serif text-charcoal">$79</span>
                       <span className="text-xs text-bark-grey font-mono">one-time</span>
                     </div>
-                    <p className="text-[11px] text-bark-grey mt-1">Pay once, own forever. Zero recurring fees.</p>
+                    <p className="text-[11px] text-bark-grey mt-1">Pay once, own forever (₹2,999 INR). Zero recurring fees.</p>
                   </div>
 
                   <button

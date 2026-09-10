@@ -213,7 +213,7 @@ sequenceDiagram
     participant D1 as Cloudflare D1 Edge Database
     participant Resend as Resend Email Service
 
-    Customer->>UI: Selects Plan (e.g. ₹999 Lifetime or $9/mo)
+    Customer->>UI: Selects Plan (e.g. ₹2,999 Lifetime or $9/mo)
     UI->>Gateway: Redirects to Hosted Checkout (Razorpay / Dodo)
     Customer->>Gateway: Completes Payment (UPI / Card / Apple Pay)
     Gateway-->>Customer: Shows Success Receipt Page
