@@ -20,8 +20,11 @@ import {
   validateAustralianTFN,
   validateAustralianMedicare,
   validateSingaporeNRIC,
-  validateUSNPI
+  validateUSNPI,
+  validateIPv6,
+  validateSWIFT
 } from '../src/core/engine/algorithms.js';
+import { PRESETS } from '../src/core/engine/presets.js';
 import JSZip from 'jszip';
 import { parseAndExtractDOCX } from '../src/core/parsers/docxParser.js';
 import { exportRedactedDOCX } from '../src/core/parsers/docxExporter.js';
@@ -923,6 +926,264 @@ assert(!customMatched.includes('$250,000,000'), 'Negative Test: Custom rule reje
 assert(customMatched.includes('#ProjectOmega'), 'Custom Symbol: Matches #ProjectOmega with wholeWord');
 assert(!customMatched.includes('#ProjectOmegaX'), 'Negative Test: Custom rule rejects #ProjectOmegaX with wholeWord');
 
+
+console.log('\n─── Testing IPv6, SWIFT & IFSC Algorithmic Engine ──────────────');
+assert(validateIPv6('2001:0db8:85a3:0000:0000:8a2e:0370:7334') === true, 'IPv6: Full notation validates');
+assert(validateIPv6('fe80::1ff:fe23:4567:890a') === true, 'IPv6: Compressed notation validates');
+assert(validateIPv6('2001:db8::1') === true, 'IPv6: Double-colon prefix validates');
+assert(validateIPv6('::1') === true, 'IPv6: Loopback ::1 validates');
+assert(validateIPv6('12:30:45') === false, 'Negative Test: Timestamp 12:30:45 rejected by IPv6 validator');
+assert(validateIPv6('00:1A:2B:3C:4D:5E') === false, 'Negative Test: MAC address rejected by IPv6 validator');
+assert(validateIPv6('8080:80') === false, 'Negative Test: Port mapping rejected by IPv6 validator');
+
+assert(validateSWIFT('WESTGB2L') === true, 'SWIFT: Valid UK BIC code passes');
+assert(validateSWIFT('HDFCINBB') === true, 'SWIFT: Valid Indian head office BIC code passes');
+assert(validateSWIFT('CHASUS33') === true, 'SWIFT: Valid US bank BIC code passes');
+assert(validateSWIFT('EUROPEAN') === false, 'Negative Test: Capitalized word EUROPEAN rejected as SWIFT code');
+assert(validateSWIFT('DATABASE') === false, 'Negative Test: Capitalized word DATABASE rejected as SWIFT code');
+assert(validateSWIFT('SECURITY') === false, 'Negative Test: Capitalized word SECURITY rejected as SWIFT code');
+assert(validateSWIFT('DECISION') === false, 'Negative Test: Capitalized word DECISION rejected as SWIFT code');
+assert(validateSWIFT('TRANSACTION') === false, 'Negative Test: Capitalized word TRANSACTION rejected as SWIFT code');
+
+const ifscDetections = detectEntities('Branch IFSC Code: HDFC0001234 and invalid HDFC1001234', 'all');
+const ifscValues = ifscDetections.filter(d => d.type === 'ifsc').map(d => d.value);
+assert(ifscValues.includes('HDFC0001234'), 'IFSC: Valid HDFC0001234 detected with 100% precision');
+assert(!ifscValues.includes('HDFC1001234'), 'Negative Test: Invalid IFSC missing 5th zero rejected');
+
+console.log('\n─── Black-Box Stress Testing Across All 10 Detection Presets ───');
+
+// 1. US Compliance
+const usBenchDoc = `
+  CONFIDENTIAL MEDICAL & BILLING SUMMARY
+  Patient: Alexander Vance, DOB: 14/05/1982
+  Social Security Number: 123-45-6789
+  ITIN: 987-65-4321, EIN: 12-3456789
+  Billing Transit Routing: 021000021
+  Co-pay Visa Card: 4532-0151-1283-0366
+  Direct Deposit Account: Account Number 987654321012
+  Attending Physician NPI: 1000000004, DEA Registration: AB1234567
+  Hospital Record MRN: #MRN-84729
+  Coverage: Policy Number POL-928374
+  Contact: (212) 555-0198, alexander.vance@nyhealth.org
+  Address: 742 Evergreen Terrace, Springfield
+`;
+const usBenchRes = detectEntities(usBenchDoc, 'us_compliance');
+const usBenchTypes = new Set(usBenchRes.map(e => e.type));
+for (const t of PRESETS.US_COMPLIANCE.types) {
+  assert(usBenchTypes.has(t), `Preset US_COMPLIANCE: 100% recall for entity type "${t}"`);
+}
+
+// 2. EU & UK GDPR
+const euBenchDoc = `
+  EUROPEAN UNION & UK CROSS-BORDER COMPLIANCE DOSSIER
+  Subject Name: Beatrice Dupont, DOB: 22/07/1988
+  UK National Insurance Number: AB123456C
+  NHS Number: 943 476 5919
+  Bank Sort Code: 12-34-56
+  Unique Taxpayer Reference: UTR: 1234567890
+  European VAT ID: FR12345678901
+  Spanish National Identity: 12345678Z
+  French Social Security NIR: 1851234567890
+  Italian Codice Fiscale: RSSMRA85M01H501Q
+  German Tax ID (IdNr): 12 345 678 901
+  International Bank Account Number: GB82WEST12345698765432
+  SWIFT BIC: WESTGB2L
+  UK Domestic Bank Account: Account Number 1234567890
+  Contact Email: beatrice.dupont@eurocorp.fr, Phone: +44 20 7946 0912
+  Residential Address: 10 Downing Street, London
+`;
+const euBenchRes = detectEntities(euBenchDoc, 'eu_uk_gdpr');
+const euBenchTypes = new Set(euBenchRes.map(e => e.type));
+for (const t of PRESETS.EU_UK_GDPR.types) {
+  assert(euBenchTypes.has(t), `Preset EU_UK_GDPR: 100% recall for entity type "${t}"`);
+}
+
+// 3. APAC & Australia Privacy
+const apacBenchDoc = `
+  APAC REGIONAL CITIZEN COMPLIANCE DOSSIER
+  Applicant Name: Rajesh Kumar
+  Indian Aadhaar: 2184 4289 8716
+  Indian PAN: ABCPK1234F
+  GSTIN: 27AAPFU0939F1ZV
+  EPFO UAN: 101234567890
+  IFSC Code: HDFC0001234
+  Singapore NRIC: S1234567D
+  Australian Tax File Number (TFN): 123456782
+  Australian Medicare Number: 2123456701
+  Passport Number: K1234567
+  Bank Account: Account Number 987654321012
+  Contact Email: rajesh.kumar@daeq.in, Phone: +91 98450 12345
+  Residence: 104 Anna Nagar, Chennai
+`;
+const apacBenchRes = detectEntities(apacBenchDoc, 'apac_compliance');
+const apacBenchTypes = new Set(apacBenchRes.map(e => e.type));
+for (const t of PRESETS.APAC_COMPLIANCE.types) {
+  assert(apacBenchTypes.has(t), `Preset APAC_COMPLIANCE: 100% recall for entity type "${t}"`);
+}
+
+// 4. DevOps & Cloud Secrets
+const devBenchDoc = `
+  DEPLOYMENT CONFIGURATION & SECRETS DUMP
+  AWS Access Key: AKIAIOSFODNN7EXAMPLE
+  GitHub Access Token: ghp_1234567890abcdefghijklmnopqrstuvwxyz
+  Stripe Key: pk_test_51Abcdefghijklmnopqrstuv0123456789
+  Slack Bot Token: xoxb-1234567890-abcdef123456
+  OpenAI API Secret: sk-proj-1234567890abcdefghijklmnopqrstuvwxyz1234567890
+  Service JWT Token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozsmw6t_V_S4_mOQ5mPkW1-bHw_qJp6qQ
+  RSA Key:
+  -----BEGIN RSA PRIVATE KEY-----
+  MIIEowIBAAKCAQEA0abcdef123456789==
+  -----END RSA PRIVATE KEY-----
+  Ethereum Vault: 0x71C7656EC7ab88b098defB751B7401B5f6d8976F
+  Primary Cluster IPv4: 192.168.1.105
+  Secondary Gateway IPv6: 2001:0db8:85a3:0000:0000:8a2e:0370:7334
+  Engineer: Alexander Vance, alexander@example.com
+`;
+const devBenchRes = detectEntities(devBenchDoc, 'secrets_dev');
+const devBenchTypes = new Set(devBenchRes.map(e => e.type));
+for (const t of PRESETS.SECRETS_DEV.types) {
+  assert(devBenchTypes.has(t), `Preset SECRETS_DEV: 100% recall for entity type "${t}"`);
+}
+assert(!devBenchTypes.has('name'), 'Preset SECRETS_DEV Negative Isolation: Person name preserved un-redacted');
+assert(!devBenchTypes.has('email'), 'Preset SECRETS_DEV Negative Isolation: Email preserved un-redacted');
+
+// 5. Indian KYC & DPDP
+const kycBenchDoc = `
+  INDIA KYC ONBOARDING VERIFICATION DOSSIER
+  Applicant Name: Rajesh Kumar, DOB: 15/08/1985
+  Aadhaar UID: 2184 4289 8716
+  PAN Card: ABCPK1234F
+  Passport No: K1234567
+  Voter ID EPIC: ABC1234567
+  Driving License: TN-01-20150001234
+  GSTIN: 27AAPFU0939F1ZV
+  EPFO UAN: 101234567890
+  IFSC Code: HDFC0001234
+  Bank Account: Account Number 987654321012
+  Vehicle Registration: TN-01-AB-1234
+  KYC Verification Ref: REF-KYC98721
+  Permanent Address: 104 Anna Nagar, Chennai - 600040
+  State: Tamil Nadu
+  Verification Date: 14 October 2023
+  Mobile: +91 98450 12345
+`;
+const kycBenchRes = detectEntities(kycBenchDoc, 'kyc');
+const kycBenchTypes = new Set(kycBenchRes.map(e => e.type));
+for (const t of PRESETS.KYC.types) {
+  assert(kycBenchTypes.has(t), `Preset KYC: 100% recall for entity type "${t}"`);
+}
+
+// 6. Legal & Court Filings
+const legalBenchDoc = `
+  IN THE HIGH COURT OF JUDICATURE AT MADRAS
+  Case Docket Reference: REF-CIV2023-8941
+  Between Plaintiff: Rajesh Kumar, DOB: 15/08/1985
+  Residing at: 104 Anna Nagar, Chennai - 600040, Tamil Nadu
+  Contact: rajesh.kumar@daeq.in, Mobile: +91 98450 12345
+  Aadhaar Card: 2184 4289 8716, SSN: 123-45-6789
+  And Defendant: Acme Corporation Pvt Ltd
+  Settlement Amount: $250,000 to be deposited into Account Number 112233445566
+  Hearing Date: 14 October 2023
+`;
+const legalBenchRes = detectEntities(legalBenchDoc, 'legal');
+const legalBenchTypes = new Set(legalBenchRes.map(e => e.type));
+for (const t of PRESETS.LEGAL.types) {
+  assert(legalBenchTypes.has(t), `Preset LEGAL: 100% recall for entity type "${t}"`);
+}
+
+// 7. Banking & PCI-DSS
+const finBenchDoc = `
+  GLOBAL BANKING TRANSACTION & PCI-DSS SETTLEMENT
+  Card Number: 4532-0151-1283-0366
+  International IBAN: GB82WEST12345698765432
+  SWIFT BIC: WESTGB2L
+  ABA FedWire Routing: 021000021
+  Indian IFSC Code: HDFC0001234
+  Deposit Account: Account Number 112233445566
+  Wire Compensation: $1,250,000.00
+  Indian Tax PAN: ABCPK1234F
+  Indian Aadhaar: 2184 4289 8716
+  Enterprise GSTIN: 27AAPFU0939F1ZV
+  Crypto Treasury: 0x71C7656EC7ab88b098defB751B7401B5f6d8976F
+  Customer Email: treasury@globalbank.com, Phone: +1 (212) 555-0199
+`;
+const finBenchRes = detectEntities(finBenchDoc, 'financial');
+const finBenchTypes = new Set(finBenchRes.map(e => e.type));
+for (const t of PRESETS.FINANCIAL.types) {
+  assert(finBenchTypes.has(t), `Preset FINANCIAL: 100% recall for entity type "${t}"`);
+}
+
+// 8. Medical & HIPAA
+const medBenchDoc = `
+  ST. JUDE CHILDREN HOSPITAL MEDICAL REPORT
+  Patient Name: Alexander Vance, DOB: 14/05/1982
+  Social Security Number: 123-45-6789
+  Indian Aadhaar (Medical Tourist): 2184 4289 8716
+  NHS Reciprocal Number: 943 476 5919
+  Medical Record Number: MRN: #MRN-84729
+  Health Insurance: Policy Number POL-928374
+  Attending Physician NPI: 1000000004
+  Prescribing Doctor DEA: AB1234567
+  Patient Address: 742 Evergreen Terrace, Springfield
+  Contact: (212) 555-0198, alexander.vance@nyhealth.org
+  Admission Date: 14 October 2023
+`;
+const medBenchRes = detectEntities(medBenchDoc, 'medical');
+const medBenchTypes = new Set(medBenchRes.map(e => e.type));
+for (const t of PRESETS.MEDICAL.types) {
+  assert(medBenchTypes.has(t), `Preset MEDICAL: 100% recall for entity type "${t}"`);
+}
+
+// 9. Blind Resume Screening
+const resumeBenchDoc = `
+  CURRICULUM VITAE
+  Candidate Name: Alexander Vance, DOB: 14/05/1995
+  Email: alexander.vance@daeq.in, Phone: +1-555-0199
+  Portfolio: https://linkedin.com/in/alexandervance
+  Current Address: 104 Anna Nagar, Chennai - 600040, Tamil Nadu
+  Internal Test IP: 192.168.1.50
+  Education: Indian Institute of Technology Madras
+  Academic Performance: CGPA: 9.2 / 10.0
+  Current Salary: INR 24,00,000 per annum
+  Experience Period: Jan 2020 - Present
+`;
+const resBenchRes = detectEntities(resumeBenchDoc, 'resume');
+const resBenchTypes = new Set(resBenchRes.map(e => e.type));
+for (const t of PRESETS.RESUME.types) {
+  assert(resBenchTypes.has(t), `Preset RESUME: 100% recall for entity type "${t}"`);
+}
+
+// 10. Universal Full Scan (ALL)
+const canadaBenchExtra = 'Canadian Social Insurance: 046 454 286';
+const allBenchDoc = `${usBenchDoc}\n${euBenchDoc}\n${apacBenchDoc}\n${devBenchDoc}\n${kycBenchDoc}\n${legalBenchDoc}\n${finBenchDoc}\n${medBenchDoc}\n${resumeBenchDoc}\n${canadaBenchExtra}`;
+const allBenchRes = detectEntities(allBenchDoc, 'all');
+const allBenchTypes = new Set(allBenchRes.map(e => e.type));
+for (const t of PRESETS.ALL.types) {
+  assert(allBenchTypes.has(t), `Preset ALL (Universal Scan): 100% recall for entity type "${t}"`);
+}
+
+// 11. Zero False-Positive Adversarial Stress Test
+const adversarialBenchDoc = `
+  IN THE HIGH COURT OF JUDICATURE AT MADRAS
+  UK CROSS-BORDER COMPLIANCE REGIME
+  THE MAIN REASON FOR THIS DECISION
+  CURRICULUM VITAE
+  CONFIDENTIAL OFFER LETTER
+  Timestamp: 12:30:45 UTC and 14:32:00 EST
+  MAC Address: 00:1A:2B:3C:4D:5E
+  Database port: 8080:80
+  Fake SWIFT words: EUROPEAN, DATABASE, SECURITY, TRANSACTION, DECISION
+  Invalid Credit Card: 4111111111111112
+  Invalid Aadhaar: 218442898761
+  Invalid UK NINO: BG123456C
+  Invalid IBAN: GB82WEST12345698765433
+  Invalid DNI: 12345678A
+  Invalid NIR: 185123456789098
+  Invalid Codice Fiscale: RSSMRA85M01H501Z
+  Software Version 2.0.4 build 9812
+`;
+const advBenchRes = detectEntities(adversarialBenchDoc, 'all');
+assert(advBenchRes.length === 0, 'Adversarial Stress Test: Zero false positives on non-PII, corrupt numbers, timestamps & MACs');
 
 console.log(`\n──────────────────────────────────────────────────────────────────`);
 console.log(`Total Passed: ${passed} | Total Failed: ${failed}`);

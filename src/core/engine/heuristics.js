@@ -18,7 +18,9 @@ const STOP_WORDS = new Set([
   'We', 'I', 'You', 'They', 'He', 'She', 'It', 'Our', 'Your', 'Their',
   'Will', 'Shall', 'Would', 'Could', 'Should', 'Between', 'Agreement',
   'Notice', 'Service', 'Services', 'Employee', 'Employer', 'Candidate',
-  'Applicant', 'Recipient', 'Signatory', 'Officer', 'Policy', 'Office'
+  'Applicant', 'Recipient', 'Signatory', 'Officer', 'Policy', 'Office',
+  'Letter', 'Offer', 'Contract', 'Statement', 'Report', 'Invoice',
+  'Receipt', 'Record', 'Records', 'Affidavit', 'Petition', 'Dossier', 'Dossiers'
 ]);
 
 // ─── 1. Name Detection via Honorifics / Salutations ─────────────────────────────
@@ -81,8 +83,15 @@ export function extractTopHeaderNames(text) {
 
     // Matches e.g. "Sakthivel E" or "Alexander Vance"
     const nameMatch = /^([A-Z][a-zA-Z]+(?:\s+[A-Z]\.?)?(?:\s+[A-Z][a-zA-Z]+)?)$/.exec(line);
-    if (nameMatch && !STOP_WORDS.has(nameMatch[1])) {
-      found.push(nameMatch[1]);
+    if (nameMatch) {
+      const words = nameMatch[1].split(/\s+/);
+      const hasStopWord = words.some(w => {
+        const cap = w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+        return STOP_WORDS.has(cap) || STOP_WORDS.has(w);
+      });
+      if (!hasStopWord) {
+        found.push(nameMatch[1]);
+      }
     }
   }
 

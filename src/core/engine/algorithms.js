@@ -333,4 +333,91 @@ export function validateUSNPI(rawNPI) {
   return validateLuhn('80840' + sanitized);
 }
 
+// ─── 18. IPv6 Address Validation ─────────────────────────────────────────────
+// Validates 128-bit IPv6 addresses in standard, compressed, and loopback notations.
+// Eliminates false-positives from timestamps (12:30:45) and MAC addresses (00:1A:2B:3C:4D:5E).
+export function validateIPv6(rawIP) {
+  if (!rawIP || typeof rawIP !== 'string') return false;
+  const ip = rawIP.trim();
+  if (!ip.includes(':')) return false;
+  if (ip.includes(':::')) return false;
+  if (!/^[0-9a-fA-F:]+$/.test(ip)) return false;
+
+  const doubleColonCount = (ip.match(/::/g) || []).length;
+  if (doubleColonCount > 1) return false;
+
+  if (doubleColonCount === 1) {
+    const [left, right] = ip.split('::');
+    const leftParts = left ? left.split(':') : [];
+    const rightParts = right ? right.split(':') : [];
+    if (leftParts.length + rightParts.length >= 8) return false;
+    for (const p of [...leftParts, ...rightParts]) {
+      if (!/^[0-9a-fA-F]{1,4}$/.test(p)) return false;
+    }
+    return (leftParts.length + rightParts.length > 0) || ip === '::';
+  } else {
+    const parts = ip.split(':');
+    if (parts.length !== 8) return false;
+    for (const p of parts) {
+      if (!/^[0-9a-fA-F]{1,4}$/.test(p)) return false;
+    }
+    return true;
+  }
+}
+
+// ─── 19. SWIFT / BIC Code Validation (ISO 9362) ──────────────────────────────
+// Validates 8 or 11 character SWIFT/BIC codes with ISO 3166-1 alpha-2 country codes.
+// Eliminates false positives from capitalized English words (EUROPEAN, DATABASE, etc.).
+const SWIFT_STOP_WORDS = new Set([
+  'EUROPEAN', 'AMERICAN', 'CANADIAN', 'NATIONAL', 'PERSONAL', 'BUSINESS',
+  'CUSTOMER', 'HOSPITAL', 'CONTRACT', 'DIRECTOR', 'INTERNAL', 'EXTERNAL',
+  'OFFICIAL', 'SERVICES', 'DATABASE', 'DOWNLOAD', 'SETTINGS', 'SECURITY',
+  'PASSPORT', 'REGISTER', 'EMPLOYEE', 'REDACTED', 'DECEMBER', 'NOVEMBER',
+  'FEBRUARY', 'SCHEDULE', 'DOCUMENT', 'STANDARD', 'OVERVIEW', 'RECEIVED',
+  'ACCEPTED', 'APPROVED', 'REJECTED', 'CONFIRMED', 'SUMMARY', 'IMPORTANT',
+  'CRITICAL', 'ACCOUNTS', 'PAYMENTS', 'TRANSFER', 'PURCHASE', 'SOFTWARE',
+  'HARDWARE', 'REPUBLIC', 'RESERVED', 'DISTRICT', 'PROVINCE', 'DIVISION',
+  'TRANSACTION'
+]);
+
+const ISO_COUNTRY_CODES = new Set([
+  'AD', 'AE', 'AF', 'AG', 'AI', 'AL', 'AM', 'AO', 'AQ', 'AR', 'AS', 'AT', 'AU', 'AW', 'AX', 'AZ',
+  'BA', 'BB', 'BD', 'BE', 'BF', 'BG', 'BH', 'BI', 'BJ', 'BL', 'BM', 'BN', 'BO', 'BQ', 'BR', 'BS',
+  'BT', 'BV', 'BW', 'BY', 'BZ', 'CA', 'CC', 'CD', 'CF', 'CG', 'CH', 'CI', 'CK', 'CL', 'CM', 'CN',
+  'CO', 'CR', 'CU', 'CV', 'CW', 'CX', 'CY', 'CZ', 'DE', 'DJ', 'DK', 'DM', 'DO', 'DZ', 'EC', 'EE',
+  'EG', 'EH', 'ER', 'ES', 'ET', 'FI', 'FJ', 'FK', 'FM', 'FO', 'FR', 'GA', 'GB', 'GD', 'GE', 'GF',
+  'GG', 'GH', 'GI', 'GL', 'GM', 'GN', 'GP', 'GQ', 'GR', 'GS', 'GT', 'GU', 'GW', 'GY', 'HK', 'HM',
+  'HN', 'HR', 'HT', 'HU', 'ID', 'IE', 'IL', 'IM', 'IN', 'IO', 'IQ', 'IR', 'IS', 'IT', 'JE', 'JM',
+  'JO', 'JP', 'KE', 'KG', 'KH', 'KI', 'KM', 'KN', 'KP', 'KR', 'KW', 'KY', 'KZ', 'LA', 'LB', 'LC',
+  'LI', 'LK', 'LR', 'LS', 'LT', 'LU', 'LV', 'LY', 'MA', 'MC', 'MD', 'ME', 'MF', 'MG', 'MH', 'MK',
+  'ML', 'MM', 'MN', 'MO', 'MP', 'MQ', 'MR', 'MS', 'MT', 'MU', 'MV', 'MW', 'MX', 'MY', 'MZ', 'NA',
+  'NC', 'NE', 'NF', 'NG', 'NI', 'NL', 'NO', 'NP', 'NR', 'NU', 'NZ', 'OM', 'PA', 'PE', 'PF', 'PG',
+  'PH', 'PK', 'PL', 'PM', 'PN', 'PR', 'PS', 'PT', 'PW', 'PY', 'QA', 'RE', 'RO', 'RS', 'RU', 'RW',
+  'SA', 'SB', 'SC', 'SD', 'SE', 'SG', 'SH', 'SI', 'SJ', 'SK', 'SL', 'SM', 'SN', 'SO', 'SR', 'SS',
+  'ST', 'SV', 'SX', 'SY', 'SZ', 'TC', 'TD', 'TF', 'TG', 'TH', 'TJ', 'TK', 'TL', 'TM', 'TN', 'TO',
+  'TR', 'TT', 'TV', 'TW', 'TZ', 'UA', 'UG', 'UM', 'US', 'UY', 'UZ', 'VA', 'VC', 'VE', 'VG', 'VI',
+  'VN', 'VU', 'WF', 'WS', 'YE', 'YT', 'ZA', 'ZM', 'ZW'
+]);
+
+export function validateSWIFT(rawSWIFT) {
+  if (!rawSWIFT || typeof rawSWIFT !== 'string') return false;
+  const sanitized = rawSWIFT.trim().toUpperCase();
+  if (!/^[A-Z]{4}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?$/.test(sanitized)) return false;
+  if (SWIFT_STOP_WORDS.has(sanitized)) return false;
+  if (
+    sanitized.endsWith('TION') ||
+    sanitized.endsWith('SION') ||
+    sanitized.endsWith('MENT') ||
+    sanitized.endsWith('NESS') ||
+    sanitized.endsWith('ABLE') ||
+    sanitized.endsWith('SHIP') ||
+    sanitized.endsWith('ICAL')
+  ) {
+    return false;
+  }
+  const countryCode = sanitized.slice(4, 6);
+  if (!ISO_COUNTRY_CODES.has(countryCode)) return false;
+  return true;
+}
+
 

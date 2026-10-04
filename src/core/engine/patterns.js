@@ -27,8 +27,7 @@ export const PATTERNS = {
   // ─── 4. Social Handles & URLs (LinkedIn, GitHub, Portfolios) ────────────────
   SOCIAL_URL: /(?:https?:\/\/)?(?:www\.)?(?:linkedin\.com\/(?:in|company)\/[a-zA-Z0-9_-]+|github\.com\/[a-zA-Z0-9_-]+|(?:[a-zA-Z0-9-]+\.)*daeq\.in(?:\/[a-zA-Z0-9_.~!*';:@&=+$,/?%#[\]-]*)?|[a-zA-Z0-9-]+\.(?:com|in|org|io|dev|app|net)\/[a-zA-Z0-9_.~!*';:@&=+$,/?%#[\]-]+)/gi,
 
-  // ─── 5. Physical Addresses & Street Patterns ────────────────────────────────
-  ADDRESS: /\b(?:C\d+\/\d+|[A-Z0-9/-]+,\s*)?(?:[A-Z][a-zA-Z0-9/,-]+\s+){1,6}(?:Road|Rd|Street|St|Lane|Ln|Avenue|Ave|Nagar|Colony|HUDCO|Layout|Extension|Sector|Phase|Bypass|Highway|Cross|Main)\b/gi,
+  ADDRESS: /\b(?:C\d+\/\d+|[A-Z0-9/-]+,\s*|\d{1,5}[A-Za-z]{0,2}[-\/]?\d{0,4}\s+)?(?:[A-Z][a-zA-Z0-9/,-]+\s+){1,6}(?:Road|Rd|Street|St|Lane|Ln|Avenue|Ave|Drive|Dr|Boulevard|Blvd|Way|(?<!\b(?:High|Supreme|District|Appellate|Magistrate|Sessions)\s+)Court|Ct|Place|Pl|Circle|Cir|Terrace|Ter|Nagar|Colony|HUDCO|Layout|Extension|Sector|Phase|Bypass|Highway)(?!-[a-zA-Z])\b|\b[0-9]+(?:st|nd|rd|th)\s+(?:Cross|Main)\b/gi,
 
   // ─── 6. International National IDs & Tax Numbers ────────────────────────────
   // US Social Security Number (SSN)
@@ -60,7 +59,7 @@ export const PATTERNS = {
 
   // ─── 9. IP Addresses (IPv4 & IPv6) ──────────────────────────────────────────
   IPV4: /\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b/g,
-  IPV6: /\b(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}\b/g,
+  IPV6: /(?:::1\b|(?:\b[0-9a-fA-F]{1,4}:|::)[0-9a-fA-F:]*[0-9a-fA-F])/g,
 
   // ─── 10. Dates (DOB, Numeric DD-MM-YYYY / YYYY-MM-DD, Formal Document Dates, Ranges) ─
   DATE_OF_BIRTH: /\b(?:DOB|Date of Birth|Born|Birth Date)[\s:]+\b(?:\d{1,2}[-/.]\d{1,2}[-/.]\d{2,4}|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+\d{1,2},?\s+\d{4})\b/gi,

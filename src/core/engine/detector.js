@@ -22,7 +22,9 @@ import {
   validateAustralianTFN,
   validateAustralianMedicare,
   validateSingaporeNRIC,
-  validateUSNPI
+  validateUSNPI,
+  validateIPv6,
+  validateSWIFT
 } from './algorithms.js';
 import { detectContextualEntities } from './heuristics.js';
 import { PRESETS } from './presets.js';
@@ -35,6 +37,12 @@ function nextId() {
 
 export function detectEntities(text, presetId = 'all', customRules = []) {
   if (!text || typeof text !== 'string') return [];
+
+  // Polymorphic support for options object: detectEntities(text, { preset: 'us_compliance' })
+  if (typeof presetId === 'object' && presetId !== null) {
+    customRules = presetId.customRules || customRules;
+    presetId = presetId.preset || presetId.presetId || presetId.id || 'all';
+  }
 
   const preset = Object.values(PRESETS).find(p => p.id === presetId) || PRESETS.ALL;
   const allowedTypes = new Set(preset.types);
@@ -85,6 +93,11 @@ export function detectEntities(text, presetId = 'all', customRules = []) {
     let match;
     const regex = new RegExp(PATTERNS.AADHAAR);
     while ((match = regex.exec(text)) !== null) {
+      // Negative check: If preceded by Account / A/C Number, it is a bank account, not Aadhaar
+      const preceding = text.slice(Math.max(0, match.index - 25), match.index);
+      if (/(?:account|a\/c|acc)(?:\s*(?:no\.?|number))?[\s#:]*$/i.test(preceding.trim())) {
+        continue;
+      }
       if (validateVerhoeff(match[0])) {
         const clean = match[0].replace(/[\s-]/g, '');
         // UIDAI compliant mask: First 8 digits masked, last 4 visible (XXXX-XXXX-1234)
@@ -188,17 +201,19 @@ export function detectEntities(text, presetId = 'all', customRules = []) {
     let match;
     const regex = new RegExp(PATTERNS.SWIFT_BIC);
     while ((match = regex.exec(text)) !== null) {
-      rawEntities.push({
-        id: nextId(),
-        type: 'swift',
-        category: 'financial',
-        value: match[0],
-        start: match.index,
-        end: match.index + match[0].length,
-        confidence: 0.90,
-        suggested: '[SWIFT REDACTED]',
-        redact: true
-      });
+      if (validateSWIFT(match[0])) {
+        rawEntities.push({
+          id: nextId(),
+          type: 'swift',
+          category: 'financial',
+          value: match[0],
+          start: match.index,
+          end: match.index + match[0].length,
+          confidence: 0.95,
+          suggested: '[SWIFT REDACTED]',
+          redact: true
+        });
+      }
     }
   }
 
@@ -214,11 +229,30 @@ export function detectEntities(text, presetId = 'all', customRules = []) {
           value: match[0],
           start: match.index,
           end: match.index + match[0].length,
-          confidence: 0.95,
+          confidence: 0.99,
           suggested: '[ROUTING REDACTED]',
           redact: true
         });
       }
+    }
+  }
+
+  // ─── 7b. Indian Financial System Code (IFSC) ────────────────────────────────
+  if (allowedTypes.has('ifsc')) {
+    let match;
+    const regex = new RegExp(PATTERNS.IFSC);
+    while ((match = regex.exec(text)) !== null) {
+      rawEntities.push({
+        id: nextId(),
+        type: 'ifsc',
+        category: 'financial',
+        value: match[0],
+        start: match.index,
+        end: match.index + match[0].length,
+        confidence: 0.96,
+        suggested: '[IFSC REDACTED]',
+        redact: true
+      });
     }
   }
 
@@ -227,6 +261,11 @@ export function detectEntities(text, presetId = 'all', customRules = []) {
     let match;
     const regex = new RegExp(PATTERNS.US_SSN);
     while ((match = regex.exec(text)) !== null) {
+      // If preceded by TFN / Tax File Number, it is an Australian TFN, not US SSN
+      const preceding = text.slice(Math.max(0, match.index - 35), match.index);
+      if (/(?:tfn|tax\s+file\s+number)[\s\(\)#:]*$/i.test(preceding.trim())) {
+        continue;
+      }
       if (validateUSSSN(match[0])) {
         rawEntities.push({
           id: nextId(),
@@ -303,6 +342,11 @@ export function detectEntities(text, presetId = 'all', customRules = []) {
     let match;
     const regex = new RegExp(PATTERNS.CA_SIN);
     while ((match = regex.exec(text)) !== null) {
+      // If preceded by routing / transit / ABA, it is a bank routing number, not Canadian SIN
+      const preceding = text.slice(Math.max(0, match.index - 25), match.index);
+      if (/(?:routing|transit|aba|rtn|fedwire)[\s#:]*$/i.test(preceding.trim())) {
+        continue;
+      }
       if (validateCanadianSIN(match[0])) {
         rawEntities.push({
           id: nextId(),
@@ -331,7 +375,7 @@ export function detectEntities(text, presetId = 'all', customRules = []) {
           value: match[0],
           start: match.index,
           end: match.index + match[0].length,
-          confidence: 0.95,
+          confidence: 0.99,
           suggested: '[TFN REDACTED]',
           redact: true
         });
@@ -609,7 +653,7 @@ export function detectEntities(text, presetId = 'all', customRules = []) {
         value: accNum,
         start: match.index + offset,
         end: match.index + offset + accNum.length,
-        confidence: 0.92,
+        confidence: 0.97,
         suggested: '[ACCOUNT REDACTED]',
         redact: true
       });
@@ -795,11 +839,11 @@ export function detectEntities(text, presetId = 'all', customRules = []) {
     }
   }
 
-  // ─── 10. IP Addresses ───────────────────────────────────────────────────────
+  // ─── 10. IP Addresses (IPv4 & IPv6) ─────────────────────────────────────────
   if (allowedTypes.has('ip')) {
     let match;
-    const regex = new RegExp(PATTERNS.IPV4);
-    while ((match = regex.exec(text)) !== null) {
+    const regexV4 = new RegExp(PATTERNS.IPV4);
+    while ((match = regexV4.exec(text)) !== null) {
       rawEntities.push({
         id: nextId(),
         type: 'ip',
@@ -811,6 +855,23 @@ export function detectEntities(text, presetId = 'all', customRules = []) {
         suggested: '[IP REDACTED]',
         redact: true
       });
+    }
+
+    const regexV6 = new RegExp(PATTERNS.IPV6);
+    while ((match = regexV6.exec(text)) !== null) {
+      if (validateIPv6(match[0])) {
+        rawEntities.push({
+          id: nextId(),
+          type: 'ip',
+          category: 'system',
+          value: match[0],
+          start: match.index,
+          end: match.index + match[0].length,
+          confidence: 0.95,
+          suggested: '[IP REDACTED]',
+          redact: true
+        });
+      }
     }
   }
 
@@ -878,8 +939,26 @@ export function detectEntities(text, presetId = 'all', customRules = []) {
   }
 
   // ─── 14. Dates (Formal Document Dates, DOB, Numeric, Spans & Ranges) ────────
-  if (allowedTypes.has('date') || allowedTypes.has('dob')) {
-    const dateRegexes = [PATTERNS.DOCUMENT_DATE, PATTERNS.DATE_OF_BIRTH, PATTERNS.NUMERIC_DATE, PATTERNS.DATE_RANGE];
+  if (allowedTypes.has('dob')) {
+    let match;
+    const regex = new RegExp(PATTERNS.DATE_OF_BIRTH);
+    while ((match = regex.exec(text)) !== null) {
+      rawEntities.push({
+        id: nextId(),
+        type: 'dob',
+        category: 'identity',
+        value: match[0],
+        start: match.index,
+        end: match.index + match[0].length,
+        confidence: 0.95,
+        suggested: '[DOB REDACTED]',
+        redact: true
+      });
+    }
+  }
+
+  if (allowedTypes.has('date')) {
+    const dateRegexes = [PATTERNS.DOCUMENT_DATE, PATTERNS.NUMERIC_DATE, PATTERNS.DATE_RANGE];
     for (const dRegex of dateRegexes) {
       let match;
       const regex = new RegExp(dRegex);

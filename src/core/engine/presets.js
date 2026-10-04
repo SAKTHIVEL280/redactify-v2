@@ -10,7 +10,7 @@ export const PRESETS = {
     description: 'Scans and redacts all international PII, financial, identity, addresses, and contact information.',
     icon: 'ShieldAlert',
     types: [
-      'email', 'phone', 'credit_card', 'iban', 'swift', 'routing',
+      'email', 'phone', 'credit_card', 'iban', 'swift', 'routing', 'ifsc',
       'aadhaar', 'pan', 'passport', 'voter_id', 'driving_license', 'ssn', 'ein', 'nino',
       'sin', 'tfn', 'ip', 'dob', 'name', 'organization', 'url', 'address', 'pincode',
       'date', 'salary', 'education', 'gpa', 'location', 'reference_id',
@@ -39,7 +39,7 @@ export const PRESETS = {
     name: 'APAC & Australia Privacy',
     description: 'Complies with Privacy Act & regional laws: India Aadhaar/PAN/GSTIN, Singapore NRIC/FIN, Australia TFN & Medicare.',
     icon: 'BadgeCheck',
-    types: ['aadhaar', 'pan', 'gstin', 'epfo_uan', 'nric', 'tfn', 'medicare', 'phone', 'email', 'name', 'address', 'bank_account', 'passport']
+    types: ['aadhaar', 'pan', 'gstin', 'epfo_uan', 'nric', 'tfn', 'medicare', 'phone', 'email', 'name', 'address', 'bank_account', 'passport', 'ifsc']
   },
   SECRETS_DEV: {
     id: 'secrets_dev',
@@ -53,7 +53,7 @@ export const PRESETS = {
     name: 'Indian KYC & DPDP',
     description: 'Complies with UIDAI & DPDP: masks Aadhaar (first 8 digits), PAN cards, voter IDs, and passports.',
     icon: 'BadgeCheck',
-    types: ['aadhaar', 'pan', 'passport', 'voter_id', 'driving_license', 'phone', 'dob', 'name', 'address', 'pincode', 'location', 'date', 'reference_id', 'gstin', 'epfo_uan', 'bank_account', 'vehicle_registration']
+    types: ['aadhaar', 'pan', 'passport', 'voter_id', 'driving_license', 'phone', 'dob', 'name', 'address', 'pincode', 'location', 'date', 'reference_id', 'gstin', 'epfo_uan', 'bank_account', 'vehicle_registration', 'ifsc']
   },
   LEGAL: {
     id: 'legal',
