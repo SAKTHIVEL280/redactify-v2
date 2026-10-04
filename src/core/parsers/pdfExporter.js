@@ -202,7 +202,7 @@ export async function exportRedactedPDF({
   if (hasBrowserCanvas && activeRedactions.length > 0) {
     try {
       const pdfjs = await import('pdfjs-dist');
-      pdfJsDoc = await pdfjs.getDocument({ data: fileArrayBuffer.slice(0) }).promise;
+      pdfJsDoc = await pdfjs.getDocument({ data: buffer.slice(0) }).promise;
     } catch {
       pdfJsDoc = null;
     }

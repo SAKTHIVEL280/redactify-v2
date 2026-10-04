@@ -1191,11 +1191,27 @@ export function detectEntities(text, presetId = 'all', customRules = []) {
       finalEntities.push(entity);
       lastEnd = entity.end;
     } else {
-      // Overlap detected: If current has higher confidence, replace previous
+      // Overlap detected: Resolve via priority hierarchy and span
       const prev = finalEntities[finalEntities.length - 1];
-      if (prev && entity.confidence > prev.confidence && (entity.end - entity.start) >= (prev.end - prev.start)) {
-        finalEntities[finalEntities.length - 1] = entity;
-        lastEnd = entity.end;
+      if (prev) {
+        const entityLen = entity.end - entity.start;
+        const prevLen = prev.end - prev.start;
+        const entityIsCustom = entity.type === 'custom';
+        const prevIsCustom = prev.type === 'custom';
+
+        let shouldReplace = false;
+        if (entityIsCustom && !prevIsCustom) {
+          shouldReplace = true;
+        } else if (entityIsCustom && prevIsCustom) {
+          shouldReplace = entityLen > prevLen;
+        } else if (!entityIsCustom && !prevIsCustom) {
+          shouldReplace = entity.confidence > prev.confidence && entityLen >= prevLen;
+        }
+
+        if (shouldReplace) {
+          finalEntities[finalEntities.length - 1] = entity;
+          lastEnd = entity.end;
+        }
       }
     }
   }

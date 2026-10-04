@@ -9,11 +9,12 @@ import { parseAndScanPDF } from './pdfParser.js';
 import { exportRedactedPDF } from './pdfExporter.js';
 import { parseAndExtractDOCX } from './docxParser.js';
 import { exportRedactedDOCX } from './docxExporter.js';
+import { exportRedactedImage } from './imageExporter.js';
 import { detectEntities } from '../engine/detector.js';
 
 export function getBatchFileType(file) {
-  const name = file.name.toLowerCase();
-  const type = file.type.toLowerCase();
+  const name = (file?.name || '').toLowerCase();
+  const type = (file?.type || '').toLowerCase();
 
   if (type === 'application/pdf' || name.endsWith('.pdf')) {
     return 'pdf';
@@ -134,14 +135,29 @@ export async function processBatchItem(item, presetId, customRules, style, isPro
     };
   }
 
-  // Fallback for image: pass through or export sanitized canvas
+  // Image batch handling: run through image exporter (with watermark if trial)
   const arrayBuffer = await file.arrayBuffer();
-  const outputBlob = new Blob([arrayBuffer], { type: file.type || 'image/png' });
-  return {
-    outputBlob,
-    redactionsCount: 0,
-    ext: file.name.split('.').pop() || 'png'
-  };
+  try {
+    const outputBlob = await exportRedactedImage({
+      file,
+      fileArrayBuffer: arrayBuffer,
+      redactions: [],
+      style,
+      isPro
+    });
+    return {
+      outputBlob,
+      redactionsCount: 0,
+      ext: (file?.name || 'image.png').split('.').pop() || 'png'
+    };
+  } catch {
+    const outputBlob = new Blob([arrayBuffer], { type: file?.type || 'image/png' });
+    return {
+      outputBlob,
+      redactionsCount: 0,
+      ext: (file?.name || 'image.png').split('.').pop() || 'png'
+    };
+  }
 }
 
 export async function createBatchZip(completedItems, presetName = 'Standard PII Compliance') {

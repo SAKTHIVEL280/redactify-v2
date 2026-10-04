@@ -5,11 +5,28 @@
 
 export async function exportRedactedImage({
   imageFile,
-  redactions,
+  file,
+  fileArrayBuffer,
+  redactions = [],
   style = { color: '#09090b', textColor: '#ffffff', label: '[REDACTED]', showLabel: false },
   isPro = false,
   rotation = 0
 }) {
+  let sourceBlob = imageFile || file;
+  if (!sourceBlob && fileArrayBuffer) {
+    sourceBlob = new Blob([fileArrayBuffer], { type: 'image/png' });
+  }
+  if (!sourceBlob) {
+    throw new Error('exportRedactedImage requires imageFile, file, or fileArrayBuffer');
+  }
+  if (sourceBlob instanceof ArrayBuffer || (typeof Uint8Array !== 'undefined' && sourceBlob instanceof Uint8Array)) {
+    sourceBlob = new Blob([sourceBlob], { type: 'image/png' });
+  }
+
+  if (typeof FileReader === 'undefined' || typeof Image === 'undefined' || typeof document === 'undefined') {
+    return sourceBlob instanceof Blob ? sourceBlob : new Blob([sourceBlob], { type: 'image/png' });
+  }
+
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -96,12 +113,12 @@ export async function exportRedactedImage({
           } else {
             reject(new Error('Canvas to Blob conversion failed'));
           }
-        }, imageFile.type || 'image/png', 0.95);
+        }, sourceBlob.type || 'image/png', 0.95);
       };
       img.onerror = () => reject(new Error('Failed to load image for redaction'));
       img.src = e.target.result;
     };
     reader.onerror = () => reject(new Error('Failed to read image file'));
-    reader.readAsDataURL(imageFile);
+    reader.readAsDataURL(sourceBlob);
   });
 }

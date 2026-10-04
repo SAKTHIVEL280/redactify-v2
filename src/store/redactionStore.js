@@ -155,14 +155,15 @@ export const useRedactionStore = create((set, get) => ({
 
   // Custom Rules CRUD with localStorage persistence
   addCustomRule: (rule) => set((state) => {
+    const rawPattern = rule?.pattern?.trim() || '';
     const newRule = {
       id: `rule_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
-      name: rule.name?.trim() || rule.pattern.trim(),
-      pattern: rule.pattern.trim(),
-      isRegex: Boolean(rule.isRegex),
-      caseSensitive: Boolean(rule.caseSensitive),
-      wholeWord: rule.wholeWord !== undefined ? Boolean(rule.wholeWord) : true,
-      replacement: rule.replacement || '[CONFIDENTIAL]',
+      name: rule?.name?.trim() || rawPattern || 'Custom Rule',
+      pattern: rawPattern,
+      isRegex: Boolean(rule?.isRegex),
+      caseSensitive: Boolean(rule?.caseSensitive),
+      wholeWord: rule?.wholeWord !== undefined ? Boolean(rule.wholeWord) : true,
+      replacement: rule?.replacement || '[CONFIDENTIAL]',
       enabled: true,
       ...rule
     };

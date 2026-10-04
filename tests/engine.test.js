@@ -28,6 +28,7 @@ import { PRESETS } from '../src/core/engine/presets.js';
 import JSZip from 'jszip';
 import { parseAndExtractDOCX } from '../src/core/parsers/docxParser.js';
 import { exportRedactedDOCX } from '../src/core/parsers/docxExporter.js';
+import { exportRedactedImage } from '../src/core/parsers/imageExporter.js';
 import { validateLicenseKey, generateValidLicenseKey } from '../src/core/license/validator.js';
 import { exportRedactedPDF } from '../src/core/parsers/pdfExporter.js';
 import { findPhraseWordGroups } from '../src/core/parsers/ocrScanner.js';
@@ -913,6 +914,135 @@ const batchTxtItem = {
 const batchTxtResult = await processBatchItem(batchTxtItem, 'all', [], { label: '[REDACTED]' }, true);
 const txtOutStr = await batchTxtResult.outputBlob.text();
 assert(!txtOutStr.includes('123-45-6789') && txtOutStr.includes('[SSN REDACTED]'), 'Batch Item: Successfully scrubs text file');
+
+// Image Batch Item
+const imageFileObj = new File([new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10])], 'badge.png', { type: 'image/png' });
+const batchImgItem = {
+  id: 'batch_test_img',
+  file: imageFileObj,
+  fileType: 'image'
+};
+const batchImgResult = await processBatchItem(batchImgItem, 'all', [], { label: '[REDACTED]' }, true);
+assert(batchImgResult.outputBlob instanceof Blob, 'Batch Item: Successfully processes image file in batch');
+assert(batchImgResult.ext === 'png', 'Batch Item: Preserves PNG image extension');
+
+// Image Redaction Polymorphic Engine Tests
+const directImgBlob = await exportRedactedImage({
+  file: imageFileObj,
+  redactions: [],
+  isPro: true
+});
+assert(directImgBlob instanceof Blob && directImgBlob.size > 0, 'Image Export: Accepts File instance directly');
+
+const bufImgBlob = await exportRedactedImage({
+  fileArrayBuffer: new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]).buffer,
+  redactions: [],
+  isPro: false
+});
+assert(bufImgBlob instanceof Blob && bufImgBlob.size > 0, 'Image Export: Accepts ArrayBuffer directly and exports trial blob');
+
+let imgMissingErr = null;
+try {
+  await exportRedactedImage({});
+} catch (e) {
+  imgMissingErr = e;
+}
+assert(imgMissingErr !== null, 'Negative Test: exportRedactedImage throws when missing imageFile, file, and buffer');
+
+// getBatchFileType Boundary & Corner Cases
+assert(getBatchFileType({ name: 'scan.pdf', type: 'application/pdf' }) === 'pdf', 'getBatchFileType: Detects standard PDF');
+assert(getBatchFileType({ name: 'DOCUMENT.PDF', type: '' }) === 'pdf', 'getBatchFileType: Detects uppercase PDF extension');
+assert(getBatchFileType({ name: 'contract.docx', type: '' }) === 'docx', 'getBatchFileType: Detects DOCX by filename');
+assert(getBatchFileType({ name: 'PHOTO.JPG', type: 'image/jpeg' }) === 'image', 'getBatchFileType: Detects uppercase JPEG image');
+assert(getBatchFileType({ name: 'photo.webp', type: '' }) === 'image', 'getBatchFileType: Detects WebP image by filename');
+assert(getBatchFileType({ name: 'spreadsheet.xlsx', type: '' }) === 'text', 'getBatchFileType: Treats spreadsheet as text stream');
+assert(getBatchFileType({ name: 'data.csv', type: 'text/csv' }) === 'text', 'getBatchFileType: Treats CSV as text stream');
+assert(getBatchFileType(null) === 'text', 'getBatchFileType: Safely defaults to text on null input');
+assert(getBatchFileType({}) === 'text', 'getBatchFileType: Safely defaults to text on empty object');
+
+// Multi-file createBatchZip & Audit Manifest
+const batchItemsForZip = [
+  { file: samplePdfForExport, fileType: 'pdf', status: 'completed', redactionsCount: 4, outputBlob: batchPdfResult.outputBlob, ext: 'pdf' },
+  { file: docxFileObj, fileType: 'docx', status: 'completed', redactionsCount: 1, outputBlob: batchDocxResult.outputBlob, ext: 'docx' },
+  { file: txtFileObj, fileType: 'text', status: 'completed', redactionsCount: 1, outputBlob: batchTxtResult.outputBlob, ext: 'txt' }
+];
+const batchZipBlob = await createBatchZip(batchItemsForZip, 'GDPR Full Redaction');
+assert(batchZipBlob instanceof Blob && batchZipBlob.size > 1000, 'Batch ZIP: Bundles multiple formats into compliant zip archive');
+const batchZipParsed = await JSZip.loadAsync(await batchZipBlob.arrayBuffer());
+assert(batchZipParsed.file('REDACTION_AUDIT_LOG.txt') !== null, 'Batch ZIP: Includes REDACTION_AUDIT_LOG.txt in root');
+const auditLogStr = await batchZipParsed.file('REDACTION_AUDIT_LOG.txt').async('string');
+assert(auditLogStr.includes('GDPR Full Redaction'), 'Audit Manifest: Includes active preset name');
+assert(auditLogStr.includes('Zero Cloud Data Transmission'), 'Audit Manifest: Confirms client-side zero-trust invariant');
+
+// Document Store State Verification
+useDocumentStore.getState().setFile(null, null);
+assert(useDocumentStore.getState().fileName === '', 'Document Store: setFile(null) handles null gracefully without throwing');
+useDocumentStore.getState().setFile(txtFileObj, 'text');
+assert(useDocumentStore.getState().fileName === 'test.txt', 'Document Store: Sets active file correctly');
+useDocumentStore.getState().clearDocument();
+assert(useDocumentStore.getState().file === null && useDocumentStore.getState().fileName === '', 'Document Store: clearDocument resets state cleanly');
+
+// Redaction Store State & Undo/Redo Engine Verification
+useRedactionStore.getState().clearRedactions();
+assert(useRedactionStore.getState().redactions.length === 0, 'Redaction Store: clearRedactions empties items');
+useRedactionStore.getState().addRedaction({ id: 'box_a', pageIndex: 0, x: 0.1, y: 0.1, width: 0.2, height: 0.05, value: 'Secret', redact: true });
+assert(useRedactionStore.getState().redactions.length === 1, 'Redaction Store: addRedaction adds new item');
+useRedactionStore.getState().addRedaction({ id: 'box_b', pageIndex: 0, x: 0.3, y: 0.3, width: 0.2, height: 0.05, value: 'Password', redact: true });
+assert(useRedactionStore.getState().redactions.length === 2, 'Redaction Store: adds second item');
+useRedactionStore.getState().undo();
+assert(useRedactionStore.getState().redactions.length === 1, 'Redaction Store Undo: Restores previous snapshot');
+useRedactionStore.getState().redo();
+assert(useRedactionStore.getState().redactions.length === 2, 'Redaction Store Redo: Restores undone mutation');
+useRedactionStore.getState().toggleRedaction('box_a');
+assert(useRedactionStore.getState().redactions.find(r => r.id === 'box_a').redact === false, 'Redaction Store: toggleRedaction flips active state');
+useRedactionStore.getState().toggleAllRedactions(false);
+assert(useRedactionStore.getState().redactions.every(r => r.redact === false), 'Redaction Store: toggleAllRedactions(false) disables all');
+useRedactionStore.getState().toggleAllRedactions(true);
+assert(useRedactionStore.getState().redactions.every(r => r.redact === true), 'Redaction Store: toggleAllRedactions(true) enables all');
+
+// Contextual Disambiguation Engine Black-Box Tests
+const bankAccDoc = 'Customer Account Number: 123456789012 at branch';
+const bankDetections = detectEntities(bankAccDoc, 'all');
+assert(bankDetections.some(d => d.type === 'bank_account'), 'Disambiguation: Preceded by "Account Number" matched as bank_account, not Aadhaar');
+assert(!bankDetections.some(d => d.type === 'aadhaar'), 'Disambiguation: Preceded by "Account Number" excludes Aadhaar');
+
+const courtDoc = 'Hearing in the High Court of California regarding zoning';
+const courtDetections = detectEntities(courtDoc, 'all');
+assert(!courtDetections.some(d => d.type === 'address'), 'Disambiguation: "High Court of California" never matches as residential street address');
+
+const headerTitleDoc = 'CURRICULUM VITAE\n\nOFFER LETTER\n\nAlex Mercer\nSoftware Architect';
+const headerTitleDetections = detectEntities(headerTitleDoc, 'resume');
+const detectedNames = headerTitleDetections.filter(d => d.type === 'name').map(d => d.value.toUpperCase());
+assert(!detectedNames.includes('CURRICULUM VITAE'), 'Disambiguation: Document title "CURRICULUM VITAE" never matched as person name');
+assert(!detectedNames.includes('OFFER LETTER'), 'Disambiguation: Document title "OFFER LETTER" never matched as person name');
+assert(detectedNames.some(n => n.includes('ALEX MERCER')), 'Disambiguation: Real candidate name "Alex Mercer" recognized accurately');
+
+// Negative Tests for Non-String & Empty Inputs
+assert(Array.isArray(detectEntities(null)) && detectEntities(null).length === 0, 'Negative Test: detectEntities(null) returns empty array');
+assert(Array.isArray(detectEntities(undefined)) && detectEntities(undefined).length === 0, 'Negative Test: detectEntities(undefined) returns empty array');
+assert(Array.isArray(detectEntities(12345)) && detectEntities(12345).length === 0, 'Negative Test: detectEntities(number) returns empty array');
+assert(Array.isArray(detectEntities({})) && detectEntities({}).length === 0, 'Negative Test: detectEntities(object) returns empty array');
+assert(Array.isArray(detectEntities([])) && detectEntities([]).length === 0, 'Negative Test: detectEntities(array) returns empty array');
+assert(Array.isArray(detectEntities('   \t\n  ')) && detectEntities('   \t\n  ').length === 0, 'Negative Test: detectEntities(whitespace) returns empty array');
+
+// International Multilingual & Unicode Tests
+const cyrillicDoc = 'Контакты для связи: ivan.petrov@yandex.ru, телефон: +7 (999) 123-45-67.';
+const cyrillicRes = detectEntities(cyrillicDoc, 'all');
+assert(cyrillicRes.some(d => d.value === 'ivan.petrov@yandex.ru'), 'Multilingual: Detects email embedded in Cyrillic Russian text');
+
+const cjkDoc = '请发送您的简历至 zhang.wei@tencent.com 谢谢。';
+const cjkRes = detectEntities(cjkDoc, 'all');
+assert(cjkRes.some(d => d.value === 'zhang.wei@tencent.com'), 'Multilingual: Detects email embedded in Chinese CJK text');
+
+const arabicDoc = 'يرجى التواصل عبر البريد الإلكتروني ahmad.khalil@company.ae وشكراً.';
+const arabicRes = detectEntities(arabicDoc, 'all');
+assert(arabicRes.some(d => d.value === 'ahmad.khalil@company.ae'), 'Multilingual: Detects email embedded in Arabic RTL text');
+
+// Formula Injection & Dangerous Spreadsheets Resilience
+const formulaDoc = 'Cell A1 contains =cmd|\' /C calc\'!A0 and @SUM(1+1) payload.';
+const formulaRules = [{ id: 'rule_formula', pattern: '=cmd|\' /C calc\'!A0', isRegex: false, replacement: '[FORMULA SCRUBBED]' }];
+const formulaRes = detectEntities(formulaDoc, 'all', formulaRules);
+assert(formulaRes.some(d => d.value === '=cmd|\' /C calc\'!A0'), 'Security: Accurately scrubs spreadsheet formula injection payload');
 
 console.log('\n─── Testing Real-Time Document Rescan Helper ─────────────────────');
 const existingManuals = [

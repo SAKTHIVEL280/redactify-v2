@@ -19,8 +19,8 @@ export const useDocumentStore = create((set) => ({
 
   setFile: (file, fileType) => set({
     file,
-    fileName: file.name,
-    fileSize: file.size,
+    fileName: file?.name || '',
+    fileSize: file?.size || 0,
     fileType,
     currentPage: 1,
     rotation: 0,
