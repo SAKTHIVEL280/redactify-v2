@@ -1,7 +1,13 @@
-import React, { useState, useMemo } from 'react';
-import { ShieldCheck, Search, CheckSquare, Square, Trash2, MessageSquarePlus, Filter, ChevronDown, X } from 'lucide-react';
+import React, { useState, useMemo, useCallback } from 'react';
+import { 
+  Search, CheckSquare, Square, Trash2, MessageSquarePlus, 
+  ChevronDown, X, Plus, Edit2, Tag, ToggleLeft, ToggleRight 
+} from 'lucide-react';
 import { useRedactionStore } from '../store/redactionStore';
+import { useDocumentStore } from '../store/documentStore';
 import { PRESETS } from '../core/engine/presets';
+import { CustomRuleModal } from './CustomRuleModal';
+import { rescanActiveDocument } from '../core/engine/rescanHelper';
 
 export function EntityInspector({ onOpenFeedback }) {
   const redactions = useRedactionStore((s) => s.redactions);
@@ -12,9 +18,65 @@ export function EntityInspector({ onOpenFeedback }) {
   const setActivePreset = useRedactionStore((s) => s.setActivePreset);
   const isInspectorOpen = useRedactionStore((s) => s.isInspectorOpen);
   const toggleInspector = useRedactionStore((s) => s.toggleInspector);
+  const customRules = useRedactionStore((s) => s.customRules);
+  const addCustomRule = useRedactionStore((s) => s.addCustomRule);
+  const updateCustomRule = useRedactionStore((s) => s.updateCustomRule);
+  const removeCustomRule = useRedactionStore((s) => s.removeCustomRule);
+  const toggleCustomRule = useRedactionStore((s) => s.toggleCustomRule);
+  const setRedactions = useRedactionStore((s) => s.setRedactions);
 
+  const file = useDocumentStore((s) => s.file);
+  const fileType = useDocumentStore((s) => s.fileType);
+  const rawText = useDocumentStore((s) => s.rawText);
+
+  const [activeTab, setActiveTab] = useState('auto'); // 'auto' | 'custom'
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [isRuleModalOpen, setIsRuleModalOpen] = useState(false);
+  const [editingRule, setEditingRule] = useState(null);
+
+  // Trigger document re-scan when rules change
+  const triggerRescan = useCallback(async (updatedRules = customRules) => {
+    if (!file && !rawText) return;
+    try {
+      const refreshed = await rescanActiveDocument({
+        file,
+        fileType,
+        rawText,
+        activePreset,
+        customRules: updatedRules,
+        existingRedactions: redactions
+      });
+      setRedactions(refreshed);
+    } catch (err) {
+      console.error('Re-scan error after rule update:', err);
+    }
+  }, [file, fileType, rawText, activePreset, customRules, redactions, setRedactions]);
+
+  const handleSaveRule = (ruleData) => {
+    if (editingRule) {
+      updateCustomRule(ruleData.id, ruleData);
+      const updated = customRules.map((r) => (r.id === ruleData.id ? { ...r, ...ruleData } : r));
+      triggerRescan(updated);
+    } else {
+      addCustomRule(ruleData);
+      const updated = [...customRules, { id: `rule_${Date.now()}`, enabled: true, ...ruleData }];
+      triggerRescan(updated);
+    }
+    setEditingRule(null);
+  };
+
+  const handleToggleRule = (id) => {
+    toggleCustomRule(id);
+    const updated = customRules.map((r) => (r.id === id ? { ...r, enabled: !r.enabled } : r));
+    triggerRescan(updated);
+  };
+
+  const handleDeleteRule = (id) => {
+    removeCustomRule(id);
+    const updated = customRules.filter((r) => r.id !== id);
+    triggerRescan(updated);
+  };
 
   const filteredRedactions = useMemo(() => {
     return redactions.filter((r) => {
@@ -37,6 +99,17 @@ export function EntityInspector({ onOpenFeedback }) {
 
   const allSelected = redactions.length > 0 && redactions.every((r) => r.redact);
 
+  // Compute matches per custom rule
+  const ruleMatchCounts = useMemo(() => {
+    const counts = {};
+    for (const rule of customRules) {
+      counts[rule.id] = redactions.filter(
+        (r) => r.ruleId === rule.id || (r.category === 'custom' && r.suggested === rule.replacement)
+      ).length;
+    }
+    return counts;
+  }, [customRules, redactions]);
+
   return (
     <>
       {/* Mobile Backdrop Overlay */}
@@ -51,165 +124,324 @@ export function EntityInspector({ onOpenFeedback }) {
       <aside className={`w-full max-w-[320px] sm:max-w-xs md:w-80 border-l border-stone-mist bg-paper-white flex flex-col h-full shrink-0 select-none transition-all duration-200 ${
         !isInspectorOpen ? 'hidden' : 'flex'
       } fixed top-16 bottom-0 right-0 z-40 md:relative md:top-auto md:bottom-auto shadow-2xl md:shadow-none`}>
-      {/* Header */}
-      <div className="p-4 border-b border-stone-mist flex items-center justify-between">
-        <div>
-          <div className="text-xs font-mono font-semibold text-charcoal uppercase tracking-wider flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-600" />
-            <span>Entity Inspector</span>
+        {/* Header */}
+        <div className="p-4 border-b border-stone-mist flex items-center justify-between">
+          <div>
+            <div className="text-xs font-mono font-semibold text-charcoal uppercase tracking-wider flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-600" />
+              <span>Entity Inspector</span>
+            </div>
+            <p className="text-[11px] text-bark-grey mt-0.5 font-mono">
+              <span className="text-charcoal font-semibold">{redactions.length}</span> items detected
+            </p>
           </div>
-          <p className="text-[11px] text-bark-grey mt-0.5 font-mono">
-            <span className="text-charcoal font-semibold">{redactions.length}</span> items detected
-          </p>
-        </div>
 
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => toggleAllRedactions(!allSelected)}
-            className="text-[11px] font-mono font-medium text-charcoal hover:underline transition-colors"
-          >
-            {allSelected ? 'Deselect All' : 'Select All'}
-          </button>
-          <button
-            onClick={toggleInspector}
-            className="md:hidden p-1 rounded-full text-bark-grey hover:text-charcoal hover:bg-stone-mist/30 transition-colors"
-            title="Close Inspector"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-
-      {/* Search & Filter */}
-      <div className="p-3 border-b border-stone-mist space-y-2">
-        {/* Preset Selector Dropdown */}
-        <div className="flex items-center justify-between gap-2 pb-1 border-b border-stone-mist/40">
-          <span className="text-[10px] uppercase font-mono font-semibold text-bark-grey tracking-wider">
-            Preset:
-          </span>
-          <div className="relative flex-1 max-w-[190px]">
-            <select
-              value={activePreset}
-              onChange={(e) => setActivePreset(e.target.value)}
-              className="w-full appearance-none bg-soft-cream border border-stone-mist rounded-button px-2.5 py-1 pr-6 text-[11px] text-charcoal font-mono font-medium focus:outline-none cursor-pointer truncate hover:bg-stone-mist/30 transition-colors"
-            >
-              {Object.values(PRESETS).map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="w-3 h-3 text-bark-grey absolute right-2 top-2 pointer-events-none" />
-          </div>
-        </div>
-
-        <div className="relative">
-          <Search className="w-3.5 h-3.5 text-bark-grey absolute left-3 top-2.5" />
-          <input
-            type="text"
-            placeholder="Search detected text..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-soft-cream border border-stone-mist rounded-button pl-8 pr-3 py-1.5 text-xs text-charcoal placeholder-stone-400 focus:outline-none focus:border-charcoal font-mono transition-colors"
-          />
-        </div>
-
-        {/* Category Pills */}
-        <div className="flex items-center gap-1 overflow-x-auto py-0.5 no-scrollbar font-mono">
-          {categories.map((cat) => (
+          <div className="flex items-center gap-3">
+            {activeTab === 'auto' && (
+              <button
+                onClick={() => toggleAllRedactions(!allSelected)}
+                className="text-[11px] font-mono font-medium text-charcoal hover:underline transition-colors"
+              >
+                {allSelected ? 'Deselect All' : 'Select All'}
+              </button>
+            )}
             <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-2.5 py-0.5 rounded-full text-[10px] font-medium capitalize shrink-0 transition-colors ${
-                selectedCategory === cat
-                  ? 'bg-charcoal text-white'
-                  : 'bg-soft-cream text-bark-grey hover:text-charcoal border border-stone-mist'
-              }`}
+              onClick={toggleInspector}
+              className="md:hidden p-1 rounded-full text-bark-grey hover:text-charcoal hover:bg-stone-mist/30 transition-colors"
+              title="Close Inspector"
             >
-              {cat}
+              <X className="w-4 h-4" />
             </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Entity List */}
-      <div className="flex-1 overflow-y-auto p-2 space-y-1 divide-y divide-stone-mist/40">
-        {filteredRedactions.length === 0 ? (
-          <div className="text-center py-12 text-bark-grey text-xs font-mono">
-            No entities match your filter.
           </div>
-        ) : (
-          filteredRedactions.map((r) => (
-            <div
-              key={r.id}
-              onClick={() => toggleRedaction(r.id)}
-              className={`p-2.5 rounded-card cursor-pointer transition-all flex items-start justify-between gap-2 group ${
-                r.redact
-                  ? 'bg-soft-cream hover:bg-stone-mist/40 border border-stone-mist'
-                  : 'bg-transparent hover:bg-soft-cream/50 border border-transparent opacity-40'
-              }`}
-            >
-              <div className="flex items-start gap-2 min-w-0">
-                <div className="mt-0.5 text-charcoal">
-                  {r.redact ? (
-                    <CheckSquare className="w-3.5 h-3.5 text-charcoal" />
-                  ) : (
-                    <Square className="w-3.5 h-3.5 text-bark-grey" />
-                  )}
-                </div>
+        </div>
 
-                <div className="min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] font-mono font-medium uppercase px-1.5 py-0.5 rounded bg-paper-white text-charcoal border border-stone-mist">
-                      {r.entityType || r.category}
-                    </span>
-                    {r.type === 'manual' && (
-                      <span className="text-[9px] text-terracotta font-medium font-mono px-1 rounded bg-terracotta/10 border border-terracotta/30">
-                        MANUAL
-                      </span>
-                    )}
-                  </div>
+        {/* Tab Navigation: Auto PII vs Custom Rules */}
+        <div className="flex border-b border-stone-mist bg-soft-cream/50">
+          <button
+            onClick={() => setActiveTab('auto')}
+            className={`flex-1 py-2 text-xs font-mono font-medium border-b-2 transition-all flex items-center justify-center gap-1.5 ${
+              activeTab === 'auto'
+                ? 'border-charcoal text-charcoal bg-paper-white'
+                : 'border-transparent text-bark-grey hover:text-charcoal'
+            }`}
+          >
+            <span>Auto PII</span>
+            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-stone-mist/60 text-charcoal font-semibold">
+              {redactions.length}
+            </span>
+          </button>
+          <button
+            onClick={() => setActiveTab('custom')}
+            className={`flex-1 py-2 text-xs font-mono font-medium border-b-2 transition-all flex items-center justify-center gap-1.5 ${
+              activeTab === 'custom'
+                ? 'border-charcoal text-charcoal bg-paper-white'
+                : 'border-transparent text-bark-grey hover:text-charcoal'
+            }`}
+          >
+            <span>Custom Rules</span>
+            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-stone-mist/60 text-charcoal font-semibold">
+              {customRules.length}
+            </span>
+          </button>
+        </div>
 
-                  <div className="text-xs font-mono text-charcoal truncate mt-1">
-                    {r.value}
-                  </div>
-
-                  {r.suggested && (
-                    <div className="text-[10px] text-bark-grey font-mono mt-0.5 truncate">
-                      → {r.suggested}
-                    </div>
-                  )}
+        {activeTab === 'auto' ? (
+          <>
+            {/* Search & Filter */}
+            <div className="p-3 border-b border-stone-mist space-y-2">
+              {/* Preset Selector Dropdown */}
+              <div className="flex items-center justify-between gap-2 pb-1 border-b border-stone-mist/40">
+                <span className="text-[10px] uppercase font-mono font-semibold text-bark-grey tracking-wider">
+                  Preset:
+                </span>
+                <div className="relative flex-1 max-w-[190px]">
+                  <select
+                    value={activePreset}
+                    onChange={(e) => setActivePreset(e.target.value)}
+                    className="w-full appearance-none bg-soft-cream border border-stone-mist rounded-button px-2.5 py-1 pr-6 text-[11px] text-charcoal font-mono font-medium focus:outline-none cursor-pointer truncate hover:bg-stone-mist/30 transition-colors"
+                  >
+                    {Object.values(PRESETS).map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="w-3 h-3 text-bark-grey absolute right-2 top-2 pointer-events-none" />
                 </div>
               </div>
 
-              {r.type === 'manual' && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    removeRedaction(r.id);
-                  }}
-                  className="p-1 rounded-button text-bark-grey hover:text-rose-600 hover:bg-stone-mist/40 opacity-0 group-hover:opacity-100 transition-all"
-                  title="Remove manual box"
-                >
-                  <Trash2 className="w-3 h-3" />
-                </button>
+              <div className="relative">
+                <Search className="w-3.5 h-3.5 text-bark-grey absolute left-3 top-2.5" />
+                <input
+                  type="text"
+                  placeholder="Search detected text..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-soft-cream border border-stone-mist rounded-button pl-8 pr-3 py-1.5 text-xs text-charcoal placeholder-stone-400 focus:outline-none focus:border-charcoal font-mono transition-colors"
+                />
+              </div>
+
+              {/* Category Pills */}
+              <div className="flex items-center gap-1 overflow-x-auto py-0.5 no-scrollbar font-mono">
+                {categories.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedCategory(cat)}
+                    className={`px-2.5 py-0.5 rounded-full text-[10px] font-medium capitalize shrink-0 transition-colors ${
+                      selectedCategory === cat
+                        ? 'bg-charcoal text-white'
+                        : 'bg-soft-cream text-bark-grey hover:text-charcoal border border-stone-mist'
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Entity List */}
+            <div className="flex-1 overflow-y-auto p-2 space-y-1 divide-y divide-stone-mist/40">
+              {filteredRedactions.length === 0 ? (
+                <div className="text-center py-12 text-bark-grey text-xs font-mono">
+                  No entities match your filter.
+                </div>
+              ) : (
+                filteredRedactions.map((r) => (
+                  <div
+                    key={r.id}
+                    onClick={() => toggleRedaction(r.id)}
+                    className={`p-2.5 rounded-card cursor-pointer transition-all flex items-start justify-between gap-2 group ${
+                      r.redact
+                        ? 'bg-soft-cream hover:bg-stone-mist/40 border border-stone-mist'
+                        : 'bg-transparent hover:bg-soft-cream/50 border border-transparent opacity-40'
+                    }`}
+                  >
+                    <div className="flex items-start gap-2 min-w-0">
+                      <div className="mt-0.5 text-charcoal">
+                        {r.redact ? (
+                          <CheckSquare className="w-3.5 h-3.5 text-charcoal" />
+                        ) : (
+                          <Square className="w-3.5 h-3.5 text-bark-grey" />
+                        )}
+                      </div>
+
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] font-mono font-medium uppercase px-1.5 py-0.5 rounded bg-paper-white text-charcoal border border-stone-mist">
+                            {r.entityType || r.category}
+                          </span>
+                          {r.type === 'manual' && (
+                            <span className="text-[9px] text-terracotta font-medium font-mono px-1 rounded bg-terracotta/10 border border-terracotta/30">
+                              MANUAL
+                            </span>
+                          )}
+                          {r.category === 'custom' && (
+                            <span className="text-[9px] text-amber-800 font-medium font-mono px-1 rounded bg-amber-50 border border-amber-200">
+                              CUSTOM
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="text-xs font-mono text-charcoal truncate mt-1">
+                          {r.value}
+                        </div>
+
+                        {r.suggested && (
+                          <div className="text-[10px] text-bark-grey font-mono mt-0.5 truncate">
+                            → {r.suggested}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {r.type === 'manual' && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeRedaction(r.id);
+                        }}
+                        className="p-1 rounded-button text-bark-grey hover:text-rose-600 hover:bg-stone-mist/40 opacity-0 group-hover:opacity-100 transition-all"
+                        title="Remove manual box"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
+                ))
               )}
             </div>
-          ))
-        )}
-      </div>
+          </>
+        ) : (
+          /* Custom Rules Tab */
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <div className="p-3 border-b border-stone-mist">
+              <button
+                onClick={() => {
+                  setEditingRule(null);
+                  setIsRuleModalOpen(true);
+                }}
+                className="w-full py-2 px-3 rounded-button bg-charcoal hover:bg-black text-white text-xs font-mono font-medium flex items-center justify-center gap-1.5 transition-all shadow-xs"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Add Custom Term or Regex</span>
+              </button>
+            </div>
 
-      {/* Feedback Footer */}
-      <div className="p-3 border-t border-stone-mist bg-paper-white">
-        <button
-          onClick={onOpenFeedback}
-          className="w-full py-2 px-3 rounded-button bg-soft-cream hover:bg-stone-mist/40 border border-stone-mist text-charcoal text-xs font-mono font-medium flex items-center justify-center gap-2 transition-all"
-        >
-          <MessageSquarePlus className="w-3.5 h-3.5 text-charcoal" />
-          <span>Report Missed Text / Feedback</span>
-        </button>
-      </div>
-    </aside>
+            <div className="flex-1 overflow-y-auto p-2 space-y-2">
+              {customRules.length === 0 ? (
+                <div className="text-center py-12 px-4 text-bark-grey text-xs font-mono space-y-2">
+                  <Tag className="w-6 h-6 mx-auto text-bark-grey/60" />
+                  <p className="font-semibold text-charcoal">No custom rules configured</p>
+                  <p className="text-[11px] leading-relaxed">
+                    Add project codenames, client names, or proprietary regex patterns to automatically redact them across documents.
+                  </p>
+                </div>
+              ) : (
+                customRules.map((rule) => {
+                  const matchCount = ruleMatchCounts[rule.id] || 0;
+                  return (
+                    <div
+                      key={rule.id}
+                      className={`p-3 rounded-card border transition-all ${
+                        rule.enabled
+                          ? 'bg-soft-cream border-stone-mist shadow-xs'
+                          : 'bg-paper-white border-stone-mist/50 opacity-60'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => handleToggleRule(rule.id)}
+                              className="focus:outline-none"
+                              title={rule.enabled ? 'Disable rule' : 'Enable rule'}
+                            >
+                              {rule.enabled ? (
+                                <ToggleRight className="w-4 h-4 text-emerald-600" />
+                              ) : (
+                                <ToggleLeft className="w-4 h-4 text-bark-grey" />
+                              )}
+                            </button>
+                            <span className="font-medium text-xs text-charcoal truncate">
+                              {rule.name}
+                            </span>
+                          </div>
+
+                          <div className="mt-1 font-mono text-[11px] text-bark-grey truncate bg-paper-white/80 px-2 py-0.5 rounded border border-stone-mist/60">
+                            {rule.pattern}
+                          </div>
+
+                          <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                            <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-paper-white text-charcoal border border-stone-mist">
+                              {rule.isRegex ? 'RegEx' : 'Keyword'}
+                            </span>
+                            {rule.caseSensitive && (
+                              <span className="text-[9px] font-mono px-1 py-0.5 rounded bg-stone-mist/40 text-charcoal">
+                                Aa
+                              </span>
+                            )}
+                            <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200">
+                              → {rule.replacement}
+                            </span>
+                            <span className="text-[9px] font-mono text-bark-grey ml-auto">
+                              {matchCount} match{matchCount === 1 ? '' : 'es'}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingRule(rule);
+                              setIsRuleModalOpen(true);
+                            }}
+                            className="p-1 rounded text-bark-grey hover:text-charcoal hover:bg-stone-mist/40 transition-colors"
+                            title="Edit rule"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteRule(rule.id)}
+                            className="p-1 rounded text-bark-grey hover:text-rose-600 hover:bg-stone-mist/40 transition-colors"
+                            title="Delete rule"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Feedback Footer */}
+        <div className="p-3 border-t border-stone-mist bg-paper-white">
+          <button
+            onClick={onOpenFeedback}
+            className="w-full py-2 px-3 rounded-button bg-soft-cream hover:bg-stone-mist/40 border border-stone-mist text-charcoal text-xs font-mono font-medium flex items-center justify-center gap-2 transition-all"
+          >
+            <MessageSquarePlus className="w-3.5 h-3.5 text-charcoal" />
+            <span>Report Missed Text / Feedback</span>
+          </button>
+        </div>
+      </aside>
+
+      {/* Modal for adding/editing custom rules */}
+      <CustomRuleModal
+        isOpen={isRuleModalOpen}
+        onClose={() => {
+          setIsRuleModalOpen(false);
+          setEditingRule(null);
+        }}
+        onSave={handleSaveRule}
+        editingRule={editingRule}
+      />
     </>
   );
 }

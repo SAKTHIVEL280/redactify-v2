@@ -197,11 +197,16 @@ function processXmlFile(content, activeItems, defaultLabel, addTrialBanner = fal
 
 export async function exportRedactedDOCX({
   fileArrayBuffer,
-  redactions,
+  file,
+  redactions = [],
   style = { label: '[REDACTED]' },
   isPro = false
 }) {
-  const zip = await JSZip.loadAsync(fileArrayBuffer);
+  const buffer = fileArrayBuffer || (file ? await file.arrayBuffer() : null);
+  if (!buffer) {
+    throw new Error('exportRedactedDOCX requires fileArrayBuffer or file');
+  }
+  const zip = await JSZip.loadAsync(buffer);
   const documentXmlPath = 'word/document.xml';
   let docXmlContent = await zip.file(documentXmlPath)?.async('string');
 

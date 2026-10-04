@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { validateLicenseKey } from '../core/license/validator';
+import { validateLicenseKey } from '../core/license/validator.js';
 
 const LICENSE_STORAGE_KEY = 'redactify_pro_license';
 
@@ -24,9 +24,12 @@ export const useLicenseStore = create((set, get) => {
     // Ignore storage parse errors
   }
 
+  const initialKey = initialLicense?.key || (typeof initialLicense === 'string' ? initialLicense : null);
+
   return {
     isPro,
     license: initialLicense,
+    licenseKey: initialKey,
     showProModal: false,
     proModalFeature: '', // Reason prompting the modal: 'multi-page', 'batch', 'custom-style', etc.
     exportTrialCallback: null,
@@ -48,9 +51,11 @@ export const useLicenseStore = create((set, get) => {
         localStorage.setItem(LICENSE_STORAGE_KEY, JSON.stringify(licenseData));
       } catch (e) {}
 
+      const key = licenseData?.key || (typeof licenseData === 'string' ? licenseData : null);
       set({
         isPro: true,
         license: licenseData,
+        licenseKey: key,
         showProModal: false
       });
     },
@@ -62,7 +67,8 @@ export const useLicenseStore = create((set, get) => {
 
       set({
         isPro: false,
-        license: null
+        license: null,
+        licenseKey: null
       });
     }
   };

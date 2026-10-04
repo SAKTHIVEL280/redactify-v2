@@ -1,25 +1,31 @@
 import React, { useState, useCallback } from 'react';
 import { 
-  UploadCloud, ShieldAlert, FileText, FileCheck, ArrowRight, Sparkles, ChevronDown 
+  UploadCloud, ShieldAlert, FileText, FileCheck, ChevronDown 
 } from 'lucide-react';
 import { useDocumentStore } from '../store/documentStore';
 import { useRedactionStore } from '../store/redactionStore';
+import { useLicenseStore } from '../store/licenseStore';
 import { PRESETS } from '../core/engine/presets';
 import { parseAndScanPDF } from '../core/parsers/pdfParser';
 import { parseAndExtractDOCX } from '../core/parsers/docxParser';
 import { detectEntities } from '../core/engine/detector';
 import { createSampleOfferLetterPdf } from '../core/parsers/samplePdfGenerator';
+import { getBatchFileType } from '../core/parsers/batchExporter';
 
 export function StudioDropzone() {
   const [isDragging, setIsDragging] = useState(false);
 
   const setFile = useDocumentStore((s) => s.setFile);
+  const setBatchQueue = useDocumentStore((s) => s.setBatchQueue);
   const setDocumentData = useDocumentStore((s) => s.setDocumentData);
   const setProgress = useDocumentStore((s) => s.setProgress);
   const isProcessing = useDocumentStore((s) => s.isProcessing);
   const progress = useDocumentStore((s) => s.progress);
   const error = useDocumentStore((s) => s.error);
   const setError = useDocumentStore((s) => s.setError);
+
+  const isPro = useLicenseStore((s) => s.isPro);
+  const openProModal = useLicenseStore((s) => s.openProModal);
 
   const activePreset = useRedactionStore((s) => s.activePreset);
   const setActivePreset = useRedactionStore((s) => s.setActivePreset);
@@ -129,17 +135,41 @@ export function StudioDropzone() {
     }
   }, [activePreset, customRules, setFile, setDocumentData, setProgress, setRedactions, setError]);
 
+  const handleIncomingFiles = useCallback((fileList) => {
+    const files = Array.from(fileList || []);
+    if (files.length === 0) return;
+
+    if (files.length > 1) {
+      if (!isPro) {
+        openProModal('batch');
+        return;
+      }
+      const queue = files.map((f, idx) => ({
+        id: `batch_${Date.now()}_${idx}_${Math.random().toString(36).substr(2, 4)}`,
+        file: f,
+        fileType: getBatchFileType(f),
+        status: 'queued',
+        progress: 0,
+        redactionsCount: 0,
+        outputBlob: null,
+        error: null
+      }));
+      setBatchQueue(queue);
+      return;
+    }
+
+    processFile(files[0]);
+  }, [isPro, openProModal, processFile, setBatchQueue]);
+
   const handleDrop = useCallback((e) => {
     e.preventDefault();
     setIsDragging(false);
-    const file = e.dataTransfer.files?.[0];
-    if (file) processFile(file);
-  }, [processFile]);
+    handleIncomingFiles(e.dataTransfer?.files);
+  }, [handleIncomingFiles]);
 
   const handleFileInput = useCallback((e) => {
-    const file = e.target.files?.[0];
-    if (file) processFile(file);
-  }, [processFile]);
+    handleIncomingFiles(e.target?.files);
+  }, [handleIncomingFiles]);
 
   const loadSampleOfferLetter = async () => {
     try {
@@ -230,6 +260,7 @@ NOTICE: Unauthorized disclosure of this document violates federal HIPAA regulati
         >
           <input
             type="file"
+            multiple
             accept=".pdf,.docx,.txt,.csv,.log,.png,.jpg,.jpeg,.webp"
             onChange={handleFileInput}
             disabled={isProcessing}
@@ -252,10 +283,10 @@ NOTICE: Unauthorized disclosure of this document violates federal HIPAA regulati
                 <UploadCloud className="w-5 h-5" />
               </div>
               <div className="text-sm font-medium text-charcoal mb-1">
-                Drop your PDF, Word, or image scan here
+                Drop your PDF, Word, or image scans here
               </div>
               <p className="text-xs text-bark-grey mb-3 sm:mb-4">
-                or <span className="text-charcoal underline underline-offset-4 font-medium">browse files</span>
+                or <span className="text-charcoal underline underline-offset-4 font-medium">browse single or multiple files</span>
               </p>
               <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 text-[10px] text-bark-grey font-mono">
                 <span className="px-2 py-0.5 rounded-full bg-paper-white border border-stone-mist">PDF</span>

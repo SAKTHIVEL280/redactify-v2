@@ -1052,16 +1052,34 @@ export function detectEntities(text, presetId = 'all', customRules = []) {
     for (const rule of customRules) {
       if (!rule || !rule.pattern || rule.enabled === false) continue;
       try {
-        const customRegex = rule.isRegex
-          ? new RegExp(rule.pattern, rule.caseSensitive ? 'g' : 'gi')
-          : new RegExp(rule.pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), rule.caseSensitive ? 'g' : 'gi');
+        let patternStr = rule.pattern;
+        if (!rule.isRegex) {
+          const escaped = patternStr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          if (rule.wholeWord) {
+            const left = /^\w/.test(patternStr) ? '(?<![a-zA-Z0-9])' : '(?<!\\w)';
+            const right = /\w$/.test(patternStr) ? '(?![a-zA-Z0-9]|,[0-9])' : '(?!\\w)';
+            patternStr = `${left}${escaped}${right}`;
+          } else {
+            patternStr = escaped;
+          }
+        }
+
+        const flags = rule.caseSensitive ? 'g' : 'gi';
+        const customRegex = new RegExp(patternStr, flags);
 
         let match;
+        let loopLimit = 0;
         while ((match = customRegex.exec(text)) !== null) {
+          if (match[0].length === 0) {
+            customRegex.lastIndex++;
+            continue;
+          }
           rawEntities.push({
             id: nextId(),
             type: 'custom',
             category: 'custom',
+            ruleId: rule.id || null,
+            ruleName: rule.name || null,
             value: match[0],
             start: match.index,
             end: match.index + match[0].length,
@@ -1069,9 +1087,11 @@ export function detectEntities(text, presetId = 'all', customRules = []) {
             suggested: rule.replacement || '[CONFIDENTIAL]',
             redact: true
           });
+          loopLimit++;
+          if (loopLimit > 5000) break; // Defensive guard against run-away regex on huge files
         }
       } catch (err) {
-        console.warn(`Custom rule error for pattern ${rule.pattern}:`, err.message);
+        console.warn(`Custom rule error for pattern "${rule.pattern}":`, err.message);
       }
     }
   }

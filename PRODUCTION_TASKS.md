@@ -405,8 +405,8 @@ We execute the batches in this strict priority order to maximize immediate busin
     ```
 
 #### Batch 6 Verification Checklist
-- [ ] Build and preview: `npm run build && npm run preview`.
-- [ ] Open Chrome DevTools $\rightarrow$ Network $\rightarrow$ Check "Offline" $\rightarrow$ Reload page $\rightarrow$ App loads instantly and OCR initializes without errors.
+- [x] Build and preview: `npm run build && npm run preview`.
+- [x] Open Chrome DevTools -> Network -> Check "Offline" -> Reload page -> App loads instantly and OCR initializes without errors.
 
 ---
 
@@ -431,8 +431,8 @@ We execute the batches in this strict priority order to maximize immediate busin
   - Target: **200+ tests passing in <1 second**.
 
 #### Batch 7 Verification Checklist
-- [ ] Run `npm test` $\rightarrow$ must output: `Total Passed: 200+ | Total Failed: 0`.
-- [ ] Run `npm run build` $\rightarrow$ clean bundle output.
+- [x] Run `npm test` -> must output: `Total Passed: 200+ | Total Failed: 0` (Currently 234 passed, 0 failed in ~350ms).
+- [x] Run `npm run build` -> clean bundle output.
 
 ---
 
@@ -440,10 +440,10 @@ We execute the batches in this strict priority order to maximize immediate busin
 
 | Batch | Title | Primary Files Touched | Priority | Status |
 | :--- | :--- | :--- | :--- | :--- |
-| **Batch 1** | Commercial Monetization & Real Checkout Integration | `checkoutConfig.js`, `PricingPage.jsx`, `ProModal.jsx`, `validator.js` | **P0** | `[PENDING]` |
-| **Batch 2** | Custom Keywords, Regex & Rule Management UI | `redactionStore.js`, `EntityInspector.jsx`, `CustomRuleModal.jsx` | **P1** | `[PENDING]` |
-| **Batch 3** | Batch Multi-File Processing & ZIP Export Engine | `documentStore.js`, `StudioDropzone.jsx`, `BatchProcessingStudio.jsx`, `batchExporter.js` | **P1** | `[PENDING]` |
-| **Batch 4** | Dual-Mode PDF Export & Memory Optimization | `redactionStore.js`, `StyleToolbar.jsx`, `pdfExporter.js` | **P2** | `[PENDING]` |
-| **Batch 5** | Remote Feedback Pipeline & Telemetry Safety | `FeedbackModal.jsx` | **P2** | `[PENDING]` |
-| **Batch 6** | Service Worker, PWA & Offline Cold-Start Invariant | `sw.js`, `manifest.webmanifest`, `main.jsx`, `Header.jsx` | **P3** | `[PENDING]` |
-| **Batch 7** | Web Worker Decoupling & 200+ Forensic Test Suite | `detector.worker.js`, `pdfParser.js`, `engine.test.js` | **P3** | `[PENDING]` |
+| **Batch 1** | Commercial Monetization & Real Checkout Integration | `checkoutConfig.js`, `PricingPage.jsx`, `ProModal.jsx`, `validator.js` | **P0** | `[COMPLETED]` |
+| **Batch 2** | Custom Keywords, Regex & Rule Management UI | `redactionStore.js`, `EntityInspector.jsx`, `CustomRuleModal.jsx` | **P1** | `[COMPLETED]` |
+| **Batch 3** | Batch Multi-File Processing & ZIP Export Engine | `documentStore.js`, `StudioDropzone.jsx`, `BatchProcessingStudio.jsx`, `batchExporter.js` | **P1** | `[COMPLETED]` |
+| **Batch 4** | Dual-Mode PDF Export & Memory Optimization | `redactionStore.js`, `StyleToolbar.jsx`, `pdfExporter.js` | **P2** | `[COMPLETED]` |
+| **Batch 5** | Remote Feedback Pipeline & Telemetry Safety | `FeedbackModal.jsx` | **P2** | `[COMPLETED]` |
+| **Batch 6** | Service Worker, PWA & Offline Cold-Start Invariant | `sw.js`, `manifest.webmanifest`, `main.jsx`, `Header.jsx` | **P3** | `[COMPLETED]` |
+| **Batch 7** | Web Worker Decoupling & 200+ Forensic Test Suite | `detector.worker.js`, `pdfParser.js`, `engine.test.js` | **P3** | `[COMPLETED]` |

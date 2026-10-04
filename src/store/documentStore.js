@@ -13,6 +13,10 @@ export const useDocumentStore = create((set) => ({
   error: null,
   rotation: 0, // 0 | 90 | 180 | 270 degrees
 
+  // Batch Multi-File Mode
+  batchQueue: [], // Array of { id, file, fileType, name, size, status, progress, redactionsCount, outputBlob, error }
+  isBatchMode: false,
+
   setFile: (file, fileType) => set({
     file,
     fileName: file.name,
@@ -20,7 +24,8 @@ export const useDocumentStore = create((set) => ({
     fileType,
     currentPage: 1,
     rotation: 0,
-    error: null
+    error: null,
+    isBatchMode: false
   }),
 
   setDocumentData: (data) => set((state) => ({ ...state, ...data })),
@@ -50,5 +55,24 @@ export const useDocumentStore = create((set) => ({
     isProcessing: false,
     progress: { current: 0, total: 0, message: '' },
     error: null
-  })
+  }),
+
+  // Batch Operations
+  setBatchQueue: (queue) => set({
+    batchQueue: queue,
+    isBatchMode: queue.length > 0
+  }),
+
+  updateBatchItem: (id, updates) => set((state) => ({
+    batchQueue: state.batchQueue.map((item) =>
+      item.id === id ? { ...item, ...updates } : item
+    )
+  })),
+
+  clearBatch: () => set({
+    batchQueue: [],
+    isBatchMode: false
+  }),
+
+  setIsBatchMode: (isBatchMode) => set({ isBatchMode })
 }));

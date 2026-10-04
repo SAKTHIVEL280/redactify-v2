@@ -162,13 +162,18 @@ async function scrubPageTextStreams(page, doc, boxes) {
  */
 export async function exportRedactedPDF({
   fileArrayBuffer,
-  redactions,
+  file,
+  redactions = [],
   style = { color: '#09090b', textColor: '#ffffff', label: '[REDACTED]', showLabel: false },
   isPro = false,
   rotation = 0,
   onProgress = () => {}
 }) {
-  const pdfDoc = await PDFDocument.load(fileArrayBuffer);
+  const buffer = fileArrayBuffer || (file ? await file.arrayBuffer() : null);
+  if (!buffer) {
+    throw new Error('exportRedactedPDF requires fileArrayBuffer or file');
+  }
+  const pdfDoc = await PDFDocument.load(buffer);
   const totalPages = pdfDoc.getPageCount();
   const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   const rot = ((rotation % 360) + 360) % 360;
@@ -212,10 +217,11 @@ export async function exportRedactedPDF({
     // If page has active redactions:
     if (boxes.length > 0) {
       let rasterizedSuccessfully = false;
+      const isVectorMode = style.exportMode === 'vector';
 
       // Strategy 1 (Browser): High-Resolution Vector Flattening (2.5x Scale ~180-200 DPI)
       // Completely destroys the underlying text stream by replacing the page with a flattened pixel bitmap
-      if (pdfJsDoc) {
+      if (!isVectorMode && pdfJsDoc) {
         try {
           const jsPage = await pdfJsDoc.getPage(i + 1);
           const scale = 2.5;
@@ -299,17 +305,18 @@ export async function exportRedactedPDF({
           pdfDoc.removePage(i + 1); // Permanently delete original page & its text stream
           rasterizedSuccessfully = true;
 
-          // Free canvas and page memory
+          // Free canvas and page memory with GC pause
           if (jsPage && typeof jsPage.cleanup === 'function') jsPage.cleanup();
           canvas.width = 0;
           canvas.height = 0;
+          await new Promise((res) => setTimeout(res, 25));
         } catch (renderErr) {
           console.warn('Canvas rasterization fallback to stream scrubbing:', renderErr);
         }
       }
 
       // Strategy 2 (Stream Scrubbing & Vector Blackout):
-      // Executes when headless / Node.js or if canvas is not available
+      // Executes when style.exportMode === 'vector', headless / Node.js, or if canvas is not available
       if (!rasterizedSuccessfully) {
         await scrubPageTextStreams(page, pdfDoc, boxes);
 
@@ -342,6 +349,29 @@ export async function exportRedactedPDF({
               });
             }
           }
+        }
+
+        // Vector trial watermark if free tier
+        if (!isPro) {
+          const watermarkText = 'Trial Version: Redacted with Redactify (redactify.daeq.in). Upgrade to Pro for clean exports';
+          const wmFontSize = 7;
+          const wmWidth = font.widthOfTextAtSize(watermarkText, wmFontSize);
+
+          page.drawRectangle({
+            x: 0,
+            y: 0,
+            width,
+            height: 16,
+            color: rgb(0.95, 0.95, 0.95)
+          });
+
+          page.drawText(watermarkText, {
+            x: Math.max(10, (width - wmWidth) / 2),
+            y: 5,
+            size: wmFontSize,
+            font,
+            color: rgb(0.3, 0.3, 0.3)
+          });
         }
 
         if (rot !== 0) {

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
-import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, AlertCircle, X, ShieldAlert, Sparkles, Loader2, RotateCw, RotateCcw, Undo2, Redo2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, AlertCircle, X, Sparkles, Loader2, RotateCw, RotateCcw, Undo2, Redo2 } from 'lucide-react';
 import { useDocumentStore } from '../store/documentStore';
 import { useRedactionStore } from '../store/redactionStore';
 import { scanImageWithOCR } from '../core/parsers/ocrScanner';
@@ -24,7 +24,6 @@ export function DocumentViewer() {
   const rawText = useDocumentStore((s) => s.rawText);
   const isScannedDocument = useDocumentStore((s) => s.isScannedDocument);
   const rotation = useDocumentStore((s) => s.rotation);
-  const setRotation = useDocumentStore((s) => s.setRotation);
   const rotateClockwise = useDocumentStore((s) => s.rotateClockwise);
   const rotateCounterClockwise = useDocumentStore((s) => s.rotateCounterClockwise);
 

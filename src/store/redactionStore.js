@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { PRESETS } from '../core/engine/presets';
+import { PRESETS } from '../core/engine/presets.js';
 
 export const REDACTION_COLORS = [
   { id: 'black', label: 'Solid Black', hex: '#09090b', textHex: '#ffffff' },
@@ -17,6 +17,23 @@ export const REDACTION_LABELS = [
   '[CLIENT PRIVILEGED]'
 ];
 
+function loadStoredCustomRules() {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem('redactify_custom_rules');
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveStoredCustomRules(rules) {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem('redactify_custom_rules', JSON.stringify(rules));
+  } catch {}
+}
+
 export const useRedactionStore = create((set, get) => ({
   // Array of normalized bounding boxes { id, pageIndex, x, y, width, height, type: 'auto'|'manual', category, value, suggested, redact: boolean }
   redactions: [],
@@ -28,7 +45,8 @@ export const useRedactionStore = create((set, get) => ({
     textColor: '#ffffff',
     label: '[REDACTED]',
     showLabel: false,
-    mode: 'blackout' // 'blackout' | 'label'
+    mode: 'blackout', // 'blackout' | 'label'
+    exportMode: 'raster' // 'raster' (forensic flattening) | 'vector' (crisp searchable text)
   },
 
   // Manual box creation tool active
@@ -37,8 +55,8 @@ export const useRedactionStore = create((set, get) => ({
   isInspectorOpen: typeof window !== 'undefined' ? window.innerWidth >= 768 : true,
   toggleInspector: () => set((state) => ({ isInspectorOpen: !state.isInspectorOpen })),
 
-  // Custom regex/keyword rules
-  customRules: [],
+  // Custom regex/keyword rules with persistence
+  customRules: loadStoredCustomRules(),
 
   // Undo / Redo Stacks
   history: [],
@@ -60,10 +78,21 @@ export const useRedactionStore = create((set, get) => ({
 
   addRedaction: (box) => {
     get()._recordHistory();
+    const newBox = {
+      id: box?.id || `manual_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+      type: box?.type || 'manual',
+      category: box?.category || 'manual',
+      value: box?.value || 'Manual Redaction',
+      suggested: box?.suggested || get().style.label || '[REDACTED]',
+      redact: box?.redact !== undefined ? box.redact : true,
+      ...box
+    };
     set((state) => ({
-      redactions: [...state.redactions, box]
+      redactions: [...state.redactions, newBox]
     }));
   },
+
+  addManualRedaction: (box) => get().addRedaction(box),
 
   toggleRedaction: (id) => {
     get()._recordHistory();
@@ -71,6 +100,13 @@ export const useRedactionStore = create((set, get) => ({
       redactions: state.redactions.map((r) =>
         r.id === id ? { ...r, redact: !r.redact } : r
       )
+    }));
+  },
+
+  toggleAllRedactions: (redact) => {
+    get()._recordHistory();
+    set((state) => ({
+      redactions: state.redactions.map((r) => ({ ...r, redact }))
     }));
   },
 
@@ -82,31 +118,28 @@ export const useRedactionStore = create((set, get) => ({
     }));
   },
 
-  toggleAllRedactions: (enable) => {
+  updateRedaction: (id, updates) => {
     get()._recordHistory();
     set((state) => ({
-      redactions: state.redactions.map((r) => ({ ...r, redact: enable }))
+      redactions: state.redactions.map((r) =>
+        r.id === id ? { ...r, ...updates } : r
+      )
     }));
   },
 
   setActivePreset: (presetId) => {
-    get().applyPreset(presetId);
-  },
-
-  applyPreset: (presetId) => {
-    const preset = Object.values(PRESETS).find(p => p.id === presetId) || PRESETS.ALL;
-    const allowedTypes = new Set(preset.types);
+    set({ activePreset: presetId });
+    const preset = PRESETS[presetId];
+    if (!preset) return;
 
     get()._recordHistory();
     set((state) => ({
-      activePreset: presetId,
       redactions: state.redactions.map((r) => {
         if (r.type === 'manual') return r;
-        const entityKey = r.entityType || r.type;
-        const isAllowed = allowedTypes.has(entityKey) || allowedTypes.has(r.category);
+        const matchesCategory = preset.categories.includes('all') || preset.categories.includes(r.category);
         return {
           ...r,
-          redact: isAllowed
+          redact: matchesCategory
         };
       })
     }));
@@ -120,14 +153,41 @@ export const useRedactionStore = create((set, get) => ({
 
   setSelectedRedactionId: (id) => set({ selectedRedactionId: id }),
 
-  // Custom Rules
-  addCustomRule: (rule) => set((state) => ({
-    customRules: [...state.customRules, { id: `rule_${Date.now()}`, enabled: true, ...rule }]
-  })),
+  // Custom Rules CRUD with localStorage persistence
+  addCustomRule: (rule) => set((state) => {
+    const newRule = {
+      id: `rule_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+      name: rule.name?.trim() || rule.pattern.trim(),
+      pattern: rule.pattern.trim(),
+      isRegex: Boolean(rule.isRegex),
+      caseSensitive: Boolean(rule.caseSensitive),
+      wholeWord: rule.wholeWord !== undefined ? Boolean(rule.wholeWord) : true,
+      replacement: rule.replacement || '[CONFIDENTIAL]',
+      enabled: true,
+      ...rule
+    };
+    const updated = [...state.customRules, newRule];
+    saveStoredCustomRules(updated);
+    return { customRules: updated };
+  }),
 
-  removeCustomRule: (id) => set((state) => ({
-    customRules: state.customRules.filter((r) => r.id !== id)
-  })),
+  updateCustomRule: (id, updates) => set((state) => {
+    const updated = state.customRules.map((r) => (r.id === id ? { ...r, ...updates } : r));
+    saveStoredCustomRules(updated);
+    return { customRules: updated };
+  }),
+
+  toggleCustomRule: (id) => set((state) => {
+    const updated = state.customRules.map((r) => (r.id === id ? { ...r, enabled: !r.enabled } : r));
+    saveStoredCustomRules(updated);
+    return { customRules: updated };
+  }),
+
+  removeCustomRule: (id) => set((state) => {
+    const updated = state.customRules.filter((r) => r.id !== id);
+    saveStoredCustomRules(updated);
+    return { customRules: updated };
+  }),
 
   // Undo & Redo Engine
   undo: () => {

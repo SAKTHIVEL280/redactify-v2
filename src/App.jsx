@@ -6,6 +6,7 @@ import { StudioDropzone } from './components/StudioDropzone';
 import { DocumentViewer } from './components/DocumentViewer';
 import { StyleToolbar } from './components/StyleToolbar';
 import { EntityInspector } from './components/EntityInspector';
+import { BatchProcessingStudio } from './components/BatchProcessingStudio';
 import { ProModal } from './components/ProModal';
 import { FeedbackModal } from './components/FeedbackModal';
 import { useDocumentStore } from './store/documentStore';
@@ -13,6 +14,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 
 export function App() {
   const file = useDocumentStore((s) => s.file);
+  const isBatchMode = useDocumentStore((s) => s.isBatchMode);
   const [activePage, setActivePage] = useState('overview'); // 'overview' | 'studio' | 'pricing'
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
 
@@ -44,7 +46,11 @@ export function App() {
           )}
 
           {activePage === 'studio' && (
-            !file ? (
+            isBatchMode ? (
+              <div className="flex-1 overflow-y-auto">
+                <BatchProcessingStudio />
+              </div>
+            ) : !file ? (
               <StudioDropzone />
             ) : (
               <div className="flex-1 flex flex-col h-full overflow-hidden">

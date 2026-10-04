@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { 
-  Check, ShieldCheck, Sparkles, KeyRound, ArrowRight, HelpCircle, 
-  ChevronDown, ChevronUp, Lock, FileText, CheckCircle2, AlertCircle 
+  Check, Sparkles, KeyRound, ArrowRight, 
+  ChevronDown, ChevronUp, CheckCircle2, AlertCircle 
 } from 'lucide-react';
 import { useLicenseStore } from '../store/licenseStore';
 import { useDocumentStore } from '../store/documentStore';
 import { validateLicenseKey } from '../core/license/validator';
+import { launchCheckout, CHECKOUT_URLS } from '../core/license/checkoutConfig';
 
 export function PricingPage({ onNavigateToStudio }) {
   const file = useDocumentStore((s) => s.file);
@@ -218,13 +219,41 @@ export function PricingPage({ onNavigateToStudio }) {
               </ul>
             </div>
 
-            <button
-              onClick={openProModal}
-              className="mt-8 w-full h-11 rounded-button bg-charcoal hover:bg-black text-white text-xs font-mono font-medium transition-all shadow-sm flex items-center justify-center gap-2"
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>{isPro ? 'Pro Active (Manage License)' : 'Upgrade to Pro'}</span>
-            </button>
+            {isPro ? (
+              <button
+                onClick={() => openProModal('manage')}
+                className="mt-8 w-full h-11 rounded-button bg-charcoal hover:bg-black text-white text-xs font-mono font-medium transition-all shadow-sm flex items-center justify-center gap-2"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Pro Active (Manage License)</span>
+              </button>
+            ) : (
+              <div className="mt-8 space-y-2">
+                <button
+                  onClick={() => launchCheckout(currency, 'PRO_MONTHLY')}
+                  className="w-full h-11 rounded-button bg-charcoal hover:bg-black text-white text-xs font-mono font-medium transition-all shadow-sm flex items-center justify-center gap-2"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Upgrade to Pro ({currency === 'INR' ? '₹499/mo' : '$9/mo'})</span>
+                </button>
+                <button
+                  onClick={() => launchCheckout(currency, 'LIFETIME')}
+                  className="w-full h-9 rounded-button bg-soft-cream hover:bg-stone-mist/50 text-charcoal text-xs font-mono font-medium transition-all border border-stone-mist flex items-center justify-center gap-1.5"
+                >
+                  <span>Or Get Lifetime Access ({currency === 'INR' ? '₹2,999' : '$79'})</span>
+                </button>
+                <div className="text-[11px] font-mono text-bark-grey text-center pt-1 flex flex-col gap-0.5">
+                  <span>Instant key on receipt & emailed.</span>
+                  <button
+                    type="button"
+                    onClick={() => openProModal('license')}
+                    className="text-charcoal underline hover:text-amber-800 text-[10px]"
+                  >
+                    Already have a key? Activate here
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* 3. Enterprise / Legal */}
@@ -271,7 +300,7 @@ export function PricingPage({ onNavigateToStudio }) {
             </div>
 
             <a
-              href="mailto:sakthivel@daeq.in?subject=Redactify%20Enterprise%20Inquiry"
+              href={CHECKOUT_URLS[currency]?.ENTERPRISE || CHECKOUT_URLS.USD.ENTERPRISE}
               className="mt-8 w-full h-11 rounded-button bg-soft-cream hover:bg-stone-mist/40 text-charcoal text-xs font-mono font-medium border border-stone-mist transition-all flex items-center justify-center gap-2"
             >
               <span>Contact Team</span>

@@ -27,9 +27,12 @@
     <meta name="twitter:image" content="https://redactify.daeq.in/logo.svg" />
 
     <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#09090b" />
+    <link rel="apple-touch-icon" href="/logo.svg" />
     
     <!-- Zero-Trust Privacy: Local System Fonts (Zero CDN Tracking) -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'unsafe-inline'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' blob: data:; object-src 'none';" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'unsafe-inline'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' blob: data: https://formspree.io; object-src 'none';" />
   </head>
   <body class="bg-warm-bone text-charcoal min-h-screen antialiased selection:bg-electric-indigo selection:text-white">
     <div id="root"></div>

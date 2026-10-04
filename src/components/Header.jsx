@@ -137,6 +137,12 @@ export function Header({ activePage, setActivePage }) {
 
         {/* Right: Status & Actions */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          {/* Sovereign Air-Gapped Status Badge */}
+          <div className="hidden xl:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-soft-cream/80 border border-stone-mist/60 text-[11px] font-mono text-bark-grey">
+            <span className={`w-1.5 h-1.5 rounded-full ${isOffline ? 'bg-amber-500' : 'bg-emerald-500 animate-pulse'}`} />
+            <span>{isOffline ? 'Offline (Air-Gapped)' : 'Air-Gapped & Offline Ready'}</span>
+          </div>
+
           {/* Pro Status or License Trigger */}
           {isPro ? (
             <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-tag bg-amber-50 border border-amber-200 text-amber-900 text-[10px] sm:text-[11px] font-mono font-semibold shadow-xs">

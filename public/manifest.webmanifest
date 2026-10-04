@@ -1,0 +1,18 @@
+{
+  "name": "Redactify - Sovereign Document Redaction",
+  "short_name": "Redactify",
+  "description": "Sovereign client-side document redaction engine for PDF, DOCX, and scanned documents. 100% in-browser zero-trust execution.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fbf9f5",
+  "theme_color": "#09090b",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "utilities", "business"]
+}

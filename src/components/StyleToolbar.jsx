@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Download, Check, Sparkles, SlidersHorizontal, Eye, ShieldCheck } from 'lucide-react';
+import { Download, Check } from 'lucide-react';
 import { useDocumentStore } from '../store/documentStore';
 import { useRedactionStore, REDACTION_COLORS, REDACTION_LABELS } from '../store/redactionStore';
 import { useLicenseStore } from '../store/licenseStore';
@@ -15,13 +15,11 @@ export function StyleToolbar() {
   const redactions = useRedactionStore((s) => s.redactions);
   const style = useRedactionStore((s) => s.style);
   const setStyle = useRedactionStore((s) => s.setStyle);
-  const toggleAllRedactions = useRedactionStore((s) => s.toggleAllRedactions);
 
   const isPro = useLicenseStore((s) => s.isPro);
   const openProModal = useLicenseStore((s) => s.openProModal);
 
   const [isExporting, setIsExporting] = useState(false);
-  const [customLabelInput, setCustomLabelInput] = useState('');
 
   const activeCount = redactions.filter((r) => r.redact).length;
 
@@ -141,6 +139,38 @@ export function StyleToolbar() {
             <span className="sm:hidden">Label</span>
           </button>
         </div>
+
+        {/* PDF Export Mode Switcher (Vector vs Flattening) */}
+        {fileType === 'pdf' && (
+          <div className="flex items-center gap-0.5 sm:gap-1 bg-soft-cream border border-stone-mist rounded-full p-0.5 sm:p-1 font-mono shrink-0">
+            <button
+              type="button"
+              onClick={() => setStyle({ exportMode: 'raster' })}
+              className={`px-1.5 sm:px-2.5 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium rounded-full transition-all ${
+                style.exportMode !== 'vector'
+                  ? 'bg-paper-white text-charcoal shadow-sm'
+                  : 'text-bark-grey hover:text-charcoal'
+              }`}
+              title="Forensic Flattening: converts redacted pages to high-res bitmaps to permanently eliminate ghost text"
+            >
+              <span className="hidden lg:inline">Forensic Flatten</span>
+              <span className="lg:hidden">Flatten</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setStyle({ exportMode: 'vector' })}
+              className={`px-1.5 sm:px-2.5 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium rounded-full transition-all ${
+                style.exportMode === 'vector'
+                  ? 'bg-paper-white text-charcoal shadow-sm'
+                  : 'text-bark-grey hover:text-charcoal'
+              }`}
+              title="Vector Blackout: draws opaque vector boxes while preserving crisp, selectable, Ctrl+F searchable text"
+            >
+              <span className="hidden lg:inline">Searchable Vector</span>
+              <span className="lg:hidden">Vector</span>
+            </button>
+          </div>
+        )}
 
         {/* Label Dropdown & Custom Input (if Text Label enabled) */}
         {style.showLabel && (

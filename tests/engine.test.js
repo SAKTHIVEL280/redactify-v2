@@ -31,6 +31,12 @@ import { findPhraseWordGroups } from '../src/core/parsers/ocrScanner.js';
 import { createSampleOfferLetterPdf } from '../src/core/parsers/samplePdfGenerator.js';
 import { PDFDocument, StandardFonts } from 'pdf-lib';
 import { execSync } from 'child_process';
+import { getBatchFileType, createBatchZip, generateAuditReport, processBatchItem } from '../src/core/parsers/batchExporter.js';
+import { CHECKOUT_URLS } from '../src/core/license/checkoutConfig.js';
+import { useRedactionStore } from '../src/store/redactionStore.js';
+import { useLicenseStore } from '../src/store/licenseStore.js';
+import { useDocumentStore } from '../src/store/documentStore.js';
+import { rescanActiveDocument } from '../src/core/engine/rescanHelper.js';
 
 let passed = 0;
 let failed = 0;
@@ -357,6 +363,152 @@ const tamperedKey = generatedKey.slice(0, -2) + '00';
 const tamperedResult = validateLicenseKey(tamperedKey);
 assert(tamperedResult.valid === false, 'Tampered license checksum is strictly rejected');
 
+// Negative Tests for License Validator
+assert(validateLicenseKey(null).valid === false, 'Negative Test: null license key is strictly rejected');
+assert(validateLicenseKey('').valid === false, 'Negative Test: empty license key is strictly rejected');
+assert(validateLicenseKey('INVALID-KEY-FORMAT').valid === false, 'Negative Test: malformed license key is strictly rejected');
+assert(validateLicenseKey('TEST-PRO-12345678-ABCD').valid === false, 'Negative Test: non-RDCT prefix is strictly rejected');
+assert(validateLicenseKey('RDCT-HACKER-12345678-ABCD').valid === false, 'Negative Test: unauthorized tier is strictly rejected');
+assert(validateLicenseKey('RDCT-PRO-12-ABCD').valid === false, 'Negative Test: truncated seed segment is strictly rejected');
+
+// Structured Token Payload & Expiration Tests
+const expiredTokenKey = generateValidLicenseKey('PRO', {
+  id: 'EXP001',
+  email: 'test@example.com',
+  issuedAt: Date.now() - 1000000,
+  expiresAt: Date.now() - 1000
+});
+const expiredResult = validateLicenseKey(expiredTokenKey);
+assert(expiredResult.valid === false && expiredResult.error.includes('expired'), 'Negative Test: Expired license token is strictly rejected');
+
+const activeTokenKey = generateValidLicenseKey('PRO', {
+  id: 'ACT001',
+  email: 'active@example.com',
+  issuedAt: Date.now(),
+  expiresAt: Date.now() + 86400000
+});
+const activeResult = validateLicenseKey(activeTokenKey);
+assert(activeResult.valid === true && activeResult.licenseId === 'ACT001', 'Active subscription token passes verification');
+
+const lifetimeTokenKey = generateValidLicenseKey('PRO', {
+  id: 'LIFE001',
+  email: 'lifetime@example.com',
+  issuedAt: Date.now(),
+  expiresAt: null
+});
+const lifetimeResult = validateLicenseKey(lifetimeTokenKey);
+assert(lifetimeResult.valid === true && lifetimeResult.tier === 'PRO', 'Permanent Lifetime pass token passes verification');
+
+const dotKey = generateValidLicenseKey('PRO', 'ABCDEF12', { useDotSeparator: true });
+const dotResult = validateLicenseKey(dotKey);
+assert(dotResult.valid === true && dotResult.tier === 'PRO', 'Modern dot-separated token format is valid');
+
+const tamperedDotKey = dotKey.slice(0, -3) + 'FFF';
+assert(validateLicenseKey(tamperedDotKey).valid === false, 'Negative Test: Tampered dot token is strictly rejected');
+
+console.log('\n--- Testing Negative Mathematical Checksums & Malformed Inputs ---');
+// Aadhaar Verhoeff Checksum
+assert(validateVerhoeff('218442898761') === false, 'Negative Test: Transposed Aadhaar digits fail Verhoeff check');
+assert(validateVerhoeff('218442898715') === false, 'Negative Test: Single digit typo fails Verhoeff check');
+assert(validateVerhoeff('000000000000') === false, 'Negative Test: Zeroed Aadhaar fails Verhoeff check');
+
+// Luhn Checksum (Cards, SIN, NPI)
+assert(validateLuhn('4111111111111112') === false, 'Negative Test: Altered credit card number fails Luhn check');
+assert(validateCanadianSIN('046454287') === false, 'Negative Test: Altered Canadian SIN fails Luhn check');
+assert(validateUSNPI('1234567894') === false, 'Negative Test: Altered US NPI fails Luhn check');
+
+// ISO 7064 Mod-97-10 (IBAN)
+assert(validateIBAN('GB82WEST12345698765431') === false, 'Negative Test: Altered IBAN fails Mod-97 check');
+
+// Mod-11 (NHS, Singapore NRIC, AU Medicare)
+assert(validateNHS('9434765918') === false, 'Negative Test: Altered UK NHS fails Mod-11 check');
+assert(validateSingaporeNRIC('S1234567A') === false, 'Negative Test: Swapped check letter on Singapore NRIC fails');
+assert(validateAustralianMedicare('2123456792') === false, 'Negative Test: Altered Medicare check digit fails');
+
+// Mod-23 (Spanish DNI) & Mod-97 (French NIR)
+assert(validateSpanishDNI('12345678A') === false, 'Negative Test: Wrong letter on Spanish DNI fails Mod-23');
+assert(validateFrenchNIR('185123456789098') === false, 'Negative Test: Wrong INSEE key on French NIR fails Mod-97');
+
+console.log('\n--- Testing Custom Keywords & Regex Detection Engine ---');
+const customTestText = 'Meeting with Project Titan team and client OmniCorp at 10am. Notes: TITAN-9842 and Titanium widgets.';
+const customRulesList = [
+  { id: 'rule_1', pattern: 'Project Titan', isRegex: false, caseSensitive: false, wholeWord: true, replacement: '[PROJECT REDACTED]', enabled: true },
+  { id: 'rule_2', pattern: 'OmniCorp', isRegex: false, caseSensitive: true, wholeWord: true, replacement: '[CLIENT PRIVILEGED]', enabled: true },
+  { id: 'rule_3', pattern: 'Titan', isRegex: false, caseSensitive: false, wholeWord: true, replacement: '[TITAN]', enabled: true },
+  { id: 'rule_4', pattern: '\\bTITAN-\\d{4}\\b', isRegex: true, caseSensitive: false, replacement: '[CODE-ID]', enabled: true },
+  { id: 'rule_disabled', pattern: 'Widgets', isRegex: false, enabled: false }
+];
+
+const customDetections = detectEntities(customTestText, 'all', customRulesList);
+const customVals = customDetections.filter(d => d.category === 'custom').map(d => d.value);
+
+assert(customVals.includes('Project Titan'), 'Custom Rules: Detects exact multi-word keyword "Project Titan"');
+assert(customVals.includes('OmniCorp'), 'Custom Rules: Detects case-sensitive keyword "OmniCorp"');
+assert(customVals.includes('TITAN-9842'), 'Custom Rules: Detects custom RegEx pattern \\bTITAN-\\d{4}\\b');
+assert(!customVals.includes('Titanium'), 'Negative Test: Custom wholeWord rule does NOT match substring "Titanium"');
+assert(!customVals.includes('Widgets'), 'Negative Test: Disabled custom rule is strictly ignored');
+
+// Negative Tests for Regex Robustness
+const malformedRules = [
+  { id: 'bad_regex', pattern: '[a-z(', isRegex: true, enabled: true },
+  { id: 'empty_rule', pattern: '', isRegex: false, enabled: true },
+  { id: 'zero_length', pattern: '^', isRegex: true, enabled: true }
+];
+let didCrash = false;
+try {
+  detectEntities('Sample text for testing regex edge cases', 'all', malformedRules);
+} catch (e) {
+  didCrash = true;
+}
+assert(didCrash === false, 'Negative Test: Malformed regex syntax fails gracefully without throwing');
+
+console.log('\n--- Testing Batch Multi-File Processing & ZIP Bundling ---');
+assert(getBatchFileType({ name: 'contract.pdf', type: 'application/pdf' }) === 'pdf', 'Batch Ingestion: Identifies PDF file');
+assert(getBatchFileType({ name: 'report.docx', type: '' }) === 'docx', 'Batch Ingestion: Identifies DOCX file');
+assert(getBatchFileType({ name: 'scan.png', type: 'image/png' }) === 'image', 'Batch Ingestion: Identifies PNG image file');
+assert(getBatchFileType({ name: 'notes.txt', type: 'text/plain' }) === 'text', 'Batch Ingestion: Identifies TXT file');
+
+const mockBatchItems = [
+  {
+    file: { name: 'document1.txt', size: 1024 },
+    fileType: 'text',
+    ext: 'txt',
+    status: 'ready',
+    redactionsCount: 3,
+    outputBlob: new Blob(['Redacted Document 1 Content'], { type: 'text/plain' })
+  },
+  {
+    file: { name: 'document2.txt', size: 2048 },
+    fileType: 'text',
+    ext: 'txt',
+    status: 'ready',
+    redactionsCount: 5,
+    outputBlob: new Blob(['Redacted Document 2 Content'], { type: 'text/plain' })
+  }
+];
+
+const auditReportText = generateAuditReport(mockBatchItems, 'Indian KYC Preset');
+assert(auditReportText.includes('Total Documents Processed: 2'), 'Batch Audit: Includes correct document count');
+assert(auditReportText.includes('Total Entities Redacted: 8'), 'Batch Audit: Includes correct total redaction count');
+assert(auditReportText.includes('Client-Side In-Memory Execution'), 'Batch Audit: Certifies zero-trust invariant');
+
+const zipBlob = await createBatchZip(mockBatchItems, 'Indian KYC Preset');
+assert(zipBlob instanceof Blob, 'Batch ZIP: Generates valid Blob instance');
+assert(zipBlob.size > 200, 'Batch ZIP: Produces non-empty compressed archive');
+
+const loadedZip = await JSZip.loadAsync(await zipBlob.arrayBuffer());
+assert(loadedZip.file('document1_redacted.txt') !== null, 'Batch ZIP: Contains document1_redacted.txt');
+assert(loadedZip.file('document2_redacted.txt') !== null, 'Batch ZIP: Contains document2_redacted.txt');
+assert(loadedZip.file('REDACTION_AUDIT_LOG.txt') !== null, 'Batch ZIP: Bundles REDACTION_AUDIT_LOG.txt');
+
+console.log('\n--- Testing Centralized Commercial Checkout Configuration ---');
+assert(CHECKOUT_URLS.INR.PRO_MONTHLY.startsWith('https://'), 'Checkout INR: Monthly URL is secure HTTPS link');
+assert(CHECKOUT_URLS.INR.LIFETIME.startsWith('https://'), 'Checkout INR: Lifetime URL is secure HTTPS link');
+assert(CHECKOUT_URLS.INR.ENTERPRISE.startsWith('mailto:'), 'Checkout INR: Enterprise is direct mailto trigger');
+assert(CHECKOUT_URLS.USD.PRO_MONTHLY.startsWith('https://'), 'Checkout USD: Monthly URL is secure HTTPS link');
+assert(CHECKOUT_URLS.USD.LIFETIME.startsWith('https://'), 'Checkout USD: Lifetime URL is secure HTTPS link');
+assert(CHECKOUT_URLS.USD.ENTERPRISE.startsWith('mailto:'), 'Checkout USD: Enterprise is direct mailto trigger');
+
 console.log('\n─── Testing PDF Forensic Text Stream Sanitization ────────────────');
 const testDoc = await PDFDocument.create();
 const testPage = testDoc.addPage([600, 400]);
@@ -600,6 +752,177 @@ for (const file of componentFiles) {
 }
 assert(openSourceMentions === 0, 'Commercial Invariant: Zero "Open Source" claims in user-facing UI');
 assert(repoLinks === 0, 'Commercial Invariant: Zero public repo links in user-facing UI');
+
+console.log('\n─── Testing Redaction Store & History Engine ─────────────────────');
+const rStore = useRedactionStore.getState();
+rStore.clearRedactions();
+assert(useRedactionStore.getState().redactions.length === 0, 'RedactionStore: Cleared successfully');
+
+rStore.addRedaction({
+  id: 'test_box_1',
+  pageIndex: 0,
+  x: 0.1,
+  y: 0.1,
+  width: 0.2,
+  height: 0.05,
+  value: 'Confidential Value',
+  suggested: '[CONFIDENTIAL]',
+  redact: true
+});
+assert(useRedactionStore.getState().redactions.length === 1, 'RedactionStore: addRedaction adds manual item');
+assert(useRedactionStore.getState().redactions[0].value === 'Confidential Value', 'RedactionStore: Value recorded correctly');
+
+rStore.addManualRedaction({
+  id: 'test_box_2',
+  pageIndex: 0,
+  x: 0.4,
+  y: 0.4,
+  width: 0.1,
+  height: 0.1
+});
+assert(useRedactionStore.getState().redactions.length === 2, 'RedactionStore: addManualRedaction alias works');
+
+rStore.toggleRedaction('test_box_1');
+assert(useRedactionStore.getState().redactions[0].redact === false, 'RedactionStore: toggleRedaction toggles redact to false');
+
+rStore.undo();
+assert(useRedactionStore.getState().redactions[0].redact === true, 'RedactionStore: undo restores previous state');
+
+rStore.redo();
+assert(useRedactionStore.getState().redactions[0].redact === false, 'RedactionStore: redo re-applies toggle');
+
+rStore.removeRedaction('test_box_2');
+assert(useRedactionStore.getState().redactions.length === 1, 'RedactionStore: removeRedaction deletes target item');
+
+console.log('\n─── Testing License Store State Synchronization ──────────────────');
+const lStore = useLicenseStore.getState();
+lStore.deactivateLicense();
+assert(useLicenseStore.getState().isPro === false, 'LicenseStore: Deactivated isPro is false');
+assert(useLicenseStore.getState().licenseKey === null, 'LicenseStore: Deactivated licenseKey is null');
+
+const testLic = generateValidLicenseKey('PRO');
+lStore.activateLicense({ key: testLic, tier: 'PRO' });
+assert(useLicenseStore.getState().isPro === true, 'LicenseStore: Activated isPro is true');
+assert(useLicenseStore.getState().licenseKey === testLic, 'LicenseStore: licenseKey property matches activated key');
+lStore.deactivateLicense();
+
+console.log('\n─── Testing Parser & Exporter Robustness & Fallbacks ─────────────');
+// 1. exportRedactedPDF with File instance directly
+const samplePdfForExport = await createSampleOfferLetterPdf();
+const directPdfBlob = await exportRedactedPDF({
+  file: samplePdfForExport,
+  redactions: [{ pageIndex: 0, x: 0.1, y: 0.1, width: 0.3, height: 0.05, value: 'Alexander Vance', redact: true }],
+  isPro: true
+});
+assert(directPdfBlob instanceof Blob && directPdfBlob.size > 500, 'PDF Export: Accepts File instance directly without error');
+
+// Negative Test: exportRedactedPDF missing both file and fileArrayBuffer throws
+let pdfMissingErr = null;
+try {
+  await exportRedactedPDF({});
+} catch (e) {
+  pdfMissingErr = e;
+}
+assert(pdfMissingErr !== null, 'Negative Test: exportRedactedPDF throws when missing buffer and file');
+
+// Negative Test: exportRedactedPDF with corrupt buffer throws
+let pdfCorruptErr = null;
+try {
+  await exportRedactedPDF({ fileArrayBuffer: new Uint8Array([1, 2, 3, 4, 5]).buffer });
+} catch (e) {
+  pdfCorruptErr = e;
+}
+assert(pdfCorruptErr !== null, 'Negative Test: exportRedactedPDF throws when given corrupt data');
+
+// 2. exportRedactedDOCX with File instance directly
+const directDocxZip = new JSZip();
+directDocxZip.file('word/document.xml', `<?xml version="1.0" encoding="UTF-8"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:r><w:t>Secret: 123-45-6789</w:t></w:r></w:p></w:body></w:document>`);
+const directDocxBuf = await directDocxZip.generateAsync({ type: 'nodebuffer' });
+const docxFileObj = new File([directDocxBuf], 'test.docx', { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+const directDocxBlob = await exportRedactedDOCX({
+  file: docxFileObj,
+  redactions: [{ redact: true, value: '123-45-6789', suggested: '[SSN REDACTED]' }],
+  isPro: true
+});
+assert(directDocxBlob instanceof Blob && directDocxBlob.size > 100, 'DOCX Export: Accepts File instance directly without error');
+
+// Negative Test: exportRedactedDOCX missing both file and fileArrayBuffer throws
+let docxMissingErr = null;
+try {
+  await exportRedactedDOCX({});
+} catch (e) {
+  docxMissingErr = e;
+}
+assert(docxMissingErr !== null, 'Negative Test: exportRedactedDOCX throws when missing buffer and file');
+
+// Negative Test: exportRedactedDOCX with corrupt data throws
+let docxCorruptErr = null;
+try {
+  await exportRedactedDOCX({ fileArrayBuffer: new Uint8Array([9, 8, 7, 6]).buffer });
+} catch (e) {
+  docxCorruptErr = e;
+}
+assert(docxCorruptErr !== null, 'Negative Test: exportRedactedDOCX throws when given corrupt data');
+
+console.log('\n─── Testing Batch Item End-to-End Processing ─────────────────────');
+// PDF Batch Item
+const batchPdfItem = {
+  id: 'batch_test_pdf',
+  file: samplePdfForExport,
+  fileType: 'pdf'
+};
+const batchPdfResult = await processBatchItem(batchPdfItem, 'all', [], { label: '[REDACTED]' }, true);
+assert(batchPdfResult.outputBlob instanceof Blob && batchPdfResult.outputBlob.size > 500, 'Batch Item: Successfully redacts and exports PDF');
+assert(batchPdfResult.ext === 'pdf', 'Batch Item: Preserves PDF extension');
+
+// DOCX Batch Item
+const batchDocxItem = {
+  id: 'batch_test_docx',
+  file: docxFileObj,
+  fileType: 'docx'
+};
+const batchDocxResult = await processBatchItem(batchDocxItem, 'all', [], { label: '[REDACTED]' }, true);
+assert(batchDocxResult.outputBlob instanceof Blob && batchDocxResult.outputBlob.size > 100, 'Batch Item: Successfully redacts and exports DOCX');
+assert(batchDocxResult.redactionsCount >= 1, 'Batch Item: Detects and counts redactions in DOCX');
+
+// TXT Batch Item
+const txtFileObj = new File(['Employee SSN is 123-45-6789 confidential.'], 'test.txt', { type: 'text/plain' });
+const batchTxtItem = {
+  id: 'batch_test_txt',
+  file: txtFileObj,
+  fileType: 'text'
+};
+const batchTxtResult = await processBatchItem(batchTxtItem, 'all', [], { label: '[REDACTED]' }, true);
+const txtOutStr = await batchTxtResult.outputBlob.text();
+assert(!txtOutStr.includes('123-45-6789') && txtOutStr.includes('[SSN REDACTED]'), 'Batch Item: Successfully scrubs text file');
+
+console.log('\n─── Testing Real-Time Document Rescan Helper ─────────────────────');
+const existingManuals = [
+  { id: 'manual_1', type: 'manual', category: 'manual', value: 'Custom Stamp', redact: true }
+];
+const rescanned = await rescanActiveDocument({
+  file: null,
+  fileType: 'text',
+  rawText: 'Contact: alex@example.com',
+  activePreset: 'all',
+  customRules: [],
+  existingRedactions: existingManuals
+});
+assert(rescanned.some(r => r.id === 'manual_1'), 'Rescan: Preserves existing manual user annotations');
+assert(rescanned.some(r => r.entityType === 'email'), 'Rescan: Discovers new auto detections in text');
+
+console.log('\n─── Testing Custom Rules With Non-Alphanumeric Boundaries ────────');
+const symbolRules = [
+  { id: 'rule_sym1', pattern: '$250,000', isRegex: false, wholeWord: true, enabled: true, replacement: '[COMPENSATION]' },
+  { id: 'rule_sym2', pattern: '#ProjectOmega', isRegex: false, wholeWord: true, enabled: true, replacement: '[CODENAME]' }
+];
+const symDetections = detectEntities('Granted $250,000 for #ProjectOmega work. Excluded $250,000,000 and #ProjectOmegaX.', 'all', symbolRules);
+const customMatched = symDetections.filter(d => d.type === 'custom').map(d => d.value);
+assert(customMatched.includes('$250,000'), 'Custom Symbol: Matches $250,000 with wholeWord');
+assert(!customMatched.includes('$250,000,000'), 'Negative Test: Custom rule rejects $250,000,000 with wholeWord');
+assert(customMatched.includes('#ProjectOmega'), 'Custom Symbol: Matches #ProjectOmega with wholeWord');
+assert(!customMatched.includes('#ProjectOmegaX'), 'Negative Test: Custom rule rejects #ProjectOmegaX with wholeWord');
+
 
 console.log(`\n──────────────────────────────────────────────────────────────────`);
 console.log(`Total Passed: ${passed} | Total Failed: ${failed}`);
