@@ -49,8 +49,8 @@ export async function parseAndExtractDOCX(file) {
 
   let textLines = extractTextFromXml(docXml);
 
-  // Also extract text from headers, footers, and footnotes
-  const auxiliaryFiles = zip.file(/^word\/(header\d*|footer\d*|footnotes\d*)\.xml$/);
+  // Also extract text from headers, footers, footnotes, endnotes, and comments
+  const auxiliaryFiles = zip.file(/^word\/(header\d*|footer\d*|footnotes\d*|endnotes\d*|comments\d*)\.xml$/);
   for (const auxFile of auxiliaryFiles) {
     try {
       const auxXml = await auxFile.async('string');

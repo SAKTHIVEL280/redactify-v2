@@ -223,8 +223,8 @@ export async function exportRedactedDOCX({
   const redactedDocXml = processXmlFile(docXmlContent, activeItems, style.label, !isPro);
   zip.file(documentXmlPath, redactedDocXml);
 
-  // 2. Redact auxiliary XMLs (headers, footers, footnotes)
-  const auxiliaryFiles = zip.file(/^word\/(header\d*|footer\d*|footnotes\d*)\.xml$/);
+  // 2. Redact auxiliary XMLs (headers, footers, footnotes, endnotes, comments)
+  const auxiliaryFiles = zip.file(/^word\/(header\d*|footer\d*|footnotes\d*|endnotes\d*|comments\d*)\.xml$/);
   for (const auxFile of auxiliaryFiles) {
     try {
       const auxXml = await auxFile.async('string');
